@@ -10,13 +10,13 @@
 </head>
 <body>
 
-<div class="container">
+<div class="container" style="margin-top: 60px;">
 
   <h1>Hemnet Commuter</h1>
 
   <form>
 
-    <div class="card">
+    <div class="card mb-5">
       <div class="card-block">
         <h4 class="card-title">Step 1: Enter Hemnet Search RSS Feed URL</h4>
         <p class="card-text">On <a href="https://www.hemnet.se" target="_blank">hemnet.se</a> create a search and save it.
@@ -25,16 +25,29 @@
       </div>
     </div>
 
-    <div class="card">
+    <div class="card mb-5">
       <div class="card-block">
         <h4 class="card-title">Step 2: Enter Commute Filters</h4>
         <p class="card-text">Enter one or more addresses, where you must commute to. Add the maximum commute time for each.</p>
-        <input type="text" class="form-control" id="commute_address_1" name="commute_address_1">
-        <input type="time" class="form-control" id="commute_time_1" name="commute_time_1">
+        <table class="table">
+          <thead>
+            <tr>
+              <th>Work Addresss</th>
+              <th>Maximum Commute Time</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><input type="text" class="form-control" id="commute_address_1" name="commute_address_1"></td>
+              <td><input type="time" class="form-control" id="commute_time_1" name="commute_time_1"></td>
+            </tr>
+          </tbody>
+        </table>
+        <button class="btn btn-secondary">Add another</button>
       </div>
     </div>
 
-    <div class="card">
+    <div class="card mb-5">
       <div class="card-block">
         <h4 class="card-title">Step 3: Search!</h4>
         <p class="card-text">When you're ready, press search to show a map with filtered properties.</p>
