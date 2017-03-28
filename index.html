@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!-- Required meta tags -->
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+  <!-- Bootstrap CSS -->
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-alpha.6/css/bootstrap.min.css" integrity="sha384-rwoIResjU2yc3z8GV/NPeZWAv56rSmLldC3R/AZzGRnGxQQKnKkoFVhFQhNUwEyJ" crossorigin="anonymous">
+</head>
+<body>
+
+<div class="container">
+
+  <h1>Hemnet Commuter</h1>
+
+  <form>
+
+    <div class="card">
+      <div class="card-block">
+        <h4 class="card-title">Step 1: Enter Hemnet Search RSS Feed URL</h4>
+        <p class="card-text">On <a href="https://www.hemnet.se" target="_blank">hemnet.se</a> create a search and save it.
+          Find the link to the RSS feed for that search (on the list page) and paste that here.</p>
+        <input type="url" class="form-control" id="hemnet_rss" name="hemnet_rss">
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-block">
+        <h4 class="card-title">Step 2: Enter Commute Filters</h4>
+        <p class="card-text">Enter one or more addresses, where you must commute to. Add the maximum commute time for each.</p>
+        <input type="text" class="form-control" id="commute_address_1" name="commute_address_1">
+        <input type="time" class="form-control" id="commute_time_1" name="commute_time_1">
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-block">
+        <h4 class="card-title">Step 3: Search!</h4>
+        <p class="card-text">When you're ready, press search to show a map with filtered properties.</p>
+        <input type="submit" class="btn btn-primary" value="Search">
+      </div>
+    </div>
+
+  </form>
+
+</div>
+
+<!-- jQuery first, then Tether, then Bootstrap JS. -->
+<script src="https://code.jquery.com/jquery-3.2.1.min.js" integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4=" crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/tether/1.4.0/js/tether.min.js" integrity="sha384-DztdAPBWPRXSA/3eYEEUWrWCy7G5KFbe8fFjk5JAIxUYHKkDx6Qin1DkWx51bBrb" crossorigin="anonymous"></script>
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-alpha.6/js/bootstrap.min.js" integrity="sha384-vBWWzlZJ8ea9aCX4pEW3rVHjgjt7zpkNpZk+02D9phzyeVkE+jo0ieGizqPLForn" crossorigin="anonymous"></script>
+</body>
+</html>
