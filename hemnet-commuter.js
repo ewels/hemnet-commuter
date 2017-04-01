@@ -4,6 +4,7 @@
 // https://github.com/ewels/hemnet-commuter //
 //////////////////////////////////////////////
 
+commute_results = [];
 hemnet_results = {};
 
 $(function(){
@@ -11,12 +12,7 @@ $(function(){
   // Load previous form inputs if we have them saved
   load_form_inputs();
 
-  // Load a base-map
-  initMap();
-
   // Add Hemnet RSS searches
-
-  // Add and remove commute rows
   $(".hemnet_rss_card").on('click', '.hemnet_rss_add_btn', function(e){ e.preventDefault(); e.stopPropagation(); add_rss_row(); });
   $(".hemnet_rss_card").on('click', '.hemnet_rss_delete_btn', function(e){ e.preventDefault(); e.stopPropagation(); remove_rss_row(); });
 
@@ -36,9 +32,33 @@ $(function(){
       $('#search-btn').val('Search').prop('disabled', false);
     });
 
-    // Hemnet results fetched, now filter with Google Maps
+    // Hemnet results fetch worked
     rss_promise.done(function(message) {
-      var commute_filter_promise = filter_with_commutes();
+
+      // Get the commute locations
+      var geocode_commute_promise = geocode_commute_entries();
+
+      // Something went wrong with getting the commute locations
+      geocode_commute_promise.fail(function(message) {
+        alert(message);
+        $('#search-btn').val('Search').prop('disabled', false);
+      });
+
+      // Commute locations worked
+      geocode_commute_promise.done(function(message) {
+
+        // Get the hemnet results locations
+        var geocode_hemnet_promise = geocode_hemnet_results();
+
+        // Hemnet geocoding done, now get commute times
+        geocode_hemnet_promise.done(function(message) {
+          console.log(commute_results);
+          console.log(hemnet_results);
+          // TODO
+        });
+
+      });
+
     });
 
   });
@@ -212,13 +232,84 @@ function load_hemnet_rss(){
 
 
 /**
- * Function to take the hemnet results and filter by commute times
+ * Geocode the commute inputs to get locations
  */
-function filter_with_commutes(){
+function geocode_commute_entries(){
 
   // jQuery promise
   var dfd = new $.Deferred();
 
+  // Parse commute inputs
+  var i = 1;
+  while($('#commute_address_'+i).length){
+    commute_results.push({
+      'title': $('#commute_address_'+i).val(),
+      'max_commute': $('#commute_time_'+i).val()
+    });
+    i++;
+  }
+
+  $('#status-msg').text("Trying to find "+commute_results.length+" commute locations with google");
+
+  // Go through each hemnet result and find location
+  var promises = [];
+  for (var i = 0; i < commute_results.length; i++) {
+    promises.push( geocode_address(commute_results[i]['title']) );
+  }
+
+  // All requests finished
+  $.when.apply($, promises).then(function(d){
+    var arg = (promises.length === 1) ? [arguments] : arguments;
+    $.each(arg, function (i, args) {
+      if(args[0]['status'] == 'OK'){
+        if(args[0]['results'].length > 1){
+          dfd.reject("Error - more than one location found for address: "+commute_results[i]['title']);
+        } else {
+          commute_results[i]['locations'] = args[0]['results'];
+        }
+      } else {
+        dfd.reject("Error - could not find commute address: "+commute_results[i]['title']);
+      }
+    })
+    dfd.resolve();
+  });
+
+  return dfd.promise();
+
+}
+
+/**
+ * Geocode the hemnet results to get locations
+ */
+function geocode_hemnet_results(){
+
+  // jQuery promise
+  var dfd = new $.Deferred();
+
+  $('#status-msg').text("Trying to find "+Object.keys(hemnet_results).length+" house locations with google");
+
+  // Go through each hemnet result and find location
+  var keys = [];
+  var promises = [];
+  for (var k in hemnet_results){
+    var address = hemnet_results[k]['title'].replace(/,?\s?\dtr\.?/, '') + ", Sweden";
+    keys.push(k);
+    promises.push( geocode_address(address) );
+  }
+
+  // All requests finished
+  $.when.apply($, promises).then(function(d){
+    var arg = (promises.length === 1) ? [arguments] : arguments;
+    $.each(arg, function (idx, args) {
+      var k = keys[idx];
+      if(args[0]['status'] == 'OK'){
+        hemnet_results[k]['locations'] = args[0]['results'];
+      } else {
+        console.warn("Could not find address: "+hemnet_results[k]['title']);
+      }
+    })
+    dfd.resolve();
+  });
 
   return dfd.promise();
 
@@ -226,13 +317,12 @@ function filter_with_commutes(){
 
 
 /**
- * Function to initialise the Google Map (before anything happens)
+ * Function to find lat and long from street address
  */
-// function initMap() {
-//   // Create a map object and specify the DOM element for display.
-//   var map = new google.maps.Map(document.getElementById('map'), {
-//     // center: {lat: -34.397, lng: 150.644},
-//     scrollwheel: false,
-//     zoom: 8
-//   });
-// }
+function geocode_address(address){
+  var url = 'https://maps.googleapis.com/maps/api/geocode/json?key=AIzaSyC7je4NbKJRUZPD57mGqYHjzAloEZlNgYs&address='+encodeURIComponent(address);
+  return $.getJSON(url);
+}
+
+
+
