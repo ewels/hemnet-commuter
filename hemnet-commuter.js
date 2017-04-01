@@ -120,7 +120,10 @@ function save_form_inputs(){
     return false;
   } else {
     // Get form values
-    form_data = {'hemnet_rss': []};
+    form_data = {
+      'hemnet_rss': [],
+      'hemnet_append_address': $('#hemnet_append_address').val()
+    };
     $('.hemnet_rss').each(function(){
       form_data['hemnet_rss'].push($(this).val());
     });
@@ -147,6 +150,10 @@ function load_form_inputs(){
     if(form_json != null){
       form_data = JSON.parse(form_json);
       if(form_data['hemnet_rss'] != undefined){
+
+        // Append to Address
+        $('#hemnet_append_address').val(form_data['hemnet_append_address']);
+
         // Fill in RSS feed values
         for (var i = 0; i < form_data['hemnet_rss'].length; i++) {
           if(i > $('.hemnet_rss_row').length - 1){
@@ -292,7 +299,7 @@ function geocode_hemnet_results(){
   var keys = [];
   var promises = [];
   for (var k in hemnet_results){
-    var address = hemnet_results[k]['title'].replace(/,?\s?\dtr\.?/, '') + ", Sweden";
+    var address = hemnet_results[k]['title'].replace(/,?\s?\dtr\.?/, '') + ", "+$('#hemnet_append_address').val();
     keys.push(k);
     promises.push( geocode_address(address) );
   }
