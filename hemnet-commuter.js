@@ -29,7 +29,10 @@ $(function(){
     // Something went wrong getting the RSS results
     rss_promise.fail(function(message) {
       alert(message);
+      $('#status-msg').text(message);
       $('#search-btn').val('Search').prop('disabled', false);
+      commute_results = [];
+      hemnet_results = {};
     });
 
     // Hemnet results fetch worked
@@ -41,7 +44,10 @@ $(function(){
       // Something went wrong with getting the commute locations
       geocode_commute_promise.fail(function(message) {
         alert(message);
+        $('#status-msg').text(message);
         $('#search-btn').val('Search').prop('disabled', false);
+        commute_results = [];
+        hemnet_results = {};
       });
 
       // Commute locations worked
@@ -54,7 +60,7 @@ $(function(){
         geocode_hemnet_promise.done(function(message) {
           console.log(commute_results);
           console.log(hemnet_results);
-          // TODO
+          // TODO - See https://developers.google.com/maps/documentation/distance-matrix/
         });
 
       });
@@ -195,24 +201,25 @@ function load_hemnet_rss(){
     // Match the RSS search ID
     var matches = $(this).val().match(/https:\/\/www.hemnet.se\/mitt_hemnet\/sparade_sokningar\/(\d+)\.xml/);
     if(matches == null){
-      console.error("RSS URL did not match expected pattern: "+$(this).val())
-      return true;
+      dfd.reject("RSS URL did not match expected pattern: "+$(this).val());
+      return false;
     }
 
     // Fetch the RSS via our own PHP script, because of stupid CORS
     var request = $.post( "mirror_hemnet.php",  { s_id: matches[1] }, function( data ) {
       try {
         if(data['status'] == "error"){
-          console.error(data['msg']);
-          return true;
+          dfd.reject("Could not load RSS "+data['msg']);
+          return false;
         }
         for (var i = 0; i < data['item'].length; i++) {
           d = data['item'][i];
           hemnet_results[d['link']] = d;
         }
       } catch (e){
-        console.error("Something went wrong whilst parsing the Hemnet RSS.");
+        dfd.reject("Something went wrong whilst parsing the Hemnet RSS.");
         console.error(e);
+        return false;
       }
     });
     promises.push(request);
