@@ -5,49 +5,55 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 
-  <!-- Bootstrap CSS -->
+  <!-- Bootstrap & FontAwesome CSS -->
   <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-alpha.6/css/bootstrap.min.css" integrity="sha384-rwoIResjU2yc3z8GV/NPeZWAv56rSmLldC3R/AZzGRnGxQQKnKkoFVhFQhNUwEyJ" crossorigin="anonymous">
+  <link href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet" integrity="sha384-wvfXpqpZZVQGK6TAh5PVlGOfQNHSoD2xbE+QkPxCAFlNEevoEH3Sl0sibVcOQVnN" crossorigin="anonymous">
+  <link rel="stylesheet" href="styles.css">
 </head>
 <body>
 
-<div class="container" style="margin-top: 60px;">
+<div class="container">
 
-  <h1>Hemnet Commuter</h1>
+  <img id="hemnet-logo" src="hemnet.svg">
+  <h1 class="display-4">Hemnet Commuter</h1>
+  <p class="lead text-muted mb-3">Given an RSS feed of a Hemnet search, filter for properties that match a commuting preference.</p>
 
   <form>
 
-    <div class="card mb-5">
+    <div class="card mb-3">
       <div class="card-block">
         <h4 class="card-title">Step 1: Enter Hemnet Search RSS Feed URL</h4>
         <p class="card-text">On <a href="https://www.hemnet.se" target="_blank">hemnet.se</a> create a search and save it.
           Find the link to the RSS feed for that search (on the list page) and paste that here.</p>
-        <input type="url" class="form-control" id="hemnet_rss" name="hemnet_rss">
+        <input type="url" class="form-control" id="hemnet_rss" name="hemnet_rss" placeholder="For example: https://www.hemnet.se/mitt_hemnet/sparade_sokningar/00000000.xml" required>
       </div>
     </div>
 
-    <div class="card mb-5">
+    <div class="card mb-3">
       <div class="card-block">
         <h4 class="card-title">Step 2: Enter Commute Filters</h4>
         <p class="card-text">Enter one or more addresses, where you must commute to. Add the maximum commute time for each.</p>
-        <table class="table">
+        <table class="table" id="commute-table">
           <thead>
             <tr>
               <th>Work Addresss</th>
-              <th>Maximum Commute Time</th>
+              <th style="max-width:300px;">Maximum Commute (<code>hh:mm</code>)</th>
+              <th style="width:5%;">Remove</th>
             </tr>
           </thead>
           <tbody>
             <tr>
-              <td><input type="text" class="form-control" id="commute_address_1" name="commute_address_1"></td>
-              <td><input type="time" class="form-control" id="commute_time_1" name="commute_time_1"></td>
+              <td><input type="text" class="form-control commute_address" id="commute_address_1" name="commute_address_1" required></td>
+              <td><input type="time" class="form-control commute_time" id="commute_time_1" name="commute_time_1" required></td>
+              <td class="text-center"><button class="btn btn-secondary commute_deleterow" id="commute_deleterow_1" disabled><i class="fa fa-trash-o" aria-hidden="true"></i></button></td>
             </tr>
           </tbody>
         </table>
-        <button class="btn btn-secondary">Add another</button>
+        <button class="btn btn-secondary" id="commute_addrow">Add another</button>
       </div>
     </div>
 
-    <div class="card mb-5">
+    <div class="card mb-3">
       <div class="card-block">
         <h4 class="card-title">Step 3: Search!</h4>
         <p class="card-text">When you're ready, press search to show a map with filtered properties.</p>
@@ -63,5 +69,6 @@
 <script src="https://code.jquery.com/jquery-3.2.1.min.js" integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4=" crossorigin="anonymous"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/tether/1.4.0/js/tether.min.js" integrity="sha384-DztdAPBWPRXSA/3eYEEUWrWCy7G5KFbe8fFjk5JAIxUYHKkDx6Qin1DkWx51bBrb" crossorigin="anonymous"></script>
 <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-alpha.6/js/bootstrap.min.js" integrity="sha384-vBWWzlZJ8ea9aCX4pEW3rVHjgjt7zpkNpZk+02D9phzyeVkE+jo0ieGizqPLForn" crossorigin="anonymous"></script>
+<script src="hemnet-commuter.js"></script>
 </body>
 </html>
