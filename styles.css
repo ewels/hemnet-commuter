@@ -4,11 +4,57 @@
  * https://github.com/ewels/hemnet-commuter
  */
 
+/* Google fonts - Open Sans (to match Hemnet) */
+@import url('https://fonts.googleapis.com/css?family=Bitter:700|Open+Sans:400,600');
+
 body {
-  border-top: 3px solid #00b100;
+  font-family: 'Open Sans', sans-serif;
+  border-top: 3px solid #39aa35;
   padding-top: 60px;
 }
+h2, h3, h4, h5, h6 {
+  font-family: 'Bitter', serif;
+  font-weight: 700;
+  color: #454545;
+}
+.btn {
+  font-family: 'Open Sans', sans-serif;
+}
+.btn-primary {
+  background-color: #39aa35;
+  border-color: #00b100;
+}
+.btn-outline-primary {
+  color: #39aa35;
+  border-color: #39aa35;
+}
+.btn-primary:hover, .btn-primary:active,
+.btn-outline-primary:hover, .btn-outline-primary:active {
+  background-color: #39aa35;
+  border-color: #39aa35;
+}
+.btn-primary:focus, .btn-outline-primary:focus {
+  -webkit-box-shadow: 0 0 0 2px rgba(57, 170, 53, 0.5);
+  box-shadow: 0 0 0 2px rgba(57, 170, 53, 0.5);
+}
+.btn-primary:disabled {
+  background-color: rgba(57, 170, 53, 0.7);
+  border-color: rgba(0, 177, 0, 0.5);
+}
+
 #hemnet-logo {
   float: right;
   width: 100px;
+}
+footer {
+  margin-top: 60px;
+  border-top: 1px solid #ccc;
+  padding: 15px;
+  font-size: 0.7rem;
+  background-color: #ededed;
+  color: #999;
+}
+footer a {
+  color: #999;
+  text-decoration: underline;
 }

@@ -21,11 +21,24 @@
   <form>
 
     <div class="card mb-3">
-      <div class="card-block">
+      <div class="card-block hemnet_rss_card">
         <h4 class="card-title">Step 1: Enter Hemnet Search RSS Feed URL</h4>
         <p class="card-text">On <a href="https://www.hemnet.se" target="_blank">hemnet.se</a> create a search and save it.
-          Find the link to the RSS feed for that search (on the list page) and paste that here.</p>
-        <input type="url" class="form-control" id="hemnet_rss" name="hemnet_rss" placeholder="For example: https://www.hemnet.se/mitt_hemnet/sparade_sokningar/00000000.xml" required>
+          Find the link to the RSS feed for that search (on the list page) and paste that here.<br>
+          <small class="text-muted"><span class="text-danger"><i class="fa fa-exclamation-triangle" aria-hidden="true"></i> Only the <strong>most recent 30</strong> items are returned.</span>
+          Enter multiple searche RSS addresses to retrieve more results.</small></p>
+        <div class="hemnet_rss_rows">
+          <div class="input-group mb-1 hemnet_rss_row">
+            <input type="url" class="form-control hemnet_rss" name="hemnet_rss[]" required>
+            <span class="input-group-btn hemnet_rss_delete" style="display:none;">
+              <button class="btn btn-secondary hemnet_rss_delete_btn" type="button"><i class="fa fa-trash-o hemnet_rss_add" aria-hidden="true"></i></button>
+            </span>
+            <span class="input-group-btn hemnet_rss_add_btn">
+              <button class="btn btn-secondary hemnet_rss_add_btn" type="button"><i class="fa fa-plus hemnet_rss_add" aria-hidden="true"></i></button>
+            </span>
+          </div>
+        </div>
+        <p class="text-muted"><small>For example: <samp>https://www.hemnet.se/mitt_hemnet/sparade_sokningar/00000000.xml</samp></small></p>
       </div>
     </div>
 
@@ -43,13 +56,13 @@
           </thead>
           <tbody>
             <tr>
-              <td><input type="text" class="form-control commute_address" id="commute_address_1" name="commute_address_1" required></td>
-              <td><input type="time" class="form-control commute_time" id="commute_time_1" name="commute_time_1" required></td>
+              <td><input type="text" class="form-control commute_address" id="commute_address_1" name="commute_address_1" placeholder="eg. Riksgatan 1, 100 12 Stockholm" required></td>
+              <td><input type="time" class="form-control commute_time" id="commute_time_1" name="commute_time_1" value="01:00" placeholder="hh:mm" required></td>
               <td class="text-center"><button class="btn btn-secondary commute_deleterow" id="commute_deleterow_1" disabled><i class="fa fa-trash-o" aria-hidden="true"></i></button></td>
             </tr>
           </tbody>
         </table>
-        <button class="btn btn-secondary" id="commute_addrow">Add another</button>
+        <button class="btn btn-outline-primary" id="commute_addrow">Add another</button>
       </div>
     </div>
 
@@ -57,18 +70,40 @@
       <div class="card-block">
         <h4 class="card-title">Step 3: Search!</h4>
         <p class="card-text">When you're ready, press search to show a map with filtered properties.</p>
-        <input type="submit" class="btn btn-primary" value="Search">
+        <p>
+          <input type="submit" class="btn btn-primary" id="search-btn" value="Search">
+          <small class="ml-3 text-muted" id="status-text" style="display:none;">Status: <span id="status-msg">Form submitted</span></small>
+        </p>
+      </div>
+    </div>
+
+    <div class="card mb-3 results_card" style="display:none;">
+      <div class="card-block">
+        <h4 class="card-title">Results</h4>
+        <h5 class="text-muted" style="display:hidden;" id="search-title"></h5>
       </div>
     </div>
 
   </form>
 
+  <div id="map"></div>
+
 </div>
 
-<!-- jQuery first, then Tether, then Bootstrap JS. -->
+<footer>
+  <div class="container">
+    Hemnet-Commuter was written by <a href="http://phil.ewels.co.uk">Phil Ewels</a>. It is in no way connected with, or endorsed by,
+    <a href="https://www.hemnet.se">hemnet.se</a>.<br>
+    The code for this website is released with the MIT open-source licence and can be
+    viewed on GitHub: <a href="https://github.com/ewels/hemnet-commuter">https://github.com/ewels/hemnet-commuter</a>.
+  </div>
+</footer>
+
+<!-- jQuery, then Tether, Bootstrap JS, Google Maps, custom JS -->
 <script src="https://code.jquery.com/jquery-3.2.1.min.js" integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4=" crossorigin="anonymous"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/tether/1.4.0/js/tether.min.js" integrity="sha384-DztdAPBWPRXSA/3eYEEUWrWCy7G5KFbe8fFjk5JAIxUYHKkDx6Qin1DkWx51bBrb" crossorigin="anonymous"></script>
 <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-alpha.6/js/bootstrap.min.js" integrity="sha384-vBWWzlZJ8ea9aCX4pEW3rVHjgjt7zpkNpZk+02D9phzyeVkE+jo0ieGizqPLForn" crossorigin="anonymous"></script>
+<script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCuwaOOHdybxB7n7xmeHXay1mQaY4P2X6w" async defer></script>
 <script src="hemnet-commuter.js"></script>
 </body>
 </html>
