@@ -2,7 +2,7 @@
 Given RSS feeds of Hemnet searches, filter properties for those that match commuting preferences.
 
 
-#### Tool available at: https://ewels.github.io/hemnet-commuter/
+#### Tool available at: http://beta.tallphil.co.uk/hemnet-commuter/
 
 ## What does this tool do?
 Whilst looking for new houses on hemnet, it can be difficult to assess which
@@ -45,4 +45,5 @@ the filters or not. Clicking reveals more information about that house.
 ---
 
 This tool is in no way endorsed by Hemnet. But it does use their nice RSS feeds. Thanks!
-![hemnet](hemnet.svg)
+
+![hemnet](http://beta.tallphil.co.uk/hemnet-commuter/hemnet.svg)

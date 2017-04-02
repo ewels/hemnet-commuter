@@ -222,7 +222,7 @@ function load_hemnet_rss(){
     }
 
     // Fetch the RSS via our own PHP script, because of stupid CORS
-    var request = $.post( "http://beta.tallphil.co.uk/hemnet-commuter/mirror_hemnet.php",  { s_id: matches[1] }, function( data ) {
+    var request = $.post( "mirror_hemnet.php",  { s_id: matches[1] }, function( data ) {
       try {
         if(data['status'] == "error"){
           dfd.reject("Could not load RSS "+data['msg']);
@@ -369,7 +369,7 @@ function geocode_hemnet_results(){
  */
 function scrape_hemnet(url){
   var dfd = new $.Deferred();
-  $.post( "http://beta.tallphil.co.uk/hemnet-commuter/mirror_hemnet.php",  { hnurl: url }, function( html ) {
+  $.post( "mirror_hemnet.php",  { hnurl: url }, function( html ) {
     var img_matches = html.match(/<meta property="og:image" content="([^"]+)">/);
     if(img_matches){
       hemnet_results[url]['front_image'] = img_matches[1];
@@ -494,7 +494,7 @@ function get_distance_matrix(keys, hemnet_locations){
   // url += '&transit_mode=bus|subway|train|tram';
 
   // Call the API!
-  var request = $.post( "http://beta.tallphil.co.uk/hemnet-commuter/mirror_hemnet.php",  { gmaps: url }, function( data ) {
+  var request = $.post( "mirror_hemnet.php",  { gmaps: url }, function( data ) {
     try {
       // Check that we haven't gone over the API quota
       if(data['status'] == "OVER_QUERY_LIMIT"){
