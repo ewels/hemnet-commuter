@@ -16,13 +16,13 @@
 
   <img id="hemnet-logo" src="hemnet.svg">
   <h1 class="display-4">Hemnet Commuter</h1>
-  <p class="lead text-muted mb-3">Given an RSS feed of a Hemnet search, filter for properties that match a commuting preference.</p>
-
+  <p class="lead text-muted mb-3">Given RSS feeds of Hemnet searches, filter for properties that match a commuting preference.</p>
+  <p>Find out more about this tool on it's <a href="https://github.com/ewels/hemnet-commuter">GitHub page</a>.</p>
   <form>
 
     <div class="card mb-3">
       <div class="card-block hemnet_rss_card">
-        <h4 class="card-title">Step 1: Enter Hemnet Search RSS Feed URL</h4>
+        <h4 class="card-title">Step 1: Enter Hemnet Search RSS Feed URLs</h4>
         <p class="card-text">On <a href="https://www.hemnet.se" target="_blank">hemnet.se</a> create a search and save it.
           Find the link to the RSS feed for that search (on the list page) and paste that here.<br>
           <small class="text-muted"><span class="text-danger"><i class="fa fa-exclamation-triangle" aria-hidden="true"></i> Only the <strong>most recent 30</strong> items are returned.</span>
@@ -39,9 +39,9 @@
           </div>
         </div>
         <p class="text-muted"><small>For example: <samp>https://www.hemnet.se/mitt_hemnet/sparade_sokningar/00000000.xml</samp></small></p>
-        <hr>
+        <!-- <hr>
         <p>Result locations are found by taking the listing title. Sometimes this can return multiple locations. Specify a string to add when searching:</p>
-        <input type="text" class="form-control hemnet_append_address" name="hemnet_append_address" id="hemnet_append_address" value="Sweden" placeholder="eg. Stockholm, Sweden">
+        <input type="text" class="form-control hemnet_append_address" name="hemnet_append_address" id="hemnet_append_address" value="Sweden" placeholder="eg. Stockholm, Sweden"> -->
       </div>
     </div>
 
@@ -49,8 +49,8 @@
       <div class="card-block">
         <h4 class="card-title">Step 2: Enter Commute Filters</h4>
         <p class="card-text">Enter one or more addresses, where you must commute to. Add the maximum commute time for each.</p>
-        <table class="table" id="commute-table">
-          <thead>
+        <table class="table table-sm table-striped" id="commute-table">
+          <thead class="thead-default">
             <tr>
               <th>Work Addresss</th>
               <th style="max-width:300px;">Maximum Commute (<code>hh:mm</code>)</th>
@@ -60,7 +60,7 @@
           <tbody>
             <tr>
               <td><input type="text" class="form-control commute_address" id="commute_address_1" name="commute_address_1" placeholder="eg. Riksgatan 1, 100 12 Stockholm" required></td>
-              <td><input type="time" class="form-control commute_time" id="commute_time_1" name="commute_time_1" value="01:00" placeholder="hh:mm" required></td>
+              <td><input type="time" class="form-control commute_time" id="commute_time_1" name="commute_time_1" value="00:40" placeholder="hh:mm" required></td>
               <td class="text-center"><button class="btn btn-secondary commute_deleterow" id="commute_deleterow_1" disabled><i class="fa fa-trash-o" aria-hidden="true"></i></button></td>
             </tr>
           </tbody>
@@ -88,8 +88,8 @@
 
       <div id="results_map" class="mb-3"></div>
 
-      <table class="table" id="results_table">
-        <thead>
+      <table class="table table-sm" id="results_table">
+        <thead class="thead-default">
           <tr>
             <th>Image</th>
             <th style="width:270px;">Title</th>

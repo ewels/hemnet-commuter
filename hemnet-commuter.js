@@ -96,7 +96,7 @@ function add_commute_row(){
     return false;
   };
   row.find('.commute_address').attr('id', 'commute_address_'+i).attr('name', 'commute_address_'+i).val('');
-  row.find('.commute_time').attr('id', 'commute_time_'+i).attr('name', 'commute_time_'+i).val('01:00');
+  row.find('.commute_time').attr('id', 'commute_time_'+i).attr('name', 'commute_time_'+i).val('00:40');
   row.find('.commute_deleterow').attr('id', 'commute_deleterow_'+i).prop('disabled', false).show();
   row.hide().appendTo($('#commute-table tbody')).fadeIn('fast');
   $("#commute-table tbody tr:not(:last-child) .commute_deleterow").hide();
@@ -222,7 +222,7 @@ function load_hemnet_rss(){
     }
 
     // Fetch the RSS via our own PHP script, because of stupid CORS
-    var request = $.post( "mirror_hemnet.php",  { s_id: matches[1] }, function( data ) {
+    var request = $.post( "http://beta.tallphil.co.uk/hemnet-commuter/mirror_hemnet.php",  { s_id: matches[1] }, function( data ) {
       try {
         if(data['status'] == "error"){
           dfd.reject("Could not load RSS "+data['msg']);
@@ -369,7 +369,7 @@ function geocode_hemnet_results(){
  */
 function scrape_hemnet(url){
   var dfd = new $.Deferred();
-  $.post( "mirror_hemnet.php",  { hnurl: url }, function( html ) {
+  $.post( "http://beta.tallphil.co.uk/hemnet-commuter/mirror_hemnet.php",  { hnurl: url }, function( html ) {
     var img_matches = html.match(/<meta property="og:image" content="([^"]+)">/);
     if(img_matches){
       hemnet_results[url]['front_image'] = img_matches[1];
@@ -420,6 +420,11 @@ function get_commute_times(){
   var keys = [];
   var hemnet_locations = [];
   for (var k in hemnet_results){
+
+    // Check we have a location
+    if(!('locations' in hemnet_results[k])){
+      continue;
+    }
 
     // Fire off a request if we're going to go over 25 locations
     if(hemnet_locations.length + hemnet_results[k]['locations'].length > 25){
@@ -489,7 +494,7 @@ function get_distance_matrix(keys, hemnet_locations){
   // url += '&transit_mode=bus|subway|train|tram';
 
   // Call the API!
-  var request = $.post( "mirror_hemnet.php",  { gmaps: url }, function( data ) {
+  var request = $.post( "http://beta.tallphil.co.uk/hemnet-commuter/mirror_hemnet.php",  { gmaps: url }, function( data ) {
     try {
       // Check that we haven't gone over the API quota
       if(data['status'] == "OVER_QUERY_LIMIT"){
@@ -499,7 +504,6 @@ function get_distance_matrix(keys, hemnet_locations){
       }
       // Save the commute results to hemnet_results
       for (var i = 0; i < data['origin_addresses'].length; i++) {
-        console.log(keys[i], hemnet_locations[i], data['origin_addresses'][i]);
         var k = keys[i];
         // Save commute times
         hemnet_results[k]['locations']['commutes'] = data['rows'][i]['elements'];
@@ -546,9 +550,15 @@ function make_results_table(){
       var ctime = '';
       var csecs = false;
       var cclass = 'danger';
+      var tdclass = '';
       try {
         ctime = hemnet_results[k]['locations']['commutes'][i]['duration']['text'];
         csecs = hemnet_results[k]['locations']['commutes'][i]['duration']['value'];
+        if(csecs > max_commute_secs){
+          tdclass = ' class="table-danger"';
+        } else {
+          tdclass = ' class="table-success"';
+        }
         if(hemnet_results[k]['locations']['commute_ok']){
           cclass = 'success';
         }
@@ -562,7 +572,7 @@ function make_results_table(){
         max_commute = '<td>'+ctime+'</td>';
         hemnet_results[k]['max_commute'] = ctime;
       }
-      ccols += '<td>'+ctime+'</td>';
+      ccols += '<td'+tdclass+'>'+ctime+'</td>';
     }
     if(hemnet_results[k]['front_image'] == undefined){
       img_thumb = '&nbsp;';
@@ -616,6 +626,10 @@ function make_results_map() {
     content: "holding..."
   });
   for (var k in hemnet_results){
+    // Check we have a location
+    if(!('locations' in hemnet_results[k])){
+      continue;
+    }
     var loc = hemnet_results[k]['locations']['geometry']['location'];
     var color = 'yellow';
     if(hemnet_results[k]['locations']['commute_ok'] === undefined){
