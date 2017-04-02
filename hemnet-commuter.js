@@ -64,11 +64,13 @@ $(function(){
 
           // Commute times fetched
           commutes_promise.done(function(){
-            console.log("Commutes done");
-            console.log(commute_results);
-            console.log(hemnet_results);
             make_results_table();
-            $('.results_card').slideDown();
+            make_results_map();
+            $('.results_card').slideDown('fast', function(){
+              $("html, body").animate({ scrollTop: $('.results_card').offset().top - 15 });
+            });
+            $('#status-msg').text("Found "+$('#results_table tbody tr:not(.table-active)').length+" out of "+$('#results_table tbody tr').length+" properties");
+            $('#search-btn').val('Search').prop('disabled', false);
           });
 
         });
@@ -372,6 +374,13 @@ function scrape_hemnet(url){
     if(img_matches){
       hemnet_results[url]['front_image'] = img_matches[1];
     }
+    var data_match = html.match(/dataLayer = (\[\{[^\]]+\]);/);
+    if(data_match){
+      var hd = JSON.parse(data_match[1]);
+      try {
+        hemnet_results[url]['dataLayer'] = hd[2]['property'];
+      } catch(e){ }
+    }
     var latlong_matches = html.match(/coordinates: {"latitude":([\d\.]+),"longitude":([\d\.]+)}/);
     if(latlong_matches){
       hemnet_results[url]['locations'] = {
@@ -536,33 +545,48 @@ function make_results_table(){
     for (var i = 0; i < commute_results.length; i++) {
       var ctime = '';
       var csecs = false;
-      var cok = true;
+      var cclass = 'danger';
       try {
         ctime = hemnet_results[k]['locations']['commutes'][i]['duration']['text'];
         csecs = hemnet_results[k]['locations']['commutes'][i]['duration']['value'];
         if(hemnet_results[k]['locations']['commute_ok']){
-          cok = true;
+          cclass = 'success';
         }
       } catch(e){
         ctime = '?'
         csecs = 9999999999999999999;
-        cok = false;
+        cclass = 'active';
       }
       if(!max_commute_secs || csecs > max_commute_secs){
         max_commute_secs = csecs;
         max_commute = '<td>'+ctime+'</td>';
+        hemnet_results[k]['max_commute'] = ctime;
       }
       ccols += '<td>'+ctime+'</td>';
     }
     if(hemnet_results[k]['front_image'] == undefined){
       img_thumb = '&nbsp;';
     } else {
-      img_thumb = '<img src="'+hemnet_results[k]['front_image']+'">';
+      img_thumb = '<a href="'+k+'" target="_blank"><img src="'+hemnet_results[k]['front_image']+'"></a>';
+    }
+    var locality = '';
+    var living_area = '';
+    var price = '';
+    var avgift = '';
+    if('dataLayer' in hemnet_results[k]){
+      locality = '<small class="text-muted">'+hemnet_results[k]['dataLayer']['locations']['district']+'</small>';
+      living_area = '<br><small class="text-muted mr-3">'+hemnet_results[k]['dataLayer']['living_area'] +' m<sup>2</sup></small>';
+      price = '<small class="text-muted">'+hemnet_results[k]['dataLayer']['price'].toLocaleString()+' kr</small>';
+      avgift = '<br><small class="text-muted">'+hemnet_results[k]['dataLayer']['borattavgift'].toLocaleString()+' kr avgift</small>';
+      hemnet_results[k]['infostring'] = locality + living_area + price + avgift;
     }
     trows.push([max_commute_secs, ' \
-      <tr class="table-'+(commute_ok ? 'success' : 'danger')+'"> \
+      <tr class="table-'+cclass+'"> \
         <td class="hn_thumb">'+img_thumb+'</td> \
-        <td><a href="'+hemnet_results[k]['link']+'" target="_blank">'+hemnet_results[k]['title']+'</a></td> \
+        <td> \
+          <a href="'+k+'" target="_blank">'+hemnet_results[k]['title']+'</a> <br> \
+          '+ locality + living_area + price + avgift + '\
+        </td> \
         '+max_commute+'\
         '+ccols+'\
       </tr> \
@@ -578,3 +602,44 @@ function make_results_table(){
 }
 
 
+/**
+ * Build Google Map to display results
+ */
+var infowindow = null;
+function make_results_map() {
+  var map = new google.maps.Map(document.getElementById('results_map'), {
+    zoom: 4,
+    center: {lat: 59.334591, lng: 18.063240}
+  });
+  var bounds = new google.maps.LatLngBounds();
+  infowindow = new google.maps.InfoWindow({
+    content: "holding..."
+  });
+  for (var k in hemnet_results){
+    var loc = hemnet_results[k]['locations']['geometry']['location'];
+    var color = 'yellow';
+    if(hemnet_results[k]['locations']['commute_ok'] === undefined){
+      color = 'blue';
+    } else if(hemnet_results[k]['locations']['commute_ok'] === true){
+      color = 'green';
+    } else {
+      color = 'red';
+    }
+    var marker = new google.maps.Marker({
+      position: {lat: parseFloat(loc['lat']), lng: parseFloat(loc['lng'])},
+      icon: 'http://maps.google.com/mapfiles/ms/icons/'+color+'-dot.png',
+      map: map,
+      title: hemnet_results[k]['title'],
+      info: '<h5><a href="'+k+'" target="_blank">'+hemnet_results[k]['title']+'</a></h5> \
+        <p>Max Commute Time: '+hemnet_results[k]['max_commute']+'</p> \
+        <p>'+hemnet_results[k]['infostring']+'</p>'
+    });
+    google.maps.event.addListener(marker, 'click', function () {
+      // where I have added .html to the marker object.
+      infowindow.setContent(this.info);
+      infowindow.open(map, this);
+    });
+    bounds.extend(marker.getPosition());
+  }
+  map.fitBounds(bounds);
+}

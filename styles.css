@@ -47,11 +47,23 @@ h2, h3, h4, h5, h6 {
   width: 100px;
 }
 
+#results_map {
+  height: 600px;
+  width: 100%;
+  background-color: #ededed;
+}
+
+.table th {
+  font-size: 0.8rem;
+}
 .table td.hn_thumb {
   padding: 8px;
 }
 .hn_thumb img {
   max-width: 140px;
+}
+.table tbody td:nth-child(n+3) {
+  text-align: center;
 }
 
 footer {
