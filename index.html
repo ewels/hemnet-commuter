@@ -26,7 +26,7 @@
         <p class="card-text">On <a href="https://www.hemnet.se" target="_blank">hemnet.se</a> create a search and save it.
           Find the link to the RSS feed for that search (on the list page) and paste that here.<br>
           <small class="text-muted"><span class="text-danger"><i class="fa fa-exclamation-triangle" aria-hidden="true"></i> Only the <strong>most recent 30</strong> items are returned.</span>
-          Enter multiple searche RSS addresses to retrieve more results.</small></p>
+          Enter multiple search RSS addresses to retrieve more results.</small></p>
         <div class="hemnet_rss_rows">
           <div class="input-group mb-1 hemnet_rss_row">
             <input type="url" class="form-control hemnet_rss" name="hemnet_rss[]" required>
@@ -80,16 +80,28 @@
       </div>
     </div>
 
-    <div class="card mb-3 results_card" style="display:none;">
-      <div class="card-block">
-        <h4 class="card-title">Results</h4>
-        <h5 class="text-muted" style="display:hidden;" id="search-title"></h5>
-      </div>
-    </div>
-
   </form>
 
-  <div id="map"></div>
+  <div class="card mb-3 results_card" style="display:none;">
+    <div class="card-block">
+      <h4 class="card-title">Results</h4>
+
+      <div id="map"></div>
+
+      <table class="table" id="results_table">
+        <thead>
+          <tr>
+            <th>Image</th>
+            <th>Title</th>
+            <th>Max Commute</th>
+          </tr>
+        </thead>
+        <tbody>
+        </tbody>
+      </table>
+
+    </div>
+  </div>
 
 </div>
 

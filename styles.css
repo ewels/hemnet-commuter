@@ -46,6 +46,14 @@ h2, h3, h4, h5, h6 {
   float: right;
   width: 100px;
 }
+
+.table td.hn_thumb {
+  padding: 8px;
+}
+.hn_thumb img {
+  max-width: 140px;
+}
+
 footer {
   margin-top: 60px;
   border-top: 1px solid #ccc;

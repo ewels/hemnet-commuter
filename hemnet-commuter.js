@@ -67,6 +67,8 @@ $(function(){
             console.log("Commutes done");
             console.log(commute_results);
             console.log(hemnet_results);
+            make_results_table();
+            $('.results_card').slideDown();
           });
 
         });
@@ -269,7 +271,7 @@ function geocode_commute_entries(){
   var i = 1;
   while($('#commute_address_'+i).length){
     var tparts = $('#commute_time_'+i).val().split(':');
-    var tsecs = (tparts[0]*60*60)+(tparts[0]*60);
+    var tsecs = (tparts[0]*60*60)+(tparts[1]*60);
     commute_results.push({
       'title': $('#commute_address_'+i).val(),
       'max_commute': $('#commute_time_'+i).val(),
@@ -315,33 +317,75 @@ function geocode_hemnet_results(){
   // jQuery promise
   var dfd = new $.Deferred();
 
-  $('#status-msg').text("Trying to find "+Object.keys(hemnet_results).length+" house locations with google");
+  $('#status-msg').text("Trying to find "+Object.keys(hemnet_results).length+" house locations");
 
-  // Go through each hemnet result and find location
-  var keys = [];
-  var promises = [];
+  // Try to scrape hemnet web page for each result
+  var hn_promises = [];
   for (var k in hemnet_results){
-    var address = hemnet_results[k]['title'].replace(/,?\s?\dtr\.?/, '') + ", "+$('#hemnet_append_address').val();
-    keys.push(k);
-    promises.push( geocode_address(address) );
+    hn_promises.push( scrape_hemnet(k) );
   }
 
-  // All requests finished
-  $.when.apply($, promises).then(function(d){
-    var arg = (promises.length === 1) ? [arguments] : arguments;
-    $.each(arg, function (idx, args) {
-      var k = keys[idx];
-      if(args[0]['status'] == 'OK'){
-        hemnet_results[k]['locations'] = args[0]['results'];
-      } else {
-        console.warn("Could not find address: "+hemnet_results[k]['title']);
+  // Go through each hemnet result and find location if not scraped
+  $.when.apply(null, hn_promises).then(function(d){
+    var keys = [];
+    var promises = [];
+    for (var k in hemnet_results){
+      if(!('locations' in hemnet_results[k])){
+        var address = hemnet_results[k]['title'].replace(/,?\s?\dtr\.?/, '') + ", "+$('#hemnet_append_address').val();
+        keys.push(k);
+        promises.push( geocode_address(address) );
       }
-    })
-    dfd.resolve();
+    }
+
+    // No requests needed to be fired
+    if(promises.length == 0){
+      dfd.resolve();
+    }
+
+    // All requests finished
+    $.when.apply($, promises).then(function(d){
+      var arg = (promises.length === 1) ? [arguments] : arguments;
+      $.each(arg, function (idx, args) {
+        var k = keys[idx];
+        if(args[0]['status'] == 'OK'){
+          hemnet_results[k]['locations'] = args[0]['results'][0];
+        } else {
+          console.warn("Could not find address: "+hemnet_results[k]['title']);
+        }
+      })
+      dfd.resolve();
+    });
+
   });
 
   return dfd.promise();
 
+}
+
+/**
+ * Function to scrape hemnet web page for stuff that's missing from RSS
+ */
+function scrape_hemnet(url){
+  var dfd = new $.Deferred();
+  $.post( "mirror_hemnet.php",  { hnurl: url }, function( html ) {
+    var img_matches = html.match(/<meta property="og:image" content="([^"]+)">/);
+    if(img_matches){
+      hemnet_results[url]['front_image'] = img_matches[1];
+    }
+    var latlong_matches = html.match(/coordinates: {"latitude":([\d\.]+),"longitude":([\d\.]+)}/);
+    if(latlong_matches){
+      hemnet_results[url]['locations'] = {
+        'geometry': {
+          'location': {
+            'lat': latlong_matches[1],
+            'lng': latlong_matches[2]
+          }
+        }
+      };
+    }
+    dfd.resolve();
+  });
+  return dfd.promise();
 }
 
 
@@ -364,27 +408,33 @@ function get_commute_times(){
   var dfd = new $.Deferred();
 
   var promises = [];
+  var keys = [];
   var hemnet_locations = [];
   for (var k in hemnet_results){
 
     // Fire off a request if we're going to go over 25 locations
     if(hemnet_locations.length + hemnet_results[k]['locations'].length > 25){
-      promises.push(get_distance_matrix(hemnet_locations));
+      promises.push(get_distance_matrix(keys, hemnet_locations));
+      keys = [];
       hemnet_locations = [];
     }
 
     // Collect place IDs
-    for (var i = 0; i < hemnet_results[k]['locations'].length; i++) {
-      hemnet_locations.push( 'place_id:'+hemnet_results[k]['locations'][i]['place_id'] );
+    if('place_id' in hemnet_results[k]['locations']){
+      keys.push(k);
+      hemnet_locations.push( 'place_id:'+hemnet_results[k]['locations']['place_id'] );
+    } else {
+      var ll = hemnet_results[k]['locations']['geometry']['location'];
+      keys.push(k);
+      hemnet_locations.push( ll['lat']+','+ll['lng'] );
     }
   }
 
   // Final API call
-  promises.push(get_distance_matrix(hemnet_locations));
+  promises.push(get_distance_matrix(keys, hemnet_locations));
 
   // All requests finished
-  $.when.apply($, promises).then(function(d){
-    console.log(hemnet_results);
+  $.when.apply(null, promises).then(function(d){
     dfd.resolve();
   });
 
@@ -395,7 +445,7 @@ function get_commute_times(){
  * Call the Google Maps Distance Matrix API to get commute times
  * https://developers.google.com/maps/documentation/distance-matrix/
  */
-function get_distance_matrix(hemnet_locations){
+function get_distance_matrix(keys, hemnet_locations){
 
   // jQuery promise
   var dfd = new $.Deferred();
@@ -432,38 +482,99 @@ function get_distance_matrix(hemnet_locations){
   // Call the API!
   var request = $.post( "mirror_hemnet.php",  { gmaps: url }, function( data ) {
     try {
-      // Loop through the origin addresses, to match to hemnet locations
+      // Check that we haven't gone over the API quota
+      if(data['status'] == "OVER_QUERY_LIMIT"){
+        console.error(data);
+        alert("You have exceeded the Google Maps API limit. Please try again tomorrow!");
+        dfd.resolve();
+      }
+      // Save the commute results to hemnet_results
       for (var i = 0; i < data['origin_addresses'].length; i++) {
-        for(var k in hemnet_results){
-          for (var j = 0; j < hemnet_results[k]['locations'].length; j++) {
-            // We have a corresponding origin and hemnet address
-            if(data['origin_addresses'][i] == hemnet_results[k]['locations'][j]['formatted_address']){
-              // Save commute times
-              hemnet_results[k]['locations'][j]['commutes'] = data['rows'][i]['elements'];
-              // Check whether any commute is too long
-              for (var l = 0; l < commute_results.length; l++) {
-                var commute_ok = true;
-                var tsecs = commute_results[l]['max_commute_secs'];
-                for (var m = 0; m < data['rows'][i]['elements'].length; m++) {
-                  var csecs = data['rows'][i]['elements'][m]['duration']['value'];
-                  if(csecs > tsecs){
-                    commute_ok = false;
-                  }
-                }
-                hemnet_results[k]['locations'][j]['commute_ok'] = commute_ok;
-              }
+        console.log(keys[i], hemnet_locations[i], data['origin_addresses'][i]);
+        var k = keys[i];
+        // Save commute times
+        hemnet_results[k]['locations']['commutes'] = data['rows'][i]['elements'];
+        // Check whether any commute is too long
+        for (var l = 0; l < commute_results.length; l++) {
+          var commute_ok = true;
+          var tsecs = commute_results[l]['max_commute_secs'];
+          for (var m = 0; m < data['rows'][i]['elements'].length; m++) {
+            var csecs = data['rows'][i]['elements'][m]['duration']['value'];
+            if(csecs > tsecs){
+              commute_ok = false;
             }
           }
+          hemnet_results[k]['locations']['commute_ok'] = commute_ok;
         }
       }
       dfd.resolve();
     } catch (e){
       console.error(e);
-      dfd.reject("Something went wrong whilst parsing the Google Maps commute times.");
+      dfd.resolve();
     }
   });
 
   return dfd.promise();
+}
+
+
+/**
+ * Function to print the results table once everything has been done
+ */
+function make_results_table(){
+  // Add header columns for commutes
+  for (var i = 0; i < commute_results.length; i++) {
+    $('#results_table thead tr').append('<th>'+commute_results[i]['title']+'</th>');
+  }
+  // Collect result table rows
+  var trows = [];
+  for (var k in hemnet_results){
+    var ccols = '';
+    var commute_ok = false;
+    var max_commute_secs = false;
+    var max_commute = '<td></td>';
+    for (var i = 0; i < commute_results.length; i++) {
+      var ctime = '';
+      var csecs = false;
+      var cok = true;
+      try {
+        ctime = hemnet_results[k]['locations']['commutes'][i]['duration']['text'];
+        csecs = hemnet_results[k]['locations']['commutes'][i]['duration']['value'];
+        if(hemnet_results[k]['locations']['commute_ok']){
+          cok = true;
+        }
+      } catch(e){
+        ctime = '?'
+        csecs = 9999999999999999999;
+        cok = false;
+      }
+      if(!max_commute_secs || csecs > max_commute_secs){
+        max_commute_secs = csecs;
+        max_commute = '<td>'+ctime+'</td>';
+      }
+      ccols += '<td>'+ctime+'</td>';
+    }
+    if(hemnet_results[k]['front_image'] == undefined){
+      img_thumb = '&nbsp;';
+    } else {
+      img_thumb = '<img src="'+hemnet_results[k]['front_image']+'">';
+    }
+    trows.push([max_commute_secs, ' \
+      <tr class="table-'+(commute_ok ? 'success' : 'danger')+'"> \
+        <td class="hn_thumb">'+img_thumb+'</td> \
+        <td><a href="'+hemnet_results[k]['link']+'" target="_blank">'+hemnet_results[k]['title']+'</a></td> \
+        '+max_commute+'\
+        '+ccols+'\
+      </tr> \
+    ']);
+  }
+  // Sort and print to table
+  trows.sort(function(left, right) {
+    return left[0] < right[0] ? -1 : 1;
+  });
+  for (var i = 0; i < trows.length; i++) {
+    $('#results_table tbody').append(trows[i][1]);
+  }
 }
 
 
