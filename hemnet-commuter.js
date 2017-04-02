@@ -36,7 +36,7 @@ $(function(){
     });
 
     // Hemnet results fetch worked
-    rss_promise.done(function(message) {
+    rss_promise.done(function() {
 
       // Get the commute locations
       var geocode_commute_promise = geocode_commute_entries();
@@ -51,16 +51,24 @@ $(function(){
       });
 
       // Commute locations worked
-      geocode_commute_promise.done(function(message) {
+      geocode_commute_promise.done(function() {
 
         // Get the hemnet results locations
         var geocode_hemnet_promise = geocode_hemnet_results();
 
         // Hemnet geocoding done, now get commute times
-        geocode_hemnet_promise.done(function(message) {
-          console.log(commute_results);
-          console.log(hemnet_results);
-          // TODO - See https://developers.google.com/maps/documentation/distance-matrix/
+        geocode_hemnet_promise.done(function() {
+
+          // Get the commute travel distance matrix
+          var commutes_promise = get_commute_times();
+
+          // Commute times fetched
+          commutes_promise.done(function(){
+            console.log("Commutes done");
+            console.log(commute_results);
+            console.log(hemnet_results);
+          });
+
         });
 
       });
@@ -79,6 +87,10 @@ function add_commute_row(){
   // Make a copy of the first row in the commute table
   var row = $('#commute-table tbody tr:first-child').clone();
   var i = $('#commute-table tbody tr').length + 1;
+  if(i > 25){
+    alert('Can only have a maximum of 25 commute locations');
+    return false;
+  };
   row.find('.commute_address').attr('id', 'commute_address_'+i).attr('name', 'commute_address_'+i).val('');
   row.find('.commute_time').attr('id', 'commute_time_'+i).attr('name', 'commute_time_'+i).val('01:00');
   row.find('.commute_deleterow').attr('id', 'commute_deleterow_'+i).prop('disabled', false).show();
@@ -256,9 +268,12 @@ function geocode_commute_entries(){
   // Parse commute inputs
   var i = 1;
   while($('#commute_address_'+i).length){
+    var tparts = $('#commute_time_'+i).val().split(':');
+    var tsecs = (tparts[0]*60*60)+(tparts[0]*60);
     commute_results.push({
       'title': $('#commute_address_'+i).val(),
-      'max_commute': $('#commute_time_'+i).val()
+      'max_commute': $('#commute_time_'+i).val(),
+      'max_commute_secs': tsecs
     });
     i++;
   }
@@ -338,5 +353,117 @@ function geocode_address(address){
   return $.getJSON(url);
 }
 
+
+/**
+ * Function to get all of the commute times.
+ * Have to call the API a bunch of times as limit of 25 addresses per request
+ */
+function get_commute_times(){
+
+  // jQuery promise
+  var dfd = new $.Deferred();
+
+  var promises = [];
+  var hemnet_locations = [];
+  for (var k in hemnet_results){
+
+    // Fire off a request if we're going to go over 25 locations
+    if(hemnet_locations.length + hemnet_results[k]['locations'].length > 25){
+      promises.push(get_distance_matrix(hemnet_locations));
+      hemnet_locations = [];
+    }
+
+    // Collect place IDs
+    for (var i = 0; i < hemnet_results[k]['locations'].length; i++) {
+      hemnet_locations.push( 'place_id:'+hemnet_results[k]['locations'][i]['place_id'] );
+    }
+  }
+
+  // Final API call
+  promises.push(get_distance_matrix(hemnet_locations));
+
+  // All requests finished
+  $.when.apply($, promises).then(function(d){
+    console.log(hemnet_results);
+    dfd.resolve();
+  });
+
+  return dfd.promise();
+}
+
+/**
+ * Call the Google Maps Distance Matrix API to get commute times
+ * https://developers.google.com/maps/documentation/distance-matrix/
+ */
+function get_distance_matrix(hemnet_locations){
+
+  // jQuery promise
+  var dfd = new $.Deferred();
+
+  $('#status-msg').text("Finding commute times");
+
+  var url = 'https://maps.googleapis.com/maps/api/distancematrix/json?key=AIzaSyAWx7_6d6yzDzFL8VBgTysd9HLINDmNgmE';
+
+  // Add the hemnet location strings
+  url += '&origins='+hemnet_locations.join('|');
+
+  // Add the commute location strings
+  var commute_locations = [];
+  for (var i = 0; i < commute_results.length; i++) {
+    commute_locations.push( 'place_id:'+commute_results[i]['locations'][0]['place_id'] );
+  }
+  url += '&destinations='+commute_locations.join('|');
+
+  // Add the arrival time
+  var d = new Date();
+  d.setDate(d.getDate() + (1 + 7 - d.getDay()) % 7);
+  d.setHours(8,0,0,0);
+  var timestamp = Math.round(d.getTime()/1000);
+  url += '&arrival_time='+timestamp;
+
+  // Travel modes
+  // TODO: implement
+  url += '&mode=transit';
+
+  // Transit modes
+  // TODO: implement
+  // url += '&transit_mode=bus|subway|train|tram';
+
+  // Call the API!
+  var request = $.post( "mirror_hemnet.php",  { gmaps: url }, function( data ) {
+    try {
+      // Loop through the origin addresses, to match to hemnet locations
+      for (var i = 0; i < data['origin_addresses'].length; i++) {
+        for(var k in hemnet_results){
+          for (var j = 0; j < hemnet_results[k]['locations'].length; j++) {
+            // We have a corresponding origin and hemnet address
+            if(data['origin_addresses'][i] == hemnet_results[k]['locations'][j]['formatted_address']){
+              // Save commute times
+              hemnet_results[k]['locations'][j]['commutes'] = data['rows'][i]['elements'];
+              // Check whether any commute is too long
+              for (var l = 0; l < commute_results.length; l++) {
+                var commute_ok = true;
+                var tsecs = commute_results[l]['max_commute_secs'];
+                for (var m = 0; m < data['rows'][i]['elements'].length; m++) {
+                  var csecs = data['rows'][i]['elements'][m]['duration']['value'];
+                  if(csecs > tsecs){
+                    commute_ok = false;
+                  }
+                }
+                hemnet_results[k]['locations'][j]['commute_ok'] = commute_ok;
+              }
+            }
+          }
+        }
+      }
+      dfd.resolve();
+    } catch (e){
+      console.error(e);
+      dfd.reject("Something went wrong whilst parsing the Google Maps commute times.");
+    }
+  });
+
+  return dfd.promise();
+}
 
 
