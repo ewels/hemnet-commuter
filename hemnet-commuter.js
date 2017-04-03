@@ -416,6 +416,13 @@ function get_commute_times(){
   // jQuery promise
   var dfd = new $.Deferred();
 
+  // Hacky sleep function
+  function sleepFor( sleepDuration ){
+    var now = new Date().getTime();
+    while(new Date().getTime() < now + sleepDuration){ /* do nothing */ }
+  }
+
+
   var promises = [];
   var keys = [];
   var hemnet_locations = [];
@@ -427,8 +434,11 @@ function get_commute_times(){
     }
 
     // Fire off a request if we're going to go over 25 locations
-    if(hemnet_locations.length + hemnet_results[k]['locations'].length > 25){
+    if(keys.length > 25){
       promises.push(get_distance_matrix(keys, hemnet_locations));
+      sleepFor(5000);
+      $('#status-msg').text("Requesting Commute Times: "+promises.length);
+      console.log("Google Distance Matrix Request "+promises.length);
       keys = [];
       hemnet_locations = [];
     }
@@ -445,6 +455,7 @@ function get_commute_times(){
   }
 
   // Final API call
+  console.log("Final distance matrix call with "+keys.length+" keys");
   promises.push(get_distance_matrix(keys, hemnet_locations));
 
   // All requests finished
@@ -463,8 +474,6 @@ function get_distance_matrix(keys, hemnet_locations){
 
   // jQuery promise
   var dfd = new $.Deferred();
-
-  $('#status-msg').text("Finding commute times");
 
   var url = 'https://maps.googleapis.com/maps/api/distancematrix/json?key=AIzaSyAWx7_6d6yzDzFL8VBgTysd9HLINDmNgmE';
 
