@@ -550,14 +550,14 @@ function make_results_table(){
       var ctime = '';
       var csecs = false;
       var cclass = 'danger';
-      var tdclass = '';
+      var tdclass = 'active';
       try {
         ctime = hemnet_results[k]['locations']['commutes'][i]['duration']['text'];
         csecs = hemnet_results[k]['locations']['commutes'][i]['duration']['value'];
-        if(csecs > max_commute_secs){
-          tdclass = ' class="table-danger"';
+        if(csecs > commute_results[i]['max_commute_secs']){
+          tdclass = 'danger';
         } else {
-          tdclass = ' class="table-success"';
+          tdclass = 'success';
         }
         if(hemnet_results[k]['locations']['commute_ok']){
           cclass = 'success';
@@ -569,10 +569,10 @@ function make_results_table(){
       }
       if(!max_commute_secs || csecs > max_commute_secs){
         max_commute_secs = csecs;
-        max_commute = '<td>'+ctime+'</td>';
+        max_commute = '<td class="table-'+cclass+'">'+ctime+'</td>';
         hemnet_results[k]['max_commute'] = ctime;
       }
-      ccols += '<td'+tdclass+'>'+ctime+'</td>';
+      ccols += '<td class="table-'+tdclass+'">'+ctime+'</td>';
     }
     if(hemnet_results[k]['front_image'] == undefined){
       img_thumb = '&nbsp;';
@@ -591,9 +591,9 @@ function make_results_table(){
       hemnet_results[k]['infostring'] = locality + living_area + price + avgift;
     }
     trows.push([max_commute_secs, ' \
-      <tr class="table-'+cclass+'"> \
-        <td class="hn_thumb">'+img_thumb+'</td> \
-        <td> \
+      <tr> \
+        <td class="hn_thumb table-'+cclass+'">'+img_thumb+'</td> \
+        <td class="table-'+cclass+'"> \
           <a href="'+k+'" target="_blank">'+hemnet_results[k]['title']+'</a> <br> \
           '+ locality + living_area + price + avgift + '\
         </td> \
