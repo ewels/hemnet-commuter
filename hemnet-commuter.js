@@ -584,10 +584,10 @@ function make_results_table(){
     var price = '';
     var avgift = '';
     if('dataLayer' in hemnet_results[k]){
-      locality = '<small class="text-muted">'+hemnet_results[k]['dataLayer']['locations']['district']+'</small>';
-      living_area = '<br><small class="text-muted mr-3">'+hemnet_results[k]['dataLayer']['living_area'] +' m<sup>2</sup></small>';
-      price = '<small class="text-muted">'+hemnet_results[k]['dataLayer']['price'].toLocaleString()+' kr</small>';
-      avgift = '<br><small class="text-muted">'+hemnet_results[k]['dataLayer']['borattavgift'].toLocaleString()+' kr avgift</small>';
+      if('locations' in hemnet_results[k]['dataLayer']){ locality = '<small class="text-muted">'+hemnet_results[k]['dataLayer']['locations']['district']+'</small>'; }
+      if('living_area' in hemnet_results[k]['dataLayer']){ living_area = '<br><small class="text-muted mr-3">'+hemnet_results[k]['dataLayer']['living_area'] +' m<sup>2</sup></small>'; }
+      if('price' in hemnet_results[k]['dataLayer']){ price = '<small class="text-muted">'+hemnet_results[k]['dataLayer']['price'].toLocaleString()+' kr</small>'; }
+      if('borattavgift' in hemnet_results[k]['dataLayer']){ avgift = '<br><small class="text-muted">'+hemnet_results[k]['dataLayer']['borattavgift'].toLocaleString()+' kr avgift</small>'; }
       hemnet_results[k]['infostring'] = locality + living_area + price + avgift;
     }
     trows.push([max_commute_secs, ' \
