@@ -292,18 +292,17 @@ function geocode_commute_entries(){
 
   // All requests finished
   $.when.apply($, promises).then(function(d){
-    var arg = (promises.length === 1) ? [arguments] : arguments;
-    $.each(arg, function (i, args) {
-      if(args[0]['status'] == 'OK'){
-        if(args[0]['results'].length > 1){
-          dfd.reject("Error - more than one location found for address: "+commute_results[i]['title']);
-        } else {
-          commute_results[i]['locations'] = args[0]['results'];
+    var arguments = (promises.length === 1) ? [arguments] : arguments;
+    $.each(arguments, function (i, args) {
+      if(args[1] == 'success'){
+        if(args[0]['features'].length > 1){
+          console.warn("Warning: - more than one location found for address: "+commute_results[i]['title'], args[0]['features']);
         }
+        commute_results[i]['locations'] = args[0]['features'][0];
       } else {
         dfd.reject("Error - could not find commute address: "+commute_results[i]['title']);
       }
-    })
+    });
     dfd.resolve();
   });
 
@@ -331,9 +330,11 @@ function geocode_hemnet_results(){
   $.when.apply(null, hn_promises).then(function(d){
     var keys = [];
     var promises = [];
+    var hn_addresses = [];
     for (var k in hemnet_results){
       if(!('locations' in hemnet_results[k])){
         var address = hemnet_results[k]['title'].replace(/,?\s?\dtr\.?/, '') + ", "+$('#hemnet_append_address').val();
+        hn_addresses.push(address);
         keys.push(k);
         promises.push( geocode_address(address) );
       }
@@ -346,15 +347,18 @@ function geocode_hemnet_results(){
 
     // All requests finished
     $.when.apply($, promises).then(function(d){
-      var arg = (promises.length === 1) ? [arguments] : arguments;
-      $.each(arg, function (idx, args) {
-        var k = keys[idx];
-        if(args[0]['status'] == 'OK'){
-          hemnet_results[k]['locations'] = args[0]['results'][0];
+      var arguments = (promises.length === 1) ? [arguments] : arguments;
+      $.each(arguments, function (i, args) {
+        var k = keys[i];
+        if(args[1] == 'success'){
+          if(args[0]['features'].length > 1){
+            console.warn("Warning: - more than one location found for address: "+hn_addresses[i], args[0]['features']);
+          }
+          hemnet_results[k]['locations'] = args[0]['features'][0];
         } else {
           console.warn("Could not find address: "+hemnet_results[k]['title']);
         }
-      })
+      });
       dfd.resolve();
     });
 
@@ -399,11 +403,31 @@ function scrape_hemnet(url){
 
 
 /**
+ * Set headers for TravelTime API
+ */
+function setTimeTravelAPIHeader(xhr) {
+  // TODO: Move API credentials out of code
+  xhr.setRequestHeader('X-Application-Id', '');
+  xhr.setRequestHeader('X-Api-Key', '');
+  xhr.setRequestHeader('Accept-Language', 'en');
+}
+
+/**
  * Function to find lat and long from street address
  */
 function geocode_address(address){
-  var url = 'https://maps.googleapis.com/maps/api/geocode/json?key=AIzaSyC7je4NbKJRUZPD57mGqYHjzAloEZlNgYs&address='+encodeURIComponent(address);
-  return $.getJSON(url);
+  // TODO: Don't hard-code search centre
+  var focus_lat = '59.322619'
+  var focus_lng = '18.073022';
+  var url = 'https://api.traveltimeapp.com/v4/geocoding/search?within.country=SWE&query='+encodeURIComponent(address)+'&focus.lat='+focus_lat+'&focus.lng='+focus_lng;
+  return $.ajax({
+    url: url,
+    type: 'GET',
+    dataType: 'json',
+    success: function(e) { console.info('Geocoding worked: '+address, e.features); },
+    error: function(e) { console.error(e.responseJSON); alert('Could not geocode address: '+address); },
+    beforeSend: setTimeTravelAPIHeader
+  });
 }
 
 
@@ -433,30 +457,15 @@ function get_commute_times(){
       continue;
     }
 
-    // Fire off a request if we're going to go over 25 locations
-    if(keys.length > 25){
-      promises.push(get_distance_matrix(keys, hemnet_locations));
-      sleepFor(5000);
-      $('#status-msg').text("Requesting Commute Times: "+promises.length);
-      console.log("Google Distance Matrix Request "+promises.length);
-      keys = [];
-      hemnet_locations = [];
-    }
-
-    // Collect place IDs
-    if('place_id' in hemnet_results[k]['locations']){
-      keys.push(k);
-      hemnet_locations.push( 'place_id:'+hemnet_results[k]['locations']['place_id'] );
-    } else {
-      var ll = hemnet_results[k]['locations']['geometry']['location'];
-      keys.push(k);
-      hemnet_locations.push( ll['lat']+','+ll['lng'] );
-    }
+    // Collect place coordinates
+    var ll = hemnet_results[k]['locations']['geometry']['coordinates'];
+    keys.push(k);
+    hemnet_locations.push( ll[1]+','+ll[0] );
   }
 
   // Final API call
-  console.log("Final distance matrix call with "+keys.length+" keys");
-  promises.push(get_distance_matrix(keys, hemnet_locations));
+  console.log("Final Time Filter call with "+keys.length+" keys");
+  promises.push(get_time_filter_matrix(keys, hemnet_locations));
 
   // All requests finished
   $.when.apply(null, promises).then(function(d){
@@ -466,11 +475,14 @@ function get_commute_times(){
   return dfd.promise();
 }
 
+//
+// TODO - Replace this bit!!
+//
 /**
  * Call the Google Maps Distance Matrix API to get commute times
  * https://developers.google.com/maps/documentation/distance-matrix/
  */
-function get_distance_matrix(keys, hemnet_locations){
+function get_time_filter_matrix(keys, hemnet_locations){
 
   // jQuery promise
   var dfd = new $.Deferred();
