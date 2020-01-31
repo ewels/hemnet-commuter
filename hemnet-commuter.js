@@ -6,6 +6,7 @@
 
 commute_results = [];
 hemnet_results = {};
+commute_shapes = {};
 
 $(function(){
 
@@ -53,22 +54,33 @@ $(function(){
       // Commute locations worked
       geocode_commute_promise.done(function() {
 
-        // Get the hemnet results locations
-        var geocode_hemnet_promise = geocode_hemnet_results();
+        // Get the intersection travel times map
+        var commute_intersection_map_promise = get_commute_intersection_map();
 
-        // Hemnet geocoding done, now get commute times
-        geocode_hemnet_promise.done(function() {
+        // Travel time intersection map done
+        commute_intersection_map_promise.done(function(data){
 
-          // Get the commute travel distance matrix
-          var commutes_promise = get_commute_times();
+          // Save to global variable
+          commute_shapes = data;
 
-          // Commute times fetched
-          commutes_promise.done(function(){
-            $('.results_card').show();
-            make_results_table();
-            make_results_map();
-            $('#status-msg').text("Found "+$('#results_table tbody tr:not(.table-active)').length+" out of "+$('#results_table tbody tr').length+" properties");
-            $('#search-btn').val('Search').prop('disabled', false);
+          // Get the hemnet results locations
+          var geocode_hemnet_promise = geocode_hemnet_results();
+
+          // Hemnet geocoding done, now get commute times
+          geocode_hemnet_promise.done(function() {
+
+            // Get the commute travel distance matrix
+            var commutes_promise = get_commute_times();
+
+            // Commute times fetched
+            commutes_promise.done(function(){
+              $('.results_card').show();
+              make_results_table();
+              make_results_map();
+              $('#status-msg').text("Found "+$('#results_table tbody tr:not(.table-active)').length+" out of "+$('#results_table tbody tr').length+" properties");
+              $('#search-btn').val('Search').prop('disabled', false);
+            });
+
           });
 
         });
@@ -281,7 +293,7 @@ function geocode_commute_entries(){
     i++;
   }
 
-  $('#status-msg').text("Trying to find "+commute_results.length+" commute locations with google");
+  $('#status-msg').text("Trying to find "+commute_results.length+" commute locations");
 
   // Go through each hemnet result and find location
   var promises = [];
@@ -308,6 +320,55 @@ function geocode_commute_entries(){
   return dfd.promise();
 
 }
+
+
+/**
+ * Get an intersection map of commute times
+ */
+function get_commute_intersection_map(){
+
+  // jQuery promise
+  var dfd = new $.Deferred();
+
+  var api_request = {
+    "arrival_searches": [],
+    "intersections": [{
+        "id": "intersection of commute times",
+        "search_ids": []
+    }]
+  };
+
+  for (var i = 0; i < commute_results.length; i++) {
+    api_request.arrival_searches.push({
+      "id": "commute from "+commute_results[i]['title'],
+      "coords": {
+        "lat": commute_results[i]['locations']['geometry']['coordinates'][1],
+        "lng": commute_results[i]['locations']['geometry']['coordinates'][0],
+      },
+      "transportation": { "type": "public_transport" },
+      "arrival_time": "2020-01-31T09:00:00Z",
+      "range": {
+        "enabled": true,
+        "width": 3600 // allow arrival between 8 and 9
+      },
+      "travel_time": commute_results[i]['max_commute_secs']
+    });
+    api_request.intersections[0].search_ids.push("commute from "+commute_results[i]['title']);
+  }
+
+  var url = 'https://api.traveltimeapp.com/v4/time-map';
+  return $.ajax({
+    url: url,
+    type: 'POST',
+    data: JSON.stringify(api_request),
+    contentType: "application/json; charset=utf-8",
+    dataType: 'json',
+    success: function(e) { console.info('Getting intersection map worked!', e); },
+    error: function(e) { console.error(e.responseJSON); },
+    beforeSend: setTimeTravelAPIHeader
+  });
+}
+
 
 /**
  * Geocode the hemnet results to get locations
@@ -658,6 +719,7 @@ function make_results_map() {
     };
   }
 
+  // Plot the hemnet results
   var mapmarkers = [];
   for (var k in hemnet_results){
     // Check we have a location
@@ -690,4 +752,46 @@ function make_results_map() {
   var mapmarkers_group = L.featureGroup(mapmarkers);
   mapmarkers_group.addTo(map);
   map.fitBounds(mapmarkers_group.getBounds());
+
+  // Plot the TravelTime shapes
+  var traveltime_shapes = {};
+  // Loop through each commute location result, including intersection
+  for (var k in commute_shapes.results){
+    tt_polygons = [];
+    // Loop through each shape
+    for(var s in commute_shapes.results[k].shapes){
+      var shell = [];
+      for(var c in commute_shapes.results[k].shapes[s].shell){
+        shell.push([
+          commute_shapes.results[k].shapes[s].shell[c].lat,
+          commute_shapes.results[k].shapes[s].shell[c].lng
+        ]);
+      }
+      var coords = [shell];
+      // Loop through each hole in this shape
+      for(var h in commute_shapes.results[k].shapes[s].holes){
+        var hole = [];
+        // Loop through the hole
+        for(var c in commute_shapes.results[k].shapes[s].holes[h]){
+          hole.push([
+            commute_shapes.results[k].shapes[s].holes[h][c].lat,
+            commute_shapes.results[k].shapes[s].holes[h][c].lng
+          ]);
+        }
+        coords.push(hole);
+      }
+      // Make a polygon with the shell and all of the holes
+      tt_polygons.push(L.polygon(coords));
+    }
+    // Make a group from the polygons and store it
+    traveltime_shapes[commute_shapes.results[k].search_id] = L.layerGroup(tt_polygons);
+
+    // Only show the intersection by default
+    if(commute_shapes.results[k].search_id == "intersection of commute times"){
+      traveltime_shapes[commute_shapes.results[k].search_id].addTo(map);
+    }
+  }
+
+  // Make a map control box to be able to select travel time polygons
+  L.control.layers(null, traveltime_shapes).addTo(map);
 }
