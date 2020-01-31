@@ -64,11 +64,9 @@ $(function(){
 
           // Commute times fetched
           commutes_promise.done(function(){
+            $('.results_card').show();
             make_results_table();
             make_results_map();
-            $('.results_card').slideDown('fast', function(){
-              $("html, body").animate({ scrollTop: $('.results_card').offset().top - 15 });
-            });
             $('#status-msg').text("Found "+$('#results_table tbody tr:not(.table-active)').length+" out of "+$('#results_table tbody tr').length+" properties");
             $('#search-btn').val('Search').prop('disabled', false);
           });
@@ -235,6 +233,7 @@ function load_hemnet_rss(){
       } catch (e){
         dfd.reject("Something went wrong whilst parsing the Hemnet RSS.");
         console.error(e);
+        console.info(data);
         return false;
       }
     });
@@ -484,6 +483,9 @@ function get_commute_times(){
  */
 function get_time_filter_matrix(keys, hemnet_locations){
 
+  // TODO - replace this. Currently just returns without results.
+  return;
+
   // jQuery promise
   var dfd = new $.Deferred();
 
@@ -634,47 +636,58 @@ function make_results_table(){
 
 
 /**
- * Build Google Map to display results
+ * Build Leaflet Map to display results
  */
 var infowindow = null;
 function make_results_map() {
-  var map = new google.maps.Map(document.getElementById('results_map'), {
-    zoom: 4,
-    center: {lat: 59.334591, lng: 18.063240}
-  });
-  var bounds = new google.maps.LatLngBounds();
-  infowindow = new google.maps.InfoWindow({
-    content: "holding..."
-  });
+
+  var map = L.map('results_map').setView([59.334591, 18.063240], 10);
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+  }).addTo(map);
+
+  // Custom colour marker icons
+  function make_markerconfig(mcol){
+    return markerconfig = {
+      iconUrl: 'https://cdn.rawgit.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-'+mcol+'.png',
+      shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png',
+      iconSize: [25, 41],
+      iconAnchor: [12, 41],
+      popupAnchor: [1, -34],
+      shadowSize: [41, 41]
+    };
+  }
+
+  var mapmarkers = [];
   for (var k in hemnet_results){
     // Check we have a location
     if(!('locations' in hemnet_results[k])){
       continue;
     }
-    var loc = hemnet_results[k]['locations']['geometry']['location'];
-    var color = 'yellow';
+
+    // Make the marker
+    var loc = hemnet_results[k]['locations']['geometry']['coordinates'];
+    var markerIcon = new L.Icon(make_markerconfig('yellow'));
     if(hemnet_results[k]['locations']['commute_ok'] === undefined){
-      color = 'blue';
+      markerIcon = new L.Icon(make_markerconfig('blue'));
     } else if(hemnet_results[k]['locations']['commute_ok'] === true){
-      color = 'green';
+      markerIcon = new L.Icon(make_markerconfig('green'));
     } else {
-      color = 'red';
+      markerIcon = new L.Icon(make_markerconfig('red'));
     }
-    var marker = new google.maps.Marker({
-      position: {lat: parseFloat(loc['lat']), lng: parseFloat(loc['lng'])},
-      icon: 'http://maps.google.com/mapfiles/ms/icons/'+color+'-dot.png',
-      map: map,
-      title: hemnet_results[k]['title'],
-      info: '<h5><a href="'+k+'" target="_blank">'+hemnet_results[k]['title']+'</a></h5> \
-        <p>Max Commute Time: '+hemnet_results[k]['max_commute']+'</p> \
-        <p>'+hemnet_results[k]['infostring']+'</p>'
-    });
-    google.maps.event.addListener(marker, 'click', function () {
-      // where I have added .html to the marker object.
-      infowindow.setContent(this.info);
-      infowindow.open(map, this);
-    });
-    bounds.extend(marker.getPosition());
+    mapmarkers.push( L.marker(
+      [parseFloat(loc[1]), parseFloat(loc[0])],
+      {icon: markerIcon}
+    ).bindPopup(
+      '<h5><a href="'+k+'" target="_blank">'+hemnet_results[k]['title']+'</a></h5> \
+      <p>Max Commute Time: '+hemnet_results[k]['max_commute']+'</p> \
+      <p><img src="'+hemnet_results[k]['front_image']+'" style="width:100%"></p>'
+    ) );
+
   }
-  map.fitBounds(bounds);
+
+  // Plot the markers and scale the map
+  var mapmarkers_group = L.featureGroup(mapmarkers);
+  mapmarkers_group.addTo(map);
+  map.fitBounds(mapmarkers_group.getBounds());
 }
