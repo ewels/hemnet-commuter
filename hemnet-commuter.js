@@ -66,20 +66,14 @@ $(function(){
           // Get the hemnet results locations
           var geocode_hemnet_promise = geocode_hemnet_results();
 
-          // Hemnet geocoding done, now get commute times
+          // Hemnet geocoding done, now plot everything
           geocode_hemnet_promise.done(function() {
 
-            // Get the commute travel distance matrix
-            var commutes_promise = get_commute_times();
-
-            // Commute times fetched
-            commutes_promise.done(function(){
-              $('.results_card').show();
-              make_results_table();
-              make_results_map();
-              $('#status-msg').text("Found "+$('#results_table tbody tr:not(.table-active)').length+" out of "+$('#results_table tbody tr').length+" properties");
-              $('#search-btn').val('Search').prop('disabled', false);
-            });
+            $('.results_card').show();
+            make_results_map();
+            make_results_table();
+            $('#status-msg').text("Found "+$('#results_table tbody tr:not(.table-active)').length+" out of "+$('#results_table tbody tr').length+" properties");
+            $('#search-btn').val('Search').prop('disabled', false);
 
           });
 
@@ -153,6 +147,8 @@ function save_form_inputs(){
   } else {
     // Get form values
     form_data = {
+      'traveltime_api_id': $('#traveltime_api_id').val(),
+      'traveltime_api_key': $('#traveltime_api_key').val(),
       'hemnet_rss': [],
       'hemnet_append_address': $('#hemnet_append_address').val()
     };
@@ -168,6 +164,11 @@ function save_form_inputs(){
     // Encode and save with local storage
     form_json = JSON.stringify(form_data);
     localStorage.setItem("hemnet-commuter", form_json);
+
+    // Hide TravelTime API details
+    if($('#traveltime_api_id').val() && $('#traveltime_api_key').val()){
+      $('#traveltime_api_details').hide();
+    }
   }
 }
 /**
@@ -181,6 +182,13 @@ function load_form_inputs(){
     form_json = localStorage.getItem("hemnet-commuter");
     if(form_json != null){
       form_data = JSON.parse(form_json);
+
+      if(form_data['traveltime_api_id'] != undefined){ $('#traveltime_api_id').val(form_data['traveltime_api_id']); }
+      if(form_data['traveltime_api_key'] != undefined){ $('#traveltime_api_key').val(form_data['traveltime_api_key']); }
+      if(form_data['traveltime_api_id'] != undefined && form_data['traveltime_api_key'] != undefined){
+        $('#traveltime_api_details').hide();
+      }
+
       if(form_data['hemnet_rss'] != undefined){
 
         // Append to Address
@@ -466,9 +474,8 @@ function scrape_hemnet(url){
  * Set headers for TravelTime API
  */
 function setTimeTravelAPIHeader(xhr) {
-  // TODO: Move API credentials out of code
-  xhr.setRequestHeader('X-Application-Id', '');
-  xhr.setRequestHeader('X-Api-Key', '');
+  xhr.setRequestHeader('X-Application-Id', $('#traveltime_api_id').val());
+  xhr.setRequestHeader('X-Api-Key', $('#traveltime_api_key').val());
   xhr.setRequestHeader('Accept-Language', 'en');
 }
 
@@ -476,7 +483,7 @@ function setTimeTravelAPIHeader(xhr) {
  * Function to find lat and long from street address
  */
 function geocode_address(address){
-  // TODO: Don't hard-code search centre
+  // Start centred on Stockholm
   var focus_lat = '59.322619'
   var focus_lng = '18.073022';
   var url = 'https://api.traveltimeapp.com/v4/geocoding/search?within.country=SWE&query='+encodeURIComponent(address)+'&focus.lat='+focus_lat+'&focus.lng='+focus_lng;
@@ -492,132 +499,9 @@ function geocode_address(address){
 
 
 /**
- * Function to get all of the commute times.
- * Have to call the API a bunch of times as limit of 25 addresses per request
- */
-function get_commute_times(){
-
-  // jQuery promise
-  var dfd = new $.Deferred();
-
-  // Hacky sleep function
-  function sleepFor( sleepDuration ){
-    var now = new Date().getTime();
-    while(new Date().getTime() < now + sleepDuration){ /* do nothing */ }
-  }
-
-
-  var promises = [];
-  var keys = [];
-  var hemnet_locations = [];
-  for (var k in hemnet_results){
-
-    // Check we have a location
-    if(!('locations' in hemnet_results[k])){
-      continue;
-    }
-
-    // Collect place coordinates
-    var ll = hemnet_results[k]['locations']['geometry']['coordinates'];
-    keys.push(k);
-    hemnet_locations.push( ll[1]+','+ll[0] );
-  }
-
-  // Final API call
-  console.log("Final Time Filter call with "+keys.length+" keys");
-  promises.push(get_time_filter_matrix(keys, hemnet_locations));
-
-  // All requests finished
-  $.when.apply(null, promises).then(function(d){
-    dfd.resolve();
-  });
-
-  return dfd.promise();
-}
-
-//
-// TODO - Replace this bit!!
-//
-/**
- * Call the Google Maps Distance Matrix API to get commute times
- * https://developers.google.com/maps/documentation/distance-matrix/
- */
-function get_time_filter_matrix(keys, hemnet_locations){
-
-  // TODO - replace this. Currently just returns without results.
-  return;
-
-  // jQuery promise
-  var dfd = new $.Deferred();
-
-  var url = 'https://maps.googleapis.com/maps/api/distancematrix/json?key=AIzaSyAWx7_6d6yzDzFL8VBgTysd9HLINDmNgmE';
-
-  // Add the hemnet location strings
-  url += '&origins='+hemnet_locations.join('|');
-
-  // Add the commute location strings
-  var commute_locations = [];
-  for (var i = 0; i < commute_results.length; i++) {
-    commute_locations.push( 'place_id:'+commute_results[i]['locations'][0]['place_id'] );
-  }
-  url += '&destinations='+commute_locations.join('|');
-
-  // Add the arrival time
-  var d = new Date();
-  d.setDate(d.getDate() + (1 + 7 - d.getDay()) % 7);
-  d.setHours(8,0,0,0);
-  var timestamp = Math.round(d.getTime()/1000);
-  url += '&arrival_time='+timestamp;
-
-  // Travel modes
-  // TODO: implement
-  url += '&mode=transit';
-
-  // Transit modes
-  // TODO: implement
-  // url += '&transit_mode=bus|subway|train|tram';
-
-  // Call the API!
-  var request = $.post( "mirror_hemnet.php",  { gmaps: url }, function( data ) {
-    try {
-      // Check that we haven't gone over the API quota
-      if(data['status'] == "OVER_QUERY_LIMIT"){
-        console.error(data);
-        alert("You have exceeded the Google Maps API limit. Please try again tomorrow!");
-        dfd.resolve();
-      }
-      // Save the commute results to hemnet_results
-      for (var i = 0; i < data['origin_addresses'].length; i++) {
-        var k = keys[i];
-        // Save commute times
-        hemnet_results[k]['locations']['commutes'] = data['rows'][i]['elements'];
-        // Check whether any commute is too long
-        for (var l = 0; l < commute_results.length; l++) {
-          var commute_ok = true;
-          var tsecs = commute_results[l]['max_commute_secs'];
-          for (var m = 0; m < data['rows'][i]['elements'].length; m++) {
-            var csecs = data['rows'][i]['elements'][m]['duration']['value'];
-            if(csecs > tsecs){
-              commute_ok = false;
-            }
-          }
-          hemnet_results[k]['locations']['commute_ok'] = commute_ok;
-        }
-      }
-      dfd.resolve();
-    } catch (e){
-      console.error(e);
-      dfd.resolve();
-    }
-  });
-
-  return dfd.promise();
-}
-
-
-/**
  * Function to print the results table once everything has been done
  */
+// TODO - update this table to show something useful and not missing values
 function make_results_table(){
   // Add header columns for commutes
   for (var i = 0; i < commute_results.length; i++) {
@@ -702,10 +586,59 @@ function make_results_table(){
 var infowindow = null;
 function make_results_map() {
 
+  // Make the base map
   var map = L.map('results_map').setView([59.334591, 18.063240], 10);
   L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
     attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
   }).addTo(map);
+
+  //
+  // Plot the TravelTime shapes
+  //
+  var traveltime_shapes = {};
+  // Loop through each commute location result, including intersection
+  for (var k in commute_shapes.results){
+    tt_polygons = [];
+    // Loop through each shape
+    for(var s in commute_shapes.results[k].shapes){
+      var shell = [];
+      for(var c in commute_shapes.results[k].shapes[s].shell){
+        shell.push([
+          commute_shapes.results[k].shapes[s].shell[c].lat,
+          commute_shapes.results[k].shapes[s].shell[c].lng
+        ]);
+      }
+      var coords = [shell];
+      // Loop through each hole in this shape
+      for(var h in commute_shapes.results[k].shapes[s].holes){
+        var hole = [];
+        // Loop through the hole
+        for(var c in commute_shapes.results[k].shapes[s].holes[h]){
+          hole.push([
+            commute_shapes.results[k].shapes[s].holes[h][c].lat,
+            commute_shapes.results[k].shapes[s].holes[h][c].lng
+          ]);
+        }
+        coords.push(hole);
+      }
+      // Make a polygon with the shell and all of the holes
+      tt_polygons.push(L.polygon(coords));
+    }
+    // Make a group from the polygons and store it
+    traveltime_shapes[commute_shapes.results[k].search_id] = L.layerGroup(tt_polygons);
+
+    // Only show the intersection by default
+    if(commute_shapes.results[k].search_id == "intersection of commute times"){
+      traveltime_shapes[commute_shapes.results[k].search_id].addTo(map);
+    }
+  }
+
+  // Make a map control box to be able to select travel time polygons
+  L.control.layers(null, traveltime_shapes).addTo(map);
+
+  //
+  // Hemnet result markers
+  //
 
   // Custom colour marker icons
   function make_markerconfig(mcol){
@@ -752,46 +685,4 @@ function make_results_map() {
   var mapmarkers_group = L.featureGroup(mapmarkers);
   mapmarkers_group.addTo(map);
   map.fitBounds(mapmarkers_group.getBounds());
-
-  // Plot the TravelTime shapes
-  var traveltime_shapes = {};
-  // Loop through each commute location result, including intersection
-  for (var k in commute_shapes.results){
-    tt_polygons = [];
-    // Loop through each shape
-    for(var s in commute_shapes.results[k].shapes){
-      var shell = [];
-      for(var c in commute_shapes.results[k].shapes[s].shell){
-        shell.push([
-          commute_shapes.results[k].shapes[s].shell[c].lat,
-          commute_shapes.results[k].shapes[s].shell[c].lng
-        ]);
-      }
-      var coords = [shell];
-      // Loop through each hole in this shape
-      for(var h in commute_shapes.results[k].shapes[s].holes){
-        var hole = [];
-        // Loop through the hole
-        for(var c in commute_shapes.results[k].shapes[s].holes[h]){
-          hole.push([
-            commute_shapes.results[k].shapes[s].holes[h][c].lat,
-            commute_shapes.results[k].shapes[s].holes[h][c].lng
-          ]);
-        }
-        coords.push(hole);
-      }
-      // Make a polygon with the shell and all of the holes
-      tt_polygons.push(L.polygon(coords));
-    }
-    // Make a group from the polygons and store it
-    traveltime_shapes[commute_shapes.results[k].search_id] = L.layerGroup(tt_polygons);
-
-    // Only show the intersection by default
-    if(commute_shapes.results[k].search_id == "intersection of commute times"){
-      traveltime_shapes[commute_shapes.results[k].search_id].addTo(map);
-    }
-  }
-
-  // Make a map control box to be able to select travel time polygons
-  L.control.layers(null, traveltime_shapes).addTo(map);
 }

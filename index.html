@@ -21,6 +21,29 @@
   <p>Find out more about this tool on it's <a href="https://github.com/ewels/hemnet-commuter">GitHub page</a>.</p>
   <form>
 
+    <div class="card mb-3" id="traveltime_api_details">
+      <div class="card-block hemnet_rss_card">
+        <h4 class="card-title">Step 0: Enter TravelTime API Credentials</h4>
+        <p class="card-text">This tool uses the wonderful API service from <a href="https://www.traveltimeplatform.com" target="_blank">https://www.traveltimeplatform.com/</a>.
+        The service is free to use, but you'll need to get your own API keys <a href="https://docs.traveltimeplatform.com/overview/getting-keys" target="_blank">from here</a>.</p>
+        <div class="traveltime_rows">
+          <div class="input-group mb-1 traveltime_row">
+            <span class="input-group-addon">
+              X-Application-Id
+            </span>
+            <input type="text" class="form-control traveltime_api" name="traveltime_api_id" id="traveltime_api_id" required>
+          </div>
+          <div class="input-group mb-1 traveltime_row">
+            <span class="input-group-addon">
+              X-Api-Key
+            </span>
+            <input type="text" class="form-control traveltime_api" name="traveltime_api_key" id="traveltime_api_key" required>
+          </div>
+        </div>
+      </div>
+    </div>
+
+
     <div class="card mb-3">
       <div class="card-block hemnet_rss_card">
         <h4 class="card-title">Step 1: Enter Hemnet Search RSS Feed URLs</h4>
