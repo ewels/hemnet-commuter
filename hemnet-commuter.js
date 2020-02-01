@@ -6,6 +6,7 @@
 
 hemnet_rss = {};
 geocoded_addresses = {};
+traveltime_time_maps = {};
 commute_results = [];
 hemnet_results = {};
 commute_shapes = {};
@@ -243,6 +244,13 @@ function load_browser_cache(){
     geocoded_addresses = JSON.parse(geocoded_addresses_cache);
     console.log('Restored geocoded_addresses cache: ', geocoded_addresses);
   }
+
+  // TravelTime time maps
+  traveltime_time_maps_cache = localStorage.getItem("hemnet-commuter-traveltime_time_maps");
+  if(traveltime_time_maps_cache != null){
+    traveltime_time_maps = JSON.parse(traveltime_time_maps_cache);
+    console.log('Restored traveltime_time_maps cache');
+  }
 }
 
 /**
@@ -424,15 +432,44 @@ function get_commute_intersection_map(){
     });
     api_request.intersections[0].search_ids.push("commute from "+commute_results[i]['title']);
   }
+  api_request_json = JSON.stringify(api_request);
+
+  // Get hash of POST vars for caching ID
+  function make_hash(obj) {
+    var hash = 0, i, chr;
+    if (obj.length === 0) return hash;
+    for (i = 0; i < obj.length; i++) {
+      chr   = obj.charCodeAt(i);
+      hash  = ((hash << 5) - hash) + chr;
+      hash |= 0; // Convert to 32bit integer
+    }
+    return hash;
+  };
+  api_post_hash_id = make_hash(api_request_json);
+
+  // Check if we already have this cached
+  if(traveltime_time_maps.hasOwnProperty(api_post_hash_id)){
+    console.log('Skipping TimeTravel map as found in the browser cache');
+    return $.Deferred().resolve(traveltime_time_maps[api_post_hash_id]);
+  }
 
   var url = 'https://api.traveltimeapp.com/v4/time-map';
   return $.ajax({
     url: url,
     type: 'POST',
-    data: JSON.stringify(api_request),
+    data: api_request_json,
     contentType: "application/json; charset=utf-8",
     dataType: 'json',
-    success: function(e) { console.info('Getting intersection map worked!', e); },
+    success: function(e) {
+      console.info('Getting intersection map worked!', e);
+      // Cache the results for next time
+      console.log(api_request_json)
+      if (typeof(Storage) != "undefined") {
+        console.log('Caching TravelTime map');
+        traveltime_time_maps[api_post_hash_id] = e;
+        localStorage.setItem("hemnet-commuter-traveltime_time_maps", JSON.stringify(traveltime_time_maps));
+      }
+    },
     error: function(e) { console.error(e.responseJSON); },
     beforeSend: setTimeTravelAPIHeader
   });
