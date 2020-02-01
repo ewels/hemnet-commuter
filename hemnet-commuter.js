@@ -7,6 +7,7 @@
 hemnet_rss = {};
 geocoded_addresses = {};
 traveltime_time_maps = {};
+scrape_hemnet_results = {};
 commute_results = [];
 hemnet_results = {};
 commute_shapes = {};
@@ -224,6 +225,11 @@ function load_form_inputs(){
  * Load local storage cache in to global variables
  */
 function load_browser_cache(){
+  if (typeof(Storage) == "undefined") {
+    console.log("Can't load localStorage cache - not supported");
+    return;
+  }
+
   // HemNet RSS Feeds
   hemnet_rss_cache = localStorage.getItem("hemnet-commuter-hemnet_rss");
   if(hemnet_rss_cache != null){
@@ -250,6 +256,13 @@ function load_browser_cache(){
   if(traveltime_time_maps_cache != null){
     traveltime_time_maps = JSON.parse(traveltime_time_maps_cache);
     console.log('Restored traveltime_time_maps cache');
+  }
+
+  // Hemnet scrapes
+  scrape_hemnet_results_cache = localStorage.getItem("hemnet-commuter-scrape_hemnet_results");
+  if(scrape_hemnet_results_cache != null){
+    scrape_hemnet_results = JSON.parse(scrape_hemnet_results_cache);
+    console.log('Restored hemnet scrapes cache');
   }
 }
 
@@ -538,33 +551,43 @@ function geocode_hemnet_results(){
  * Function to scrape hemnet web page for stuff that's missing from RSS
  */
 function scrape_hemnet(url){
-  var dfd = new $.Deferred();
-  $.post( "mirror_hemnet.php",  { hnurl: url }, function( html ) {
-    var img_matches = html.match(/<meta property="og:image" content="([^"]+)">/);
-    if(img_matches){
-      hemnet_results[url]['front_image'] = img_matches[1];
+  if(scrape_hemnet_results.hasOwnProperty(url)){
+    // Found a cached copy
+    console.log('Found localstorage cache of Hemnet webpage '+url);
+    hemnet_results[url].front_image = scrape_hemnet_results[url].front_image;
+    hemnet_results[url].dataLayer = scrape_hemnet_results[url].dataLayer;
+    return new $.Deferred().resolve();
+
+  } else {
+    var dfd = new $.Deferred();
+    $.post( "mirror_hemnet.php",  { hnurl: url }, function( html ) {
+      scrape_hemnet_results[url] = parse_hemnet_scrape(html);
+      hemnet_results[url].front_image = scrape_hemnet_results[url].front_image;
+      hemnet_results[url].dataLayer = scrape_hemnet_results[url].dataLayer;
+      // Save to cache
+      console.log('Caching hemnet page '+url);
+      localStorage.setItem("hemnet-commuter-scrape_hemnet_results", JSON.stringify(scrape_hemnet_results));
+      dfd.resolve();
+    });
+    return dfd.promise();
+  }
+}
+function parse_hemnet_scrape(html){
+  var scraped_info = {};
+  var img_matches = html.match(/<meta property="og:image" content="([^"]+)">/);
+  if(img_matches){
+    scraped_info.front_image = img_matches[1];
+  }
+  var data_match = html.match(/dataLayer = ([^;]+);/);
+  if(data_match){
+    var hd = JSON.parse(data_match[1]);
+    try {
+      scraped_info.dataLayer = hd[1]['property'];
+    } catch(e){
+      console.log("Scraped dataLayer but couldn't access hd[1]['property']");
     }
-    var data_match = html.match(/dataLayer = (\[\{[^\]]+\]);/);
-    if(data_match){
-      var hd = JSON.parse(data_match[1]);
-      try {
-        hemnet_results[url]['dataLayer'] = hd[2]['property'];
-      } catch(e){ }
-    }
-    var latlong_matches = html.match(/coordinates: {"latitude":([\d\.]+),"longitude":([\d\.]+)}/);
-    if(latlong_matches){
-      hemnet_results[url]['locations'] = {
-        'geometry': {
-          'location': {
-            'lat': latlong_matches[1],
-            'lng': latlong_matches[2]
-          }
-        }
-      };
-    }
-    dfd.resolve();
-  });
-  return dfd.promise();
+  }
+  return scraped_info;
 }
 
 
@@ -664,7 +687,15 @@ function make_results_table(){
     var price = '';
     var avgift = '';
     if('dataLayer' in hemnet_results[k]){
-      if('locations' in hemnet_results[k]['dataLayer']){ locality = '<small class="text-muted">'+hemnet_results[k]['dataLayer']['locations']['district']+'</small>'; }
+      if('locations' in hemnet_results[k]['dataLayer']){
+        // District can be weirdly duplicated
+        var districts = hemnet_results[k]['dataLayer']['locations']['district'].split(', ');
+        var unique_districts = [];
+        $.each(districts, function(i, el){
+          if($.inArray(el, unique_districts) === -1) unique_districts.push(el);
+        });
+        locality = '<small class="text-muted">'+unique_districts.join(', ')+'</small>';
+      }
       if('living_area' in hemnet_results[k]['dataLayer']){ living_area = '<br><small class="text-muted mr-3">'+hemnet_results[k]['dataLayer']['living_area'] +' m<sup>2</sup></small>'; }
       if('price' in hemnet_results[k]['dataLayer']){ price = '<small class="text-muted">'+hemnet_results[k]['dataLayer']['price'].toLocaleString()+' kr</small>'; }
       if('borattavgift' in hemnet_results[k]['dataLayer']){ avgift = '<br><small class="text-muted">'+hemnet_results[k]['dataLayer']['borattavgift'].toLocaleString()+' kr avgift</small>'; }
