@@ -52,14 +52,17 @@
           <small class="text-muted"><span class="text-danger"><i class="fa fa-exclamation-triangle" aria-hidden="true"></i> Only the <strong>most recent 30</strong> items are returned.</span>
           Enter multiple search RSS addresses to retrieve more results.</small></p>
         <div class="hemnet_rss_rows">
-          <div class="input-group mb-1 hemnet_rss_row">
-            <input type="url" class="form-control hemnet_rss" name="hemnet_rss[]" required>
-            <span class="input-group-btn hemnet_rss_delete" style="display:none;">
-              <button class="btn btn-secondary hemnet_rss_delete_btn" type="button"><i class="fa fa-trash-o hemnet_rss_add" aria-hidden="true"></i></button>
-            </span>
-            <span class="input-group-btn hemnet_rss_add_btn">
-              <button class="btn btn-secondary hemnet_rss_add_btn" type="button"><i class="fa fa-plus hemnet_rss_add" aria-hidden="true"></i></button>
-            </span>
+          <div class="mb-1 hemnet_rss_row">
+            <p class="hemnet_rss_title form-text text-muted small mb-0 mt-3">Enter a HemNet RSS URL below:</p>
+            <div class="input-group">
+              <input type="url" class="form-control hemnet_rss" name="hemnet_rss[]" required>
+              <span class="input-group-btn hemnet_rss_delete" style="display:none;">
+                <button class="btn btn-secondary hemnet_rss_delete_btn" type="button"><i class="fa fa-trash-o hemnet_rss_add" aria-hidden="true"></i></button>
+              </span>
+              <span class="input-group-btn hemnet_rss_add_btn">
+                <button class="btn btn-secondary hemnet_rss_add_btn" type="button"><i class="fa fa-plus hemnet_rss_add" aria-hidden="true"></i></button>
+              </span>
+            </div>
           </div>
         </div>
         <p class="text-muted"><small>For example: <samp>https://www.hemnet.se/mitt_hemnet/sparade_sokningar/00000000.xml</samp></small></p>

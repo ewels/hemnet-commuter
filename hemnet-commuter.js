@@ -4,6 +4,7 @@
 // https://github.com/ewels/hemnet-commuter //
 //////////////////////////////////////////////
 
+hemnet_rss = {};
 commute_results = [];
 hemnet_results = {};
 commute_shapes = {};
@@ -25,6 +26,7 @@ $(function(){
   $('form').submit(function(e){
     e.preventDefault();
     save_form_inputs();
+    load_browser_cache();
     var rss_promise = load_hemnet_rss();
 
     // Something went wrong getting the RSS results
@@ -217,6 +219,24 @@ function load_form_inputs(){
 }
 
 /**
+ * Load local storage cache in to global variables
+ */
+function load_browser_cache(){
+  hemnet_rss_cache = localStorage.getItem("hemnet-commuter-hemnet_rss");
+  if(hemnet_rss_cache != null){
+    hemnet_rss_cache = JSON.parse(hemnet_rss_cache);
+    // Only restore those URLs that are in the form
+    $('.hemnet_rss').each(function(){
+      var rss_url = $(this).val();
+      if(hemnet_rss_cache.hasOwnProperty(rss_url)){
+        hemnet_rss[rss_url] = hemnet_rss_cache[rss_url];
+        console.log('Used browser cache for Hemnet RSS: '+rss_url);
+      }
+    });
+  }
+}
+
+/**
  * Main hemnet-commuter search function
  */
 function load_hemnet_rss(){
@@ -230,25 +250,57 @@ function load_hemnet_rss(){
 
   $('#status-msg').text("Fetching search data");
   var promises = [];
-  $('.hemnet_rss').each(function(){
+  $('.hemnet_rss_row').each(function(){
 
     // Match the RSS search ID
-    var matches = $(this).val().match(/https:\/\/www.hemnet.se\/mitt_hemnet\/sparade_sokningar\/(\d+)\.xml/);
+    var rss_url = $(this).find('.hemnet_rss').val();
+    var matches = rss_url.match(/https:\/\/www.hemnet.se\/mitt_hemnet\/sparade_sokningar\/(\d+)\.xml/);
     if(matches == null){
-      dfd.reject("RSS URL did not match expected pattern: "+$(this).val());
+      dfd.reject("RSS URL did not match expected pattern: "+rss_url);
       return false;
+    }
+
+    // Check if we already have this cached
+    if(hemnet_rss.hasOwnProperty(rss_url)){
+      console.log('Skipping '+rss_url+' as found in the browser cache');
+      for (var i = 0; i < hemnet_rss[rss_url].item.length; i++) {
+        d = hemnet_rss[rss_url].item[i];
+        hemnet_results[d['link']] = d;
+      }
+      // Show title and how many results this RSS feed had, warn if 30
+      $(this).find('.hemnet_rss_title').html(hemnet_rss[rss_url].title+' - <span class="badge badge-pill badge-success">'+hemnet_rss[rss_url].item.length+' results</span>');
+      if(hemnet_rss[rss_url].item.length >= 30){
+        $(this).find('.hemnet_rss_title').addClass('bg-danger text-white px-1').removeClass('text-muted');
+        $(this).find('.hemnet_rss_title .badge').addClass('badge-warning').removeClass('badge-success');
+      }
+      return dfd.resolve();
     }
 
     // Fetch the RSS via our own PHP script, because of stupid CORS
     var request = $.post( "mirror_hemnet.php",  { s_id: matches[1] }, function( data ) {
       try {
+        // Something was wrong
         if(data['status'] == "error"){
           dfd.reject("Could not load RSS "+data['msg']);
           return false;
         }
+        // All good - save the results
         for (var i = 0; i < data['item'].length; i++) {
           d = data['item'][i];
           hemnet_results[d['link']] = d;
+        }
+        // Show title and how many results this RSS feed had, warn if 30
+        $(this).find('.hemnet_rss_title').html(hemnet_rss[rss_url].title+' - <span class="badge badge-pill badge-success">'+hemnet_rss[rss_url].item.length+' results</span>');
+        if(hemnet_rss[rss_url].item.length >= 30){
+          $(this).find('.hemnet_rss_title').addClass('bg-danger text-white px-1').removeClass('text-muted');
+          $(this).find('.hemnet_rss_title .badge').addClass('badge-warning').removeClass('badge-success');
+        }
+
+        // Cache the results for next time
+        if (typeof(Storage) != "undefined") {
+          console.log('Caching HemNet RSS for '+data['link']);
+          hemnet_rss[rss_url] = data;
+          localStorage.setItem("hemnet-commuter-hemnet_rss", JSON.stringify(hemnet_rss));
         }
       } catch (e){
         dfd.reject("Something went wrong whilst parsing the Hemnet RSS.");
