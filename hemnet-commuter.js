@@ -277,9 +277,10 @@ function load_hemnet_rss(){
   $('#status-msg').text("Fetching search data");
   var promises = [];
   $('.hemnet_rss_row').each(function(){
+    var hemnet_row = $(this);
 
     // Match the RSS search ID
-    var rss_url = $(this).find('.hemnet_rss').val();
+    var rss_url = hemnet_row.find('.hemnet_rss').val();
     var matches = rss_url.match(/https:\/\/www.hemnet.se\/mitt_hemnet\/sparade_sokningar\/(\d+)\.xml/);
     if(matches == null){
       dfd.reject("RSS URL did not match expected pattern: "+rss_url);
@@ -294,10 +295,10 @@ function load_hemnet_rss(){
         hemnet_results[d['link']] = d;
       }
       // Show title and how many results this RSS feed had, warn if 30
-      $(this).find('.hemnet_rss_title').html(hemnet_rss[rss_url].title+' - <span class="badge badge-pill badge-success">'+hemnet_rss[rss_url].item.length+' results</span>');
+      hemnet_row.find('.hemnet_rss_title').html(hemnet_rss[rss_url].title+' - <span class="badge badge-pill badge-success">'+hemnet_rss[rss_url].item.length+' results</span>');
       if(hemnet_rss[rss_url].item.length >= 30){
-        $(this).find('.hemnet_rss_title').addClass('bg-danger text-white px-1').removeClass('text-muted');
-        $(this).find('.hemnet_rss_title .badge').addClass('badge-warning').removeClass('badge-success');
+        hemnet_row.find('.hemnet_rss_title').addClass('bg-danger text-white px-1').removeClass('text-muted');
+        hemnet_row.find('.hemnet_rss_title .badge').addClass('badge-warning').removeClass('badge-success');
       }
       return dfd.resolve();
     }
@@ -317,10 +318,10 @@ function load_hemnet_rss(){
           hemnet_results[d['link']] = d;
         }
         // Show title and how many results this RSS feed had, warn if 30
-        $(this).find('.hemnet_rss_title').html(hemnet_rss[rss_url].title+' - <span class="badge badge-pill badge-success">'+hemnet_rss[rss_url].item.length+' results</span>');
+        hemnet_row.find('.hemnet_rss_title').html(hemnet_rss[rss_url].title+' - <span class="badge badge-pill badge-success">'+hemnet_rss[rss_url].item.length+' results</span>');
         if(hemnet_rss[rss_url].item.length >= 30){
-          $(this).find('.hemnet_rss_title').addClass('bg-danger text-white px-1').removeClass('text-muted');
-          $(this).find('.hemnet_rss_title .badge').addClass('badge-warning').removeClass('badge-success');
+          hemnet_row.find('.hemnet_rss_title').addClass('bg-danger text-white px-1').removeClass('text-muted');
+          hemnet_row.find('.hemnet_rss_title .badge').addClass('badge-warning').removeClass('badge-success');
         }
 
         // Cache the results for next time
@@ -470,9 +471,8 @@ function get_commute_intersection_map(){
     contentType: "application/json; charset=utf-8",
     dataType: 'json',
     success: function(e) {
-      console.info('Getting intersection map worked!', e);
+      console.info('Getting intersection map worked!');
       // Cache the results for next time
-      console.log(api_request_json)
       if (typeof(Storage) != "undefined") {
         console.log('Caching TravelTime map');
         traveltime_time_maps[api_post_hash_id] = e;
