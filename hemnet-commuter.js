@@ -315,6 +315,7 @@ function load_hemnet_rss(){
           return false;
         }
         // All good - save the results
+        hemnet_rss[rss_url] = data;
         for (var i = 0; i < data['item'].length; i++) {
           d = data['item'][i];
           hemnet_results[d['link']] = d;
@@ -329,7 +330,6 @@ function load_hemnet_rss(){
         // Cache the results for next time
         if (typeof(Storage) != "undefined") {
           console.log('Caching HemNet RSS for '+data['link']);
-          hemnet_rss[rss_url] = data;
           localStorage.setItem("hemnet-commuter-hemnet_rss", JSON.stringify(hemnet_rss));
         }
       } catch (e){
@@ -556,6 +556,7 @@ function scrape_hemnet(url){
     console.log('Found localstorage cache of Hemnet webpage '+url);
     hemnet_results[url].front_image = scrape_hemnet_results[url].front_image;
     hemnet_results[url].dataLayer = scrape_hemnet_results[url].dataLayer;
+    hemnet_results[url].infostring = make_info_string(scrape_hemnet_results[url].dataLayer);
     return new $.Deferred().resolve();
 
   } else {
@@ -564,6 +565,7 @@ function scrape_hemnet(url){
       scrape_hemnet_results[url] = parse_hemnet_scrape(html);
       hemnet_results[url].front_image = scrape_hemnet_results[url].front_image;
       hemnet_results[url].dataLayer = scrape_hemnet_results[url].dataLayer;
+      hemnet_results[url].infostring = make_info_string(scrape_hemnet_results[url].dataLayer);
       // Save to cache
       console.log('Caching hemnet page '+url);
       localStorage.setItem("hemnet-commuter-scrape_hemnet_results", JSON.stringify(scrape_hemnet_results));
@@ -588,6 +590,33 @@ function parse_hemnet_scrape(html){
     }
   }
   return scraped_info;
+}
+function make_info_string(dataLayer){
+  var infostring = '';
+  // Parse variables
+  try{
+    // District can be weirdly duplicated
+    var districts = dataLayer['locations']['district'].split(', ');
+    var unique_districts = [];
+    $.each(districts, function(i, el){
+      if($.inArray(el, unique_districts) === -1) unique_districts.push(el);
+    });
+    infostring += '<small class="text-muted">'+unique_districts.join(', ')+'</small>';
+  } catch(e){ }
+  try { var boarea = dataLayer['living_area'].toLocaleString(); } catch(e) { var boarea = '?'; }
+  try { var biarea = dataLayer['supplemental_area'].toLocaleString(); } catch(e) { var biarea = '?'; }
+  try { var price = (dataLayer['price']/1000000).toFixed(2); } catch(e) { var price = '?'; }
+  try { var driftk = parseInt(dataLayer['driftkostnad'] / 12).toLocaleString(); } catch(e) { var driftk = '?'; }
+  try { var const_yr = parseInt(dataLayer['construction_year']); } catch(e) { var const_yr = '?'; }
+  try { var avgift = dataLayer['borattavgift'].toLocaleString(); } catch(e) { var avgift = '?'; }
+
+  // Make a string
+  infostring += '<br><small class="text-muted">Pris: <strong>'+price+' Mkr</strong>, Drift: '+driftk+' kr/m</small>';
+  infostring += '<br><small class="text-muted mr-3">Bo: '+boarea+' m<sup>2</sup>, Bi: '+biarea+' m<sup>2</sup></small>';
+  infostring += '<br><small class="text-muted">Built: '+const_yr+'</small>';
+  if(avgift != '?') { infostring += '<br><small class="text-muted">'+avgift+' kr avgift</small>'; }
+
+  return infostring;
 }
 
 
@@ -682,31 +711,12 @@ function make_results_table(){
     } else {
       img_thumb = '<a href="'+k+'" target="_blank"><img src="'+hemnet_results[k]['front_image']+'"></a>';
     }
-    var locality = '';
-    var living_area = '';
-    var price = '';
-    var avgift = '';
-    if('dataLayer' in hemnet_results[k]){
-      if('locations' in hemnet_results[k]['dataLayer']){
-        // District can be weirdly duplicated
-        var districts = hemnet_results[k]['dataLayer']['locations']['district'].split(', ');
-        var unique_districts = [];
-        $.each(districts, function(i, el){
-          if($.inArray(el, unique_districts) === -1) unique_districts.push(el);
-        });
-        locality = '<small class="text-muted">'+unique_districts.join(', ')+'</small>';
-      }
-      if('living_area' in hemnet_results[k]['dataLayer']){ living_area = '<br><small class="text-muted mr-3">'+hemnet_results[k]['dataLayer']['living_area'] +' m<sup>2</sup></small>'; }
-      if('price' in hemnet_results[k]['dataLayer']){ price = '<small class="text-muted">'+hemnet_results[k]['dataLayer']['price'].toLocaleString()+' kr</small>'; }
-      if('borattavgift' in hemnet_results[k]['dataLayer']){ avgift = '<br><small class="text-muted">'+hemnet_results[k]['dataLayer']['borattavgift'].toLocaleString()+' kr avgift</small>'; }
-      hemnet_results[k]['infostring'] = locality + living_area + price + avgift;
-    }
     trows.push([max_commute_secs, ' \
       <tr> \
         <td class="hn_thumb table-'+cclass+'">'+img_thumb+'</td> \
         <td class="table-'+cclass+'"> \
           <a href="'+k+'" target="_blank">'+hemnet_results[k]['title']+'</a> <br> \
-          '+ locality + living_area + price + avgift + '\
+          '+ hemnet_results[k]['infostring'] + '\
         </td> \
         '+max_commute+'\
         '+ccols+'\
@@ -818,8 +828,8 @@ function make_results_map() {
       {icon: markerIcon}
     ).bindPopup(
       '<h5><a href="'+k+'" target="_blank">'+hemnet_results[k]['title']+'</a></h5> \
-      <p>Max Commute Time: '+hemnet_results[k]['max_commute']+'</p> \
-      <p><img src="'+hemnet_results[k]['front_image']+'" style="width:100%"></p>'
+      <p><img src="'+hemnet_results[k]['front_image']+'" style="width:100%"></p> \
+      <p style="font-size:130%">'+hemnet_results[k]['infostring']+'</p>'
     ) );
 
   }
