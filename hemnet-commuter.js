@@ -5,6 +5,7 @@
 //////////////////////////////////////////////
 
 hemnet_rss = {};
+geocoded_addresses = {};
 commute_results = [];
 hemnet_results = {};
 commute_shapes = {};
@@ -222,6 +223,7 @@ function load_form_inputs(){
  * Load local storage cache in to global variables
  */
 function load_browser_cache(){
+  // HemNet RSS Feeds
   hemnet_rss_cache = localStorage.getItem("hemnet-commuter-hemnet_rss");
   if(hemnet_rss_cache != null){
     hemnet_rss_cache = JSON.parse(hemnet_rss_cache);
@@ -233,6 +235,13 @@ function load_browser_cache(){
         console.log('Used browser cache for Hemnet RSS: '+rss_url);
       }
     });
+  }
+
+  // Geocoding results
+  geocoded_addresses_cache = localStorage.getItem("hemnet-commuter-geocoded_addresses");
+  if(geocoded_addresses_cache != null){
+    geocoded_addresses = JSON.parse(geocoded_addresses_cache);
+    console.log('Restored geocoded_addresses cache: ', geocoded_addresses);
   }
 }
 
@@ -535,6 +544,12 @@ function setTimeTravelAPIHeader(xhr) {
  * Function to find lat and long from street address
  */
 function geocode_address(address){
+  // Check if we already have this cached
+  if(geocoded_addresses.hasOwnProperty(address)){
+    console.log('Skipping geocoding '+address+' as found in the browser cache');
+    return $.Deferred().resolve([geocoded_addresses[address], 'success']);
+  }
+
   // Start centred on Stockholm
   var focus_lat = '59.322619'
   var focus_lng = '18.073022';
@@ -543,7 +558,15 @@ function geocode_address(address){
     url: url,
     type: 'GET',
     dataType: 'json',
-    success: function(e) { console.info('Geocoding worked: '+address, e.features); },
+    success: function(e) {
+      console.info('Geocoding worked: '+address, e.features);
+      // Cache the results for next time
+      if (typeof(Storage) != "undefined") {
+        console.log('Caching geocoding for '+address);
+        geocoded_addresses[address] = e;
+        localStorage.setItem("hemnet-commuter-geocoded_addresses", JSON.stringify(geocoded_addresses));
+      }
+    },
     error: function(e) { console.error(e.responseJSON); alert('Could not geocode address: '+address); },
     beforeSend: setTimeTravelAPIHeader
   });
