@@ -154,8 +154,7 @@ function save_form_inputs(){
     form_data = {
       'traveltime_api_id': $('#traveltime_api_id').val(),
       'traveltime_api_key': $('#traveltime_api_key').val(),
-      'hemnet_rss': [],
-      'hemnet_append_address': $('#hemnet_append_address').val()
+      'hemnet_rss': []
     };
     $('.hemnet_rss').each(function(){
       form_data['hemnet_rss'].push($(this).val());
@@ -195,9 +194,6 @@ function load_form_inputs(){
       }
 
       if(form_data['hemnet_rss'] != undefined){
-
-        // Append to Address
-        $('#hemnet_append_address').val(form_data['hemnet_append_address']);
 
         // Fill in RSS feed values
         for (var i = 0; i < form_data['hemnet_rss'].length; i++) {
@@ -512,7 +508,12 @@ function geocode_hemnet_results(){
     var hn_addresses = [];
     for (var k in hemnet_results){
       if(!('locations' in hemnet_results[k])){
-        var address = hemnet_results[k]['title'].replace(/,?\s?\dtr\.?/, '') + ", "+$('#hemnet_append_address').val();
+        // Strip floor number from address title, eg ", 3tr"
+        var address = hemnet_results[k]['title'].replace(/,?\s?\dtr\.?/, '');
+        // Append the 'postal_city' from the web scrape if we have it
+        try {
+          address += ', '+hemnet_results[k].dataLayer.locations.postal_city.split(', ')[0];
+        } catch(e) {e}
         hn_addresses.push(address);
         keys.push(k);
         promises.push( geocode_address(address) );
