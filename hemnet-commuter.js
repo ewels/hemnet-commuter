@@ -78,6 +78,10 @@ $(function(){
           // Hemnet geocoding done
           geocode_hemnet_promise.done(function() {
 
+            // Cache geocoding results
+            console.log('Caching geocoding results');
+            saveCache("hemnet-commuter-geocoded_addresses", JSON.stringify(geocoded_addresses));
+
             // Get the travel times to each commute location
             var traveltime_commute_matrix_promise = get_traveltime_commute_times();
             traveltime_commute_matrix_promise.done(function(data){
@@ -180,7 +184,7 @@ function save_form_inputs(){
     }
     // Encode and save with local storage
     form_json = JSON.stringify(form_data);
-    localStorage.setItem("hemnet-commuter", form_json);
+    saveCache("hemnet-commuter", form_json);
 
     // Hide TravelTime API details
     if($('#traveltime_api_id').val() && $('#traveltime_api_key').val()){
@@ -196,7 +200,7 @@ function load_form_inputs(){
     console.log("localstorage not supported in this browser");
     return false;
   } else {
-    form_json = localStorage.getItem("hemnet-commuter");
+    form_json = loadCache("hemnet-commuter");
     if(form_json != null){
       form_data = JSON.parse(form_json);
 
@@ -253,7 +257,7 @@ function load_browser_cache(){
   }
 
   // HemNet RSS Feeds
-  hemnet_rss_cache = localStorage.getItem("hemnet-commuter-hemnet_rss");
+  hemnet_rss_cache = loadCache("hemnet-commuter-hemnet_rss");
   if(hemnet_rss_cache != null){
     hemnet_rss_cache = JSON.parse(hemnet_rss_cache);
     // Delete all old cache results
@@ -276,31 +280,47 @@ function load_browser_cache(){
   }
 
   // Geocoding results
-  geocoded_addresses_cache = localStorage.getItem("hemnet-commuter-geocoded_addresses");
+  geocoded_addresses_cache = loadCache("hemnet-commuter-geocoded_addresses");
   if(geocoded_addresses_cache != null){
-    geocoded_addresses = JSON.parse(geocoded_addresses_cache);
-    console.log('Restored geocoded_addresses cache: ', geocoded_addresses);
+    try {
+      geocoded_addresses = JSON.parse(geocoded_addresses_cache);
+      console.log('Restored geocoded_addresses cache: ', geocoded_addresses);
+    } catch(e){
+      console.warn("couldn't restore cache", e);
+    }
   }
 
   // TravelTime time maps
-  traveltime_time_maps_cache = localStorage.getItem("hemnet-commuter-traveltime_time_maps");
+  traveltime_time_maps_cache = loadCache("hemnet-commuter-traveltime_time_maps");
   if(traveltime_time_maps_cache != null){
-    traveltime_time_maps = JSON.parse(traveltime_time_maps_cache);
-    console.log('Restored traveltime_time_maps cache');
+    try {
+      traveltime_time_maps = JSON.parse(traveltime_time_maps_cache);
+      console.log('Restored traveltime_time_maps cache');
+    } catch(e){
+      console.warn("couldn't restore cache", e);
+    }
   }
 
   // TravelTime travel matrices
-  traveltime_travel_matrices_cache = localStorage.getItem("hemnet-commuter-traveltime_travel_matrices");
+  traveltime_travel_matrices_cache = loadCache("hemnet-commuter-traveltime_travel_matrices");
   if(traveltime_travel_matrices_cache != null){
-    traveltime_travel_matrices = JSON.parse(traveltime_travel_matrices_cache);
-    console.log('Restored traveltime_travel_matrices cache');
+    try {
+      traveltime_travel_matrices = JSON.parse(traveltime_travel_matrices_cache);
+      console.log('Restored traveltime_travel_matrices cache');
+    } catch(e){
+      console.warn("couldn't restore cache", e);
+    }
   }
 
   // Hemnet scrapes
-  scrape_hemnet_results_cache = localStorage.getItem("hemnet-commuter-scrape_hemnet_results");
+  scrape_hemnet_results_cache = loadCache("hemnet-commuter-scrape_hemnet_results");
   if(scrape_hemnet_results_cache != null){
-    scrape_hemnet_results = JSON.parse(scrape_hemnet_results_cache);
-    console.log('Restored hemnet scrapes cache');
+    try {
+      scrape_hemnet_results = JSON.parse(scrape_hemnet_results_cache);
+      console.log('Restored hemnet scrapes cache');
+    } catch(e){
+      console.warn("couldn't restore cache", e);
+    }
   }
 }
 
@@ -367,11 +387,6 @@ function load_hemnet_rss(){
           hemnet_row.find('.hemnet_rss_title .badge').addClass('badge-warning').removeClass('badge-success');
         }
 
-        // Cache the results for next time
-        if (typeof(Storage) != "undefined") {
-          console.log('Caching HemNet RSS for '+data['link']);
-          localStorage.setItem("hemnet-commuter-hemnet_rss", JSON.stringify(hemnet_rss));
-        }
       } catch (e){
         dfd.reject("Something went wrong whilst parsing the Hemnet RSS.");
         console.error(e);
@@ -386,6 +401,10 @@ function load_hemnet_rss(){
   $.when.apply(null, promises).done(function(){
 
     $('#status-msg').text("Finished retrieving Hemnet results");
+
+    // Cache the results for next time
+    console.log('Caching HemNet RSS results');
+    saveCache("hemnet-commuter-hemnet_rss", JSON.stringify(hemnet_rss));
 
     // Check that we got some results
     var num_results = Object.keys(hemnet_results).length;
@@ -516,11 +535,9 @@ function get_commute_intersection_map(){
     success: function(e) {
       console.info('Getting intersection map worked!');
       // Cache the results for next time
-      if (typeof(Storage) != "undefined") {
-        console.log('Caching TravelTime map');
-        traveltime_time_maps[api_post_hash_id] = e;
-        localStorage.setItem("hemnet-commuter-traveltime_time_maps", JSON.stringify(traveltime_time_maps));
-      }
+      console.log('Caching TravelTime map');
+      traveltime_time_maps[api_post_hash_id] = e;
+      saveCache("hemnet-commuter-traveltime_time_maps", JSON.stringify(traveltime_time_maps));
     },
     error: function(e) { console.error(e.responseJSON); },
     beforeSend: setTimeTravelAPIHeader
@@ -546,6 +563,11 @@ function geocode_hemnet_results(){
 
   // Go through each hemnet result and find location if not scraped
   $.when.apply(null, hn_promises).then(function(d){
+
+    // Save hemnet scrape results to cache
+    console.log('Caching hemnet scrape results');
+    saveCache("hemnet-commuter-scrape_hemnet_results", JSON.stringify(scrape_hemnet_results));
+
     var keys = [];
     var promises = [];
     var hn_addresses = [];
@@ -629,9 +651,6 @@ function scrape_hemnet(url){
       hemnet_results[url].front_image = scrape_hemnet_results[url].front_image;
       hemnet_results[url].dataLayer = scrape_hemnet_results[url].dataLayer;
       hemnet_results[url].infostring = make_info_string(scrape_hemnet_results[url].dataLayer);
-      // Save to cache
-      console.log('Caching hemnet page '+url);
-      localStorage.setItem("hemnet-commuter-scrape_hemnet_results", JSON.stringify(scrape_hemnet_results));
       dfd.resolve();
     });
     return dfd.promise();
@@ -712,12 +731,7 @@ function geocode_address(address){
     dataType: 'json',
     success: function(e) {
       console.info('Geocoding worked: '+address, e.features);
-      // Cache the results for next time
-      if (typeof(Storage) != "undefined") {
-        console.log('Caching geocoding for '+address);
-        geocoded_addresses[address] = e;
-        localStorage.setItem("hemnet-commuter-geocoded_addresses", JSON.stringify(geocoded_addresses));
-      }
+      geocoded_addresses[address] = e;
     },
     error: function(e) { console.error(e.responseJSON); alert('Could not geocode address: '+address); },
     beforeSend: setTimeTravelAPIHeader
@@ -800,11 +814,9 @@ function get_traveltime_commute_times(){
     success: function(e) {
       console.info('Getting commute times worked!', e);
       // Cache the results for next time
-      if (typeof(Storage) != "undefined") {
-        console.log('Caching TravelTime commute times');
-        traveltime_travel_matrices[api_post_hash_id] = e;
-        localStorage.setItem("hemnet-commuter-traveltime_travel_matrices", JSON.stringify(traveltime_travel_matrices));
-      }
+      console.log('Caching TravelTime commute times');
+      traveltime_travel_matrices[api_post_hash_id] = e;
+      saveCache("hemnet-commuter-traveltime_travel_matrices", JSON.stringify(traveltime_travel_matrices));
     },
     error: function(e) { console.error(e.responseJSON); },
     beforeSend: setTimeTravelAPIHeader
@@ -975,7 +987,7 @@ function make_results_map() {
 
     // Count stats of how well the geocoding worked
     try { if(hemnet_results[k].locations.properties.score == 1){ geocode_stats.score += 1; } } catch(e){ }
-    try { if(typeof hemnet_results[k].locations.properties.street !== 'undefined'){ geocode_stats.street += 1; } else { console.log(hemnet_results[k]['geocode_address_used'], hemnet_results[k], hemnet_results[k].locations.properties); } } catch(e){ console.log(hemnet_results[k]['geocode_address_used'], hemnet_results[k], hemnet_results[k].locations.properties); }
+    try { if(typeof hemnet_results[k].locations.properties.street !== 'undefined'){ geocode_stats.street += 1; } } catch(e){ }
     try { if(typeof hemnet_results[k].locations.properties.postcode !== 'undefined'){ geocode_stats.postcode += 1; } } catch(e){ }
     try { if(typeof hemnet_results[k].locations.properties.house_number !== 'undefined'){ geocode_stats.house_number += 1; } } catch(e){ }
 
@@ -1035,4 +1047,28 @@ function make_results_map() {
   var mapmarkers_group = L.featureGroup(mapmarkers);
   mapmarkers_group.addTo(map);
   map.fitBounds(mapmarkers_group.getBounds());
+}
+
+
+function saveCache(ckey, cache){
+  $.post( "cache_result.php", { ckey: ckey, cache: cache }).done(function( e ) {
+    console.log("Saved cache '"+ckey+"'", e);
+  });
+}
+
+function loadCache(ckey){
+  var cdata = '';
+  $.ajax({
+    url: "cache_result.php?ckey="+ckey,
+    success: function (data) {
+      cdata = data
+    },
+    async: false
+  });
+  if(cdata.length == 0){
+    console.log("No cache found for '"+ckey+"'");
+    return null;
+  }
+  console.log("Loaded cache for '"+ckey+"'");
+  return cdata;
 }
