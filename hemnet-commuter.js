@@ -13,6 +13,7 @@ commute_results = [];
 hemnet_results = {};
 commute_shapes = {};
 commute_times = {};
+house_comments = {};
 
 $(function(){
 
@@ -90,8 +91,7 @@ $(function(){
               // All done - now plot everything
               $('.results_card').show();
               make_results_map();
-              make_results_table();
-              $('#status-msg').text("Found "+$('#results_table tbody tr:not(.table-active)').length+" out of "+$('#results_table tbody tr').length+" properties");
+              $('#status-msg').text("Found "+hemnet_results.length+" properties");
               $('#search-btn').val('Search').prop('disabled', false);
 
             });
@@ -159,91 +159,81 @@ function remove_rss_row(){
 }
 
 /**
- * Save the entered form inputs to browser localstorage
+ * Save the entered form inputs to cache
  */
 function save_form_inputs(){
-  if (typeof(Storage) == "undefined") {
-    console.log("localstorage not supported in this browser");
-    return false;
-  } else {
-    // Get form values
-    form_data = {
-      'traveltime_api_id': $('#traveltime_api_id').val(),
-      'traveltime_api_key': $('#traveltime_api_key').val(),
-      'commute_hidemarkers_outside': $('#commute_hidemarkers_outside').is(':checked'),
-      'hemnet_rss': []
-    };
-    $('.hemnet_rss').each(function(){
-      form_data['hemnet_rss'].push($(this).val());
-    });
-    var i = 1;
-    while($('#commute_address_'+i).length){
-      form_data['commute_address_'+i] = $('#commute_address_'+i).val();
-      form_data['commute_time_'+i] = $('#commute_time_'+i).val();
-      i++;
-    }
-    // Encode and save with local storage
-    form_json = JSON.stringify(form_data);
-    saveCache("hemnet-commuter", form_json);
+  // Get form values
+  form_data = {
+    'traveltime_api_id': $('#traveltime_api_id').val(),
+    'traveltime_api_key': $('#traveltime_api_key').val(),
+    'commute_hidemarkers_outside': $('#commute_hidemarkers_outside').is(':checked'),
+    'hemnet_rss': []
+  };
+  $('.hemnet_rss').each(function(){
+    form_data['hemnet_rss'].push($(this).val());
+  });
+  var i = 1;
+  while($('#commute_address_'+i).length){
+    form_data['commute_address_'+i] = $('#commute_address_'+i).val();
+    form_data['commute_time_'+i] = $('#commute_time_'+i).val();
+    i++;
+  }
+  // Encode and save with local storage
+  form_json = JSON.stringify(form_data);
+  saveCache("hemnet-commuter", form_json);
 
-    // Hide TravelTime API details
-    if($('#traveltime_api_id').val() && $('#traveltime_api_key').val()){
-      $('#traveltime_api_details').hide();
-    }
+  // Hide TravelTime API details
+  if($('#traveltime_api_id').val() && $('#traveltime_api_key').val()){
+    $('#traveltime_api_details').hide();
   }
 }
 /**
- * Load the localstorage form inputs if found, and populate table
+ * Load the cached form inputs if found, and populate table
  */
 function load_form_inputs(){
-  if (typeof(Storage) == "undefined") {
-    console.log("localstorage not supported in this browser");
-    return false;
-  } else {
-    form_json = loadCache("hemnet-commuter");
-    if(form_json != null){
-      form_data = JSON.parse(form_json);
+  form_json = loadCache("hemnet-commuter");
+  if(form_json != null){
+    form_data = JSON.parse(form_json);
 
-      if(form_data['traveltime_api_id'] != undefined){ $('#traveltime_api_id').val(form_data['traveltime_api_id']); }
-      if(form_data['traveltime_api_key'] != undefined){ $('#traveltime_api_key').val(form_data['traveltime_api_key']); }
-      if(form_data['traveltime_api_id'] != undefined && form_data['traveltime_api_key'] != undefined){
-        $('#traveltime_api_details').hide();
-      }
-      if(form_data['commute_hidemarkers_outside'] != undefined || form_data['commute_hidemarkers_outside']){
-        $('#commute_hidemarkers_outside').attr('checked', true);
-      }
-
-      if(form_data['hemnet_rss'] != undefined){
-
-        // Fill in RSS feed values
-        for (var i = 0; i < form_data['hemnet_rss'].length; i++) {
-          if(i > $('.hemnet_rss_row').length - 1){
-            add_rss_row();
-          }
-          $('.hemnet_rss_row').last().find('.hemnet_rss').val(form_data['hemnet_rss'][i]);
-          // Label with RSS name / number of results if we have this cached
-          $.each(hemnet_rss_cache, function(rss_url, d){
-            if(rss_url == form_data['hemnet_rss'][i]){
-              $('.hemnet_rss_row').last().find('.hemnet_rss_title').html('<span class="badge badge-pill badge-info">'+hemnet_rss_cache[rss_url].title+'</span> <span class="badge badge-pill badge-success">'+hemnet_rss_cache[rss_url].item.length+' results</span>');
-              if(hemnet_rss_cache[rss_url].item.length >= 30){
-                $('.hemnet_rss_row').last().find('.hemnet_rss_title').addClass('bg-danger text-white px-1').removeClass('text-muted');
-                $('.hemnet_rss_row').last().find('.hemnet_rss_title .badge').addClass('badge-warning').removeClass('badge-success');
-              }
-            }
-          });
-        }
-        // Fill in commute values
-        var i = 1;
-        while(form_data['commute_address_'+i] != undefined){
-          if($('#commute_address_'+i).length == 0){ add_commute_row(); }
-          $('#commute_address_'+i).val(form_data['commute_address_'+i]);
-          $('#commute_time_'+i).val(form_data['commute_time_'+i]);
-          i++;
-        }
-      }
-    } else {
-      console.info("No localstorage results found");
+    if(form_data['traveltime_api_id'] != undefined){ $('#traveltime_api_id').val(form_data['traveltime_api_id']); }
+    if(form_data['traveltime_api_key'] != undefined){ $('#traveltime_api_key').val(form_data['traveltime_api_key']); }
+    if(form_data['traveltime_api_id'] != undefined && form_data['traveltime_api_key'] != undefined){
+      $('#traveltime_api_details').hide();
     }
+    if(form_data['commute_hidemarkers_outside'] != undefined || form_data['commute_hidemarkers_outside']){
+      $('#commute_hidemarkers_outside').attr('checked', true);
+    }
+
+    if(form_data['hemnet_rss'] != undefined){
+
+      // Fill in RSS feed values
+      for (var i = 0; i < form_data['hemnet_rss'].length; i++) {
+        if(i > $('.hemnet_rss_row').length - 1){
+          add_rss_row();
+        }
+        $('.hemnet_rss_row').last().find('.hemnet_rss').val(form_data['hemnet_rss'][i]);
+        // Label with RSS name / number of results if we have this cached
+        $.each(hemnet_rss_cache, function(rss_url, d){
+          if(rss_url == form_data['hemnet_rss'][i]){
+            $('.hemnet_rss_row').last().find('.hemnet_rss_title').html('<span class="badge badge-pill badge-info">'+hemnet_rss_cache[rss_url].title+'</span> <span class="badge badge-pill badge-success">'+hemnet_rss_cache[rss_url].item.length+' results</span>');
+            if(hemnet_rss_cache[rss_url].item.length >= 30){
+              $('.hemnet_rss_row').last().find('.hemnet_rss_title').addClass('bg-danger text-white px-1').removeClass('text-muted');
+              $('.hemnet_rss_row').last().find('.hemnet_rss_title .badge').addClass('badge-warning').removeClass('badge-success');
+            }
+          }
+        });
+      }
+      // Fill in commute values
+      var i = 1;
+      while(form_data['commute_address_'+i] != undefined){
+        if($('#commute_address_'+i).length == 0){ add_commute_row(); }
+        $('#commute_address_'+i).val(form_data['commute_address_'+i]);
+        $('#commute_time_'+i).val(form_data['commute_time_'+i]);
+        i++;
+      }
+    }
+  } else {
+    console.info("No cached results found");
   }
 }
 
@@ -251,10 +241,6 @@ function load_form_inputs(){
  * Load local storage cache in to global variables
  */
 function load_browser_cache(){
-  if (typeof(Storage) == "undefined") {
-    console.log("Can't load localStorage cache - not supported");
-    return;
-  }
 
   // HemNet RSS Feeds
   hemnet_rss_cache = loadCache("hemnet-commuter-hemnet_rss");
@@ -318,6 +304,17 @@ function load_browser_cache(){
     try {
       scrape_hemnet_results = JSON.parse(scrape_hemnet_results_cache);
       console.log('Restored hemnet scrapes cache');
+    } catch(e){
+      console.warn("couldn't restore cache", e);
+    }
+  }
+
+  // Hemnet scrapes
+  house_comments_cache = loadCache("hemnet-commuter-house_comments");
+  if(house_comments_cache != null){
+    try {
+      house_comments = JSON.parse(house_comments_cache);
+      console.log('Restored house comments cache');
     } catch(e){
       console.warn("couldn't restore cache", e);
     }
@@ -638,7 +635,7 @@ function geocode_hemnet_results(){
 function scrape_hemnet(url){
   if(scrape_hemnet_results.hasOwnProperty(url)){
     // Found a cached copy
-    console.log('Found localstorage cache of Hemnet webpage '+url);
+    console.log('Found cache of Hemnet webpage '+url);
     hemnet_results[url].front_image = scrape_hemnet_results[url].front_image;
     hemnet_results[url].dataLayer = scrape_hemnet_results[url].dataLayer;
     hemnet_results[url].infostring = make_info_string(scrape_hemnet_results[url].dataLayer);
@@ -822,77 +819,6 @@ function get_traveltime_commute_times(){
     beforeSend: setTimeTravelAPIHeader
   });
 }
-
-/**
- * Function to print the results table once everything has been done
- */
-// TODO - update this table to show something useful and not missing values
-function make_results_table(){
-  // Add header columns for commutes
-  for (var i = 0; i < commute_results.length; i++) {
-    $('#results_table thead tr').append('<th>'+commute_results[i]['title']+'</th>');
-  }
-  // Collect result table rows
-  var trows = [];
-  for (var k in hemnet_results){
-    var ccols = '';
-    var commute_ok = false;
-    var max_commute_secs = false;
-    var max_commute = '<td></td>';
-    for (var i = 0; i < commute_results.length; i++) {
-      var ctime = '';
-      var csecs = false;
-      var cclass = 'danger';
-      var tdclass = 'active';
-      try {
-        ctime = hemnet_results[k]['locations']['commutes'][i]['duration']['text'];
-        csecs = hemnet_results[k]['locations']['commutes'][i]['duration']['value'];
-        if(csecs > commute_results[i]['max_commute_secs']){
-          tdclass = 'danger';
-        } else {
-          tdclass = 'success';
-        }
-        if(hemnet_results[k]['locations']['commute_ok']){
-          cclass = 'success';
-        }
-      } catch(e){
-        ctime = '?'
-        csecs = 9999999999999999999;
-        cclass = 'active';
-      }
-      if(!max_commute_secs || csecs > max_commute_secs){
-        max_commute_secs = csecs;
-        max_commute = '<td class="table-'+cclass+'">'+ctime+'</td>';
-        hemnet_results[k]['max_commute'] = ctime;
-      }
-      ccols += '<td class="table-'+tdclass+'">'+ctime+'</td>';
-    }
-    if(hemnet_results[k]['front_image'] == undefined){
-      img_thumb = '&nbsp;';
-    } else {
-      img_thumb = '<a href="'+k+'" target="_blank"><img src="'+hemnet_results[k]['front_image']+'"></a>';
-    }
-    trows.push([max_commute_secs, ' \
-      <tr> \
-        <td class="hn_thumb table-'+cclass+'">'+img_thumb+'</td> \
-        <td class="table-'+cclass+'"> \
-          <a href="'+k+'" target="_blank">'+hemnet_results[k]['title']+'</a> <br> \
-          '+ hemnet_results[k]['infostring'] + '\
-        </td> \
-        '+max_commute+'\
-        '+ccols+'\
-      </tr> \
-    ']);
-  }
-  // Sort and print to table
-  trows.sort(function(left, right) {
-    return left[0] < right[0] ? -1 : 1;
-  });
-  for (var i = 0; i < trows.length; i++) {
-    $('#results_table tbody').append(trows[i][1]);
-  }
-}
-
 
 /**
  * Build Leaflet Map to display results
