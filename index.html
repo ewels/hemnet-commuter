@@ -13,7 +13,7 @@
 </head>
 <body>
 
-<div class="container">
+<div class="container-fluid">
 
   <img id="hemnet-logo" src="hemnet.svg">
   <h1 class="display-4">Hemnet Commuter</h1>
@@ -127,7 +127,40 @@
         <span class="badge badge-pill badge-info num_houses_geocode_house_number">? houses with house number</span>
       </p>
       <div id="results_map" class="mb-3"></div>
-      <div id="results_focus"><p class="text-muted">Click a house marker on the map to see more information here.</p></div>
+      <div id="results_focus">
+        <p id="results_nofocus" class="text-muted">Click a house marker on the map to see more information here.</p>
+        <div id="results_focus_row" style="display:none;" class="row">
+          <div class="col-4">
+            <img src="" style="width:100%;" class="focus_img">
+          </div>
+          <div class="col-8">
+            <h5><a href="" target="_blank" class="focus_link"><span class="focus_title"></span></a></h5>
+            <p class="focus_infostring"></p>
+            <p>Hemnet location info:</p>
+            <pre class="focus_hemnet_loc_info bg-faded"></pre>
+            <p>Geocode location info:</p>
+            <pre class="focus_geocode_info bg-faded"></pre>
+            <p>All information:</p>
+            <pre class="focus_data small"></pre>
+            <div class="row">
+              <div class="col-6">
+                <div class="row">
+                  <div class="col-6 text-center"><i class="fa fa-thumbs-down"></i></div>
+                  <div class="col-6 text-center"><i class="fa fa-thumbs-up"></i></div>
+                </div>
+                <textarea class="form-control results_comment_1"></textarea>
+              </div>
+              <div class="col-6">
+                <div class="row">
+                  <div class="col-6 text-center"><i class="fa fa-thumbs-down"></i></div>
+                  <div class="col-6 text-center"><i class="fa fa-thumbs-up"></i></div>
+                </div>
+                <textarea class="form-control results_comment_2"></textarea>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
 
     </div>
   </div>

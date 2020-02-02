@@ -718,10 +718,7 @@ function geocode_address(address){
     return $.Deferred().resolve([geocoded_addresses[address], 'success']);
   }
 
-  // Start centred on Stockholm
-  var focus_lat = '59.322619'
-  var focus_lng = '18.073022';
-  var url = 'https://api.traveltimeapp.com/v4/geocoding/search?within.country=SWE&query='+encodeURIComponent(address)+'&focus.lat='+focus_lat+'&focus.lng='+focus_lng;
+  var url = 'https://api.traveltimeapp.com/v4/geocoding/search?within.country=SWE&query='+encodeURIComponent(address);
   return $.ajax({
     url: url,
     type: 'GET',
@@ -946,14 +943,16 @@ function make_results_map() {
       } else {
         markerIcon = new L.Icon(make_markerconfig('red'));
       }
-      mapmarkers.push( L.marker(
+      var marker = L.marker(
         [parseFloat(loc[1]), parseFloat(loc[0])],
         {icon: markerIcon}
       ).bindPopup(
         '<h5><a href="'+k+'" target="_blank">'+hemnet_results[k]['title']+'</a></h5> \
         <p><img src="'+hemnet_results[k]['front_image']+'" style="width:100%"></p> \
         <p style="font-size:130%">'+hemnet_results[k]['infostring']+'</p>'
-      ) );
+      );
+      marker.house_id = k;
+      mapmarkers.push(marker);
     } catch(e){
       console.warn("Couldn't plot map marker", hemnet_results[k])
     }
@@ -973,6 +972,22 @@ function make_results_map() {
   var mapmarkers_group = L.featureGroup(mapmarkers);
   mapmarkers_group.addTo(map);
   map.fitBounds(mapmarkers_group.getBounds());
+
+  // Handle click events on the markers
+  mapmarkers_group.on("click", function (e) {
+    $('#results_nofocus').hide();
+    $('#results_focus_row').show();
+    var house_url = e.layer.house_id;
+    var house = hemnet_results[ house_url ];
+
+    $('.focus_img').attr('src', house.front_image);
+    $('.focus_link').attr('href', house_url);
+    $('.focus_title').text(house.title);
+    $('.focus_infostring').html(house.infostring);
+    $('.focus_hemnet_loc_info').html(JSON.stringify(house.dataLayer.locations, null, 2));
+    $('.focus_geocode_info').html(JSON.stringify(house.locations.properties, null, 2));
+    $('.focus_data').html(JSON.stringify(house, null, 2));
+  });
 }
 
 
