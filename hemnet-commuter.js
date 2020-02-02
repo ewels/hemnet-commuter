@@ -7,10 +7,12 @@
 hemnet_rss = {};
 geocoded_addresses = {};
 traveltime_time_maps = {};
+traveltime_travel_matrices = {};
 scrape_hemnet_results = {};
 commute_results = [];
 hemnet_results = {};
 commute_shapes = {};
+commute_times = {};
 
 $(function(){
 
@@ -73,14 +75,22 @@ $(function(){
           // Get the hemnet results locations
           var geocode_hemnet_promise = geocode_hemnet_results();
 
-          // Hemnet geocoding done, now plot everything
+          // Hemnet geocoding done
           geocode_hemnet_promise.done(function() {
 
-            $('.results_card').show();
-            make_results_map();
-            make_results_table();
-            $('#status-msg').text("Found "+$('#results_table tbody tr:not(.table-active)').length+" out of "+$('#results_table tbody tr').length+" properties");
-            $('#search-btn').val('Search').prop('disabled', false);
+            // Get the travel times to each commute location
+            var traveltime_commute_matrix_promise = get_traveltime_commute_times();
+            traveltime_commute_matrix_promise.done(function(data){
+              commute_times = data;
+
+              // All done - now plot everything
+              $('.results_card').show();
+              make_results_map();
+              make_results_table();
+              $('#status-msg').text("Found "+$('#results_table tbody tr:not(.table-active)').length+" out of "+$('#results_table tbody tr').length+" properties");
+              $('#search-btn').val('Search').prop('disabled', false);
+
+            });
 
           });
 
@@ -281,6 +291,13 @@ function load_browser_cache(){
     console.log('Restored traveltime_time_maps cache');
   }
 
+  // TravelTime travel matrices
+  traveltime_travel_matrices_cache = localStorage.getItem("hemnet-commuter-traveltime_travel_matrices");
+  if(traveltime_travel_matrices_cache != null){
+    traveltime_travel_matrices = JSON.parse(traveltime_travel_matrices_cache);
+    console.log('Restored traveltime_travel_matrices cache');
+  }
+
   // Hemnet scrapes
   scrape_hemnet_results_cache = localStorage.getItem("hemnet-commuter-scrape_hemnet_results");
   if(scrape_hemnet_results_cache != null){
@@ -437,6 +454,18 @@ function geocode_commute_entries(){
 }
 
 
+// Get hash of object vars for caching ID
+function make_hash(obj) {
+  var hash = 0, i, chr;
+  if (obj.length === 0) return hash;
+  for (i = 0; i < obj.length; i++) {
+    chr   = obj.charCodeAt(i);
+    hash  = ((hash << 5) - hash) + chr;
+    hash |= 0; // Convert to 32bit integer
+  }
+  return hash;
+};
+
 /**
  * Get an intersection map of commute times
  */
@@ -471,18 +500,6 @@ function get_commute_intersection_map(){
     api_request.intersections[0].search_ids.push("commute from "+commute_results[i]['title']);
   }
   api_request_json = JSON.stringify(api_request);
-
-  // Get hash of POST vars for caching ID
-  function make_hash(obj) {
-    var hash = 0, i, chr;
-    if (obj.length === 0) return hash;
-    for (i = 0; i < obj.length; i++) {
-      chr   = obj.charCodeAt(i);
-      hash  = ((hash << 5) - hash) + chr;
-      hash |= 0; // Convert to 32bit integer
-    }
-    return hash;
-  };
   api_post_hash_id = make_hash(api_request_json);
 
   // Check if we already have this cached
@@ -691,6 +708,92 @@ function geocode_address(address){
 }
 
 
+
+/**
+ * Function to get TravelTime commute times
+ */
+function get_traveltime_commute_times(){
+  // jQuery promise
+  var dfd = new $.Deferred();
+
+  var api_request = {
+    "locations": [],
+    "arrival_searches": []
+  };
+
+  // Hemnet houses
+  var hemnet_house_ids = [];
+  for (var k in hemnet_results){
+    try {
+      var loc = hemnet_results[k]['locations']['geometry']['coordinates'];
+      api_request.locations.push({
+        "id": "hemnet location "+hemnet_results[k]['title'],
+        "coords": {
+          "lat": parseFloat(loc[1]),
+          "lng": parseFloat(loc[0]),
+        }
+      });
+      hemnet_house_ids.push("hemnet location "+hemnet_results[k]['title']);
+    } catch(e) { }
+  }
+
+  // Commute locations
+  for (var i = 0; i < commute_results.length; i++) {
+    api_request.locations.push({
+      "id": "commute location "+commute_results[i]['title'],
+      "coords": {
+        "lat": commute_results[i]['locations']['geometry']['coordinates'][1],
+        "lng": commute_results[i]['locations']['geometry']['coordinates'][0],
+      }
+    });
+    api_request.arrival_searches.push({
+      "id": "commute to "+commute_results[i]['title'],
+      "arrival_location_id": "commute location "+commute_results[i]['title'],
+      "departure_location_ids": hemnet_house_ids,
+      "transportation": { "type": "public_transport" },
+      "arrival_time": "2020-02-03T09:00:00Z",
+      "range": {
+        "enabled": true,
+        "width": 3600, // allow arrival between 8 and 9
+        "max_results": 1
+      },
+      "travel_time": commute_results[i]['max_commute_secs'],
+      "properties": [
+        "travel_time",
+        "distance_breakdown"
+      ]
+    });
+  }
+  api_request_json = JSON.stringify(api_request);
+  api_post_hash_id = make_hash(api_request_json);
+
+  // Check if we already have this cached
+  if(traveltime_travel_matrices.hasOwnProperty(api_post_hash_id)){
+    console.log('Skipping TimeTravel commute times as found in the browser cache');
+    return $.Deferred().resolve(traveltime_travel_matrices[api_post_hash_id]);
+  }
+
+  var url = 'https://api.traveltimeapp.com/v4/time-filter';
+  return $.ajax({
+    url: url,
+    type: 'POST',
+    data: api_request_json,
+    contentType: "application/json; charset=utf-8",
+    dataType: 'json',
+    success: function(e) {
+      console.info('Getting commute times worked!', e);
+      // Cache the results for next time
+      if (typeof(Storage) != "undefined") {
+        console.log('Caching TravelTime commute times');
+        traveltime_travel_matrices[api_post_hash_id] = e;
+        localStorage.setItem("hemnet-commuter-traveltime_travel_matrices", JSON.stringify(traveltime_travel_matrices));
+      }
+    },
+    error: function(e) { console.error(e.responseJSON); },
+    beforeSend: setTimeTravelAPIHeader
+  });
+}
+
 /**
  * Function to print the results table once everything has been done
  */
@@ -836,39 +939,83 @@ function make_results_map() {
 
   // Plot the hemnet results
   var mapmarkers = [];
+  var num_houses = 0;
+  var num_houses_map_shown = 0;
+  var num_houses_map_hidden = 0;
+  var geocode_stats = {
+    score: 0,
+    street: 0,
+    postcode: 0,
+    house_number: 0
+  }
   for (var k in hemnet_results){
     // Check we have a location
     if(!('locations' in hemnet_results[k])){
       continue;
     }
 
+    num_houses += 1;
+
+    // Count stats of how well the geocoding worked
+    try {
+      if(hemnet_results[k].locations.properties.score == 1){ geocode_stats.score += 1; }
+      if(hemnet_results[k].locations.properties.street){ geocode_stats.street += 1; }
+      if(hemnet_results[k].locations.properties.postcode){ geocode_stats.postcode += 1; }
+      if(hemnet_results[k].locations.properties.house_number){ geocode_stats.house_number += 1; }
+    } catch(e){ }
+
+    // Skip if we can't commute here in time
+    var can_commute = true;
+    hemnet_results[k]['can_commute'] = {};
+    for(j in commute_times.results){
+      if(commute_times.results[j].unreachable.includes("hemnet location "+hemnet_results[k]['title'])){
+        hemnet_results[k]['can_commute'][commute_times.results[j].search_id] = false;
+        can_commute = false;
+      } else {
+        hemnet_results[k]['can_commute'][commute_times.results[j].search_id] = true;
+      }
+    }
+    if($('#commute_hidemarkers_outside').is(':checked') && !can_commute){
+      console.log("Skipping map marker as not commutable: "+hemnet_results[k]['title']);
+      num_houses_map_hidden += 1;
+      continue;
+    }
+    num_houses_map_shown += 1;
+
     try {
 
       // Plot the marker
       var loc = hemnet_results[k]['locations']['geometry']['coordinates'];
-      if($('#commute_hidemarkers_outside').not(':checked') || in_polygon){
-        var markerIcon = new L.Icon(make_markerconfig('yellow'));
-        if(hemnet_results[k]['locations']['commute_ok'] === undefined){
-          markerIcon = new L.Icon(make_markerconfig('blue'));
-        } else if(hemnet_results[k]['locations']['commute_ok'] === true){
-          markerIcon = new L.Icon(make_markerconfig('green'));
-        } else {
-          markerIcon = new L.Icon(make_markerconfig('red'));
-        }
-        mapmarkers.push( L.marker(
-          [parseFloat(loc[1]), parseFloat(loc[0])],
-          {icon: markerIcon}
-        ).bindPopup(
-          '<h5><a href="'+k+'" target="_blank">'+hemnet_results[k]['title']+'</a></h5> \
-          <p><img src="'+hemnet_results[k]['front_image']+'" style="width:100%"></p> \
-          <p style="font-size:130%">'+hemnet_results[k]['infostring']+'</p>'
-        ) );
+      var markerIcon = new L.Icon(make_markerconfig('yellow'));
+      if(hemnet_results[k]['locations']['commute_ok'] === undefined){
+        markerIcon = new L.Icon(make_markerconfig('blue'));
+      } else if(hemnet_results[k]['locations']['commute_ok'] === true){
+        markerIcon = new L.Icon(make_markerconfig('green'));
+      } else {
+        markerIcon = new L.Icon(make_markerconfig('red'));
       }
+      mapmarkers.push( L.marker(
+        [parseFloat(loc[1]), parseFloat(loc[0])],
+        {icon: markerIcon}
+      ).bindPopup(
+        '<h5><a href="'+k+'" target="_blank">'+hemnet_results[k]['title']+'</a></h5> \
+        <p><img src="'+hemnet_results[k]['front_image']+'" style="width:100%"></p> \
+        <p style="font-size:130%">'+hemnet_results[k]['infostring']+'</p>'
+      ) );
     } catch(e){
       console.warn("Couldn't plot map marker", hemnet_results[k])
     }
 
   }
+
+  // Show how many houses are shown / hidden
+  $('.num_houses').text(num_houses+' houses');
+  $('.num_houses_map_hidden').text(num_houses_map_hidden+' hidden');
+  $('.num_houses_map_shown').text(num_houses_map_shown+' shown');
+  $('.num_houses_geocode_score').text(geocode_stats.score+' ('+((geocode_stats.score/num_houses)*100).toFixed(0)+'%)'+' with perfect geocode score');
+  $('.num_houses_geocode_street').text(geocode_stats.street+' ('+((geocode_stats.street/num_houses)*100).toFixed(0)+'%)'+' with street');
+  $('.num_houses_geocode_postcode').text(geocode_stats.postcode+' ('+((geocode_stats.postcode/num_houses)*100).toFixed(0)+'%)'+' with postcode');
+  $('.num_houses_geocode_house_number').text(geocode_stats.house_number+' ('+((geocode_stats.house_number/num_houses)*100).toFixed(0)+'%)'+' with house number');
 
   // Plot the markers and scale the map
   var mapmarkers_group = L.featureGroup(mapmarkers);
