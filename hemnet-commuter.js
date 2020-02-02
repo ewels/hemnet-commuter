@@ -258,12 +258,10 @@ function load_browser_cache(){
     hemnet_rss_cache = JSON.parse(hemnet_rss_cache);
     // Delete all old cache results
     var max_age = (new Date()).getTime() - 86400000; // 24 hours in milliseconds
-    $.each(hemnet_rss, function(url, data){
-      if(data.date_fetched < max_age || !data.hasOwnProperty(date_fetched)){
-        delete hemnet_rss[url];
+    $.each(hemnet_rss_cache, function(url, data){
+      if(data.date_fetched < max_age || !data.hasOwnProperty('date_fetched')){
+        delete hemnet_rss_cache[url];
         console.log('Deleted old hemnet RSS cache for '+url);
-      } else {
-        console.log('Cached hemnet RSS fresh enough ('+data.date_fetched+') for '+url);
       }
     });
 
@@ -555,10 +553,29 @@ function geocode_hemnet_results(){
       if(!('locations' in hemnet_results[k])){
         // Strip floor number from address title, eg ", 3tr"
         var address = hemnet_results[k]['title'].replace(/,?\s?\dtr\.?/, '');
-        // Append the 'postal_city' from the web scrape if we have it
+        // Append additional address information from the web scrape if we have it
+        var have_districts = false;
+        var have_municipalities = false;
         try {
-          address += ', '+hemnet_results[k].dataLayer.locations.postal_city.replace('+', ' ').split(', ')[0];
-        } catch(e) {e}
+          // Places can be weirdly duplicated
+          var districts = hemnet_results[k].dataLayer.locations.district.replace('+',' ').split(', ');
+          var unique_districts = [];
+          $.each(districts, function(i, el){
+            if($.inArray(el, unique_districts) === -1) unique_districts.push(el);
+          });
+          address += ', '+unique_districts.join(', ');
+          have_districts = true;
+        } catch(e) { }
+        if(!have_districts){ try {
+          var municipalities = hemnet_results[k].dataLayer.locations.municipality.replace('+',' ').split(', ');
+          var unique_municipalities = [];
+          $.each(municipalities, function(i, el){
+            if($.inArray(el, unique_municipalities) === -1) unique_municipalities.push(el);
+          });
+          address += ', '+unique_municipalities.join(', ');
+          have_municipalities = true;
+        } catch(e) { console.log('municipality failed:', e); } }
+        hemnet_results[k]['geocode_address_used'] = address;
         hn_addresses.push(address);
         keys.push(k);
         promises.push( geocode_address(address) );
@@ -957,12 +974,10 @@ function make_results_map() {
     num_houses += 1;
 
     // Count stats of how well the geocoding worked
-    try {
-      if(hemnet_results[k].locations.properties.score == 1){ geocode_stats.score += 1; }
-      if(hemnet_results[k].locations.properties.street){ geocode_stats.street += 1; }
-      if(hemnet_results[k].locations.properties.postcode){ geocode_stats.postcode += 1; }
-      if(hemnet_results[k].locations.properties.house_number){ geocode_stats.house_number += 1; }
-    } catch(e){ }
+    try { if(hemnet_results[k].locations.properties.score == 1){ geocode_stats.score += 1; } } catch(e){ }
+    try { if(typeof hemnet_results[k].locations.properties.street !== 'undefined'){ geocode_stats.street += 1; } else { console.log(hemnet_results[k]['geocode_address_used'], hemnet_results[k], hemnet_results[k].locations.properties); } } catch(e){ console.log(hemnet_results[k]['geocode_address_used'], hemnet_results[k], hemnet_results[k].locations.properties); }
+    try { if(typeof hemnet_results[k].locations.properties.postcode !== 'undefined'){ geocode_stats.postcode += 1; } } catch(e){ }
+    try { if(typeof hemnet_results[k].locations.properties.house_number !== 'undefined'){ geocode_stats.house_number += 1; } } catch(e){ }
 
     // Skip if we can't commute here in time
     var can_commute = true;
@@ -976,7 +991,6 @@ function make_results_map() {
       }
     }
     if($('#commute_hidemarkers_outside').is(':checked') && !can_commute){
-      console.log("Skipping map marker as not commutable: "+hemnet_results[k]['title']);
       num_houses_map_hidden += 1;
       continue;
     }
