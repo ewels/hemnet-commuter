@@ -14,6 +14,9 @@ commute_shapes = {};
 
 $(function(){
 
+  // Load the browser cache
+  load_browser_cache();
+
   // Load previous form inputs if we have them saved
   load_form_inputs();
 
@@ -29,7 +32,6 @@ $(function(){
   $('form').submit(function(e){
     e.preventDefault();
     save_form_inputs();
-    load_browser_cache();
     var rss_promise = load_hemnet_rss();
 
     // Something went wrong getting the RSS results
@@ -154,6 +156,7 @@ function save_form_inputs(){
     form_data = {
       'traveltime_api_id': $('#traveltime_api_id').val(),
       'traveltime_api_key': $('#traveltime_api_key').val(),
+      'commute_hidemarkers_outside': $('#commute_hidemarkers_outside').is(':checked'),
       'hemnet_rss': []
     };
     $('.hemnet_rss').each(function(){
@@ -192,6 +195,9 @@ function load_form_inputs(){
       if(form_data['traveltime_api_id'] != undefined && form_data['traveltime_api_key'] != undefined){
         $('#traveltime_api_details').hide();
       }
+      if(form_data['commute_hidemarkers_outside'] != undefined || form_data['commute_hidemarkers_outside']){
+        $('#commute_hidemarkers_outside').attr('checked', true);
+      }
 
       if(form_data['hemnet_rss'] != undefined){
 
@@ -201,6 +207,16 @@ function load_form_inputs(){
             add_rss_row();
           }
           $('.hemnet_rss_row').last().find('.hemnet_rss').val(form_data['hemnet_rss'][i]);
+          // Label with RSS name / number of results if we have this cached
+          $.each(hemnet_rss_cache, function(rss_url, d){
+            if(rss_url == form_data['hemnet_rss'][i]){
+              $('.hemnet_rss_row').last().find('.hemnet_rss_title').html('<span class="badge badge-pill badge-info">'+hemnet_rss_cache[rss_url].title+'</span> <span class="badge badge-pill badge-success">'+hemnet_rss_cache[rss_url].item.length+' results</span>');
+              if(hemnet_rss_cache[rss_url].item.length >= 30){
+                $('.hemnet_rss_row').last().find('.hemnet_rss_title').addClass('bg-danger text-white px-1').removeClass('text-muted');
+                $('.hemnet_rss_row').last().find('.hemnet_rss_title .badge').addClass('badge-warning').removeClass('badge-success');
+              }
+            }
+          });
         }
         // Fill in commute values
         var i = 1;
@@ -230,6 +246,17 @@ function load_browser_cache(){
   hemnet_rss_cache = localStorage.getItem("hemnet-commuter-hemnet_rss");
   if(hemnet_rss_cache != null){
     hemnet_rss_cache = JSON.parse(hemnet_rss_cache);
+    // Delete all old cache results
+    var max_age = (new Date()).getTime() - 86400000; // 24 hours in milliseconds
+    $.each(hemnet_rss, function(url, data){
+      if(data.date_fetched < max_age || !data.hasOwnProperty(date_fetched)){
+        delete hemnet_rss[url];
+        console.log('Deleted old hemnet RSS cache for '+url);
+      } else {
+        console.log('Cached hemnet RSS fresh enough ('+data.date_fetched+') for '+url);
+      }
+    });
+
     // Only restore those URLs that are in the form
     $('.hemnet_rss').each(function(){
       var rss_url = $(this).val();
@@ -295,7 +322,7 @@ function load_hemnet_rss(){
         hemnet_results[d['link']] = d;
       }
       // Show title and how many results this RSS feed had, warn if 30
-      hemnet_row.find('.hemnet_rss_title').html(hemnet_rss[rss_url].title+' - <span class="badge badge-pill badge-success">'+hemnet_rss[rss_url].item.length+' results</span>');
+      hemnet_row.find('.hemnet_rss_title').html('<span class="badge badge-pill badge-info">'+hemnet_rss[rss_url].title+'</span> <span class="badge badge-pill badge-success">'+hemnet_rss[rss_url].item.length+' results</span>');
       if(hemnet_rss[rss_url].item.length >= 30){
         hemnet_row.find('.hemnet_rss_title').addClass('bg-danger text-white px-1').removeClass('text-muted');
         hemnet_row.find('.hemnet_rss_title .badge').addClass('badge-warning').removeClass('badge-success');
@@ -313,12 +340,13 @@ function load_hemnet_rss(){
         }
         // All good - save the results
         hemnet_rss[rss_url] = data;
+        hemnet_rss[rss_url].date_fetched = (new Date()).getTime();
         for (var i = 0; i < data['item'].length; i++) {
           d = data['item'][i];
           hemnet_results[d['link']] = d;
         }
         // Show title and how many results this RSS feed had, warn if 30
-        hemnet_row.find('.hemnet_rss_title').html(hemnet_rss[rss_url].title+' - <span class="badge badge-pill badge-success">'+hemnet_rss[rss_url].item.length+' results</span>');
+        hemnet_row.find('.hemnet_rss_title').html('<span class="badge badge-pill badge-info">'+hemnet_rss[rss_url].title+'</span> <span class="badge badge-pill badge-success">'+hemnet_rss[rss_url].item.length+' results</span>');
         if(hemnet_rss[rss_url].item.length >= 30){
           hemnet_row.find('.hemnet_rss_title').addClass('bg-danger text-white px-1').removeClass('text-muted');
           hemnet_row.find('.hemnet_rss_title .badge').addClass('badge-warning').removeClass('badge-success');
@@ -512,7 +540,7 @@ function geocode_hemnet_results(){
         var address = hemnet_results[k]['title'].replace(/,?\s?\dtr\.?/, '');
         // Append the 'postal_city' from the web scrape if we have it
         try {
-          address += ', '+hemnet_results[k].dataLayer.locations.postal_city.split(', ')[0];
+          address += ', '+hemnet_results[k].dataLayer.locations.postal_city.replace('+', ' ').split(', ')[0];
         } catch(e) {e}
         hn_addresses.push(address);
         keys.push(k);
@@ -814,24 +842,31 @@ function make_results_map() {
       continue;
     }
 
-    // Make the marker
-    var loc = hemnet_results[k]['locations']['geometry']['coordinates'];
-    var markerIcon = new L.Icon(make_markerconfig('yellow'));
-    if(hemnet_results[k]['locations']['commute_ok'] === undefined){
-      markerIcon = new L.Icon(make_markerconfig('blue'));
-    } else if(hemnet_results[k]['locations']['commute_ok'] === true){
-      markerIcon = new L.Icon(make_markerconfig('green'));
-    } else {
-      markerIcon = new L.Icon(make_markerconfig('red'));
+    try {
+
+      // Plot the marker
+      var loc = hemnet_results[k]['locations']['geometry']['coordinates'];
+      if($('#commute_hidemarkers_outside').not(':checked') || in_polygon){
+        var markerIcon = new L.Icon(make_markerconfig('yellow'));
+        if(hemnet_results[k]['locations']['commute_ok'] === undefined){
+          markerIcon = new L.Icon(make_markerconfig('blue'));
+        } else if(hemnet_results[k]['locations']['commute_ok'] === true){
+          markerIcon = new L.Icon(make_markerconfig('green'));
+        } else {
+          markerIcon = new L.Icon(make_markerconfig('red'));
+        }
+        mapmarkers.push( L.marker(
+          [parseFloat(loc[1]), parseFloat(loc[0])],
+          {icon: markerIcon}
+        ).bindPopup(
+          '<h5><a href="'+k+'" target="_blank">'+hemnet_results[k]['title']+'</a></h5> \
+          <p><img src="'+hemnet_results[k]['front_image']+'" style="width:100%"></p> \
+          <p style="font-size:130%">'+hemnet_results[k]['infostring']+'</p>'
+        ) );
+      }
+    } catch(e){
+      console.warn("Couldn't plot map marker", hemnet_results[k])
     }
-    mapmarkers.push( L.marker(
-      [parseFloat(loc[1]), parseFloat(loc[0])],
-      {icon: markerIcon}
-    ).bindPopup(
-      '<h5><a href="'+k+'" target="_blank">'+hemnet_results[k]['title']+'</a></h5> \
-      <p><img src="'+hemnet_results[k]['front_image']+'" style="width:100%"></p> \
-      <p style="font-size:130%">'+hemnet_results[k]['infostring']+'</p>'
-    ) );
 
   }
 

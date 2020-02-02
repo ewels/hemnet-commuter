@@ -53,7 +53,7 @@
           Enter multiple search RSS addresses to retrieve more results.</small></p>
         <div class="hemnet_rss_rows">
           <div class="mb-1 hemnet_rss_row">
-            <p class="hemnet_rss_title form-text text-muted small mb-0 mt-3">Enter a HemNet RSS URL below:</p>
+            <p class="hemnet_rss_title form-text text-muted mb-0 mt-3"></p>
             <div class="input-group">
               <input type="url" class="form-control hemnet_rss" name="hemnet_rss[]" required>
               <span class="input-group-btn hemnet_rss_delete" style="display:none;">
@@ -89,7 +89,15 @@
             </tr>
           </tbody>
         </table>
-        <button class="btn btn-outline-primary" id="commute_addrow">Add another</button>
+        <div class="form-inline">
+          <button class="btn btn-outline-primary" id="commute_addrow">Add another</button>
+          <div class="form-check ml-4">
+            <label class="form-check-label">
+              <input class="form-check-input" type="checkbox" name="commute_hidemarkers_outside" id="commute_hidemarkers_outside" value="1">
+              Hide map markers that are outside commute area
+            </label>
+          </div>
+        </div>
       </div>
     </div>
 
