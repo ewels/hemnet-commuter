@@ -166,6 +166,7 @@ function save_form_inputs(){
   form_data = {
     'traveltime_api_id': $('#traveltime_api_id').val(),
     'traveltime_api_key': $('#traveltime_api_key').val(),
+    'gmap_api_key': $('#gmap_api_key').val(),
     'commute_hidemarkers_outside': $('#commute_hidemarkers_outside').is(':checked'),
     'hemnet_rss': []
   };
@@ -183,8 +184,8 @@ function save_form_inputs(){
   saveCache("hemnet-commuter", form_json);
 
   // Hide TravelTime API details
-  if($('#traveltime_api_id').val() && $('#traveltime_api_key').val()){
-    $('#traveltime_api_details').hide();
+  if($('#traveltime_api_id').val() && $('#traveltime_api_key').val() && $('#gmap_api_key').val()){
+    $('#api_details').hide();
   }
 }
 /**
@@ -197,8 +198,9 @@ function load_form_inputs(){
 
     if(form_data['traveltime_api_id'] != undefined){ $('#traveltime_api_id').val(form_data['traveltime_api_id']); }
     if(form_data['traveltime_api_key'] != undefined){ $('#traveltime_api_key').val(form_data['traveltime_api_key']); }
-    if(form_data['traveltime_api_id'] != undefined && form_data['traveltime_api_key'] != undefined){
-      $('#traveltime_api_details').hide();
+    if(form_data['gmap_api_key'] != undefined){ $('#gmap_api_key').val(form_data['gmap_api_key']); }
+    if(form_data['traveltime_api_id'] != undefined && form_data['traveltime_api_key'] != undefined && form_data['gmap_api_key'] != undefined){
+      $('#api_details').hide();
     }
     if(form_data['commute_hidemarkers_outside'] != undefined || form_data['commute_hidemarkers_outside']){
       $('#commute_hidemarkers_outside').attr('checked', true);
@@ -451,13 +453,20 @@ function geocode_commute_entries(){
   $.when.apply($, promises).then(function(d){
     var arguments = (promises.length === 1) ? [arguments] : arguments;
     $.each(arguments, function (i, args) {
-      if(args[1] == 'success'){
-        if(args[0]['features'].length > 1){
-          console.warn("Warning: - more than one location found for address: "+commute_results[i]['title'], args[0]['features']);
+      // First assume this is a result from Google Maps API
+      if(args[0].hasOwnProperty('status') && args[0]['status'] == 'OK'){
+        commute_results[i]['locations'] = args[0]['results'][0];
+      }
+      // TravelTime geocoding result
+      else {
+        if(args[1] == 'success'){
+          if(args[0]['features'].length > 1){
+            console.warn("Warning: - more than one location found for address: "+commute_results[i]['title'], args[0]['features']);
+          }
+          commute_results[i]['locations'] = args[0]['features'][0];
+        } else {
+          dfd.reject("Error - could not find commute address: "+commute_results[i]['title']);
         }
-        commute_results[i]['locations'] = args[0]['features'][0];
-      } else {
-        dfd.reject("Error - could not find commute address: "+commute_results[i]['title']);
       }
     });
     dfd.resolve();
@@ -497,11 +506,12 @@ function get_commute_intersection_map(){
   };
 
   for (var i = 0; i < commute_results.length; i++) {
+    var latlng = getLatLng(commute_results[i]);
     api_request.arrival_searches.push({
       "id": "commute from "+commute_results[i]['title'],
       "coords": {
-        "lat": commute_results[i]['locations']['geometry']['coordinates'][1],
-        "lng": commute_results[i]['locations']['geometry']['coordinates'][0],
+        "lat": latlng.lat,
+        "lng": latlng.lng,
       },
       "transportation": { "type": "public_transport" },
       "arrival_time": "2020-01-31T09:00:00Z",
@@ -611,13 +621,24 @@ function geocode_hemnet_results(){
       var arguments = (promises.length === 1) ? [arguments] : arguments;
       $.each(arguments, function (i, args) {
         var k = keys[i];
-        if(args[1] == 'success'){
-          if(args[0]['features'].length > 1){
-            console.warn("Warning: - more than one location found for address: "+hn_addresses[i], args[0]['features']);
+        // First assume this is a result from Google Maps API
+        if(args[0].hasOwnProperty('status')){
+          if(args[0]['status'] == 'OK'){
+            hemnet_results[k]['locations'] = args[0]['results'][0];
+          } else {
+            console.warn("Could not find address: "+hemnet_results[k]['title'], args);
           }
-          hemnet_results[k]['locations'] = args[0]['features'][0];
-        } else {
-          console.warn("Could not find address: "+hemnet_results[k]['title']);
+        }
+        // TravelTime geocoding result
+        else {
+          if(args[1] == 'success'){
+            if(args[0]['features'].length > 1){
+              console.warn("Warning: - more than one location found for address: "+hn_addresses[i], args[0]['features']);
+            }
+            hemnet_results[k]['locations'] = args[0]['features'][0];
+          } else {
+            console.warn("Could not find address: "+hemnet_results[k]['title']);
+          }
         }
       });
       dfd.resolve();
@@ -711,6 +732,7 @@ function setTimeTravelAPIHeader(xhr) {
 /**
  * Function to find lat and long from street address
  */
+geocode_sleep = 0;
 function geocode_address(address){
   // Check if we already have this cached
   if(geocoded_addresses.hasOwnProperty(address)){
@@ -718,18 +740,41 @@ function geocode_address(address){
     return $.Deferred().resolve([geocoded_addresses[address], 'success']);
   }
 
-  var url = 'https://api.traveltimeapp.com/v4/geocoding/search?within.country=SWE&query='+encodeURIComponent(address);
-  return $.ajax({
-    url: url,
-    type: 'GET',
-    dataType: 'json',
-    success: function(e) {
-      console.info('Geocoding worked: '+address, e.features);
-      geocoded_addresses[address] = e;
-    },
-    error: function(e) { console.error(e.responseJSON); alert('Could not geocode address: '+address); },
-    beforeSend: setTimeTravelAPIHeader
-  });
+  // Check if we have an API key to do this with Google Maps Geocoding, which is way better
+  var gmaps_apikey = $('#gmap_api_key').val();
+  if(typeof gmaps_apikey !== 'undefined' && gmaps_apikey.length > 0){
+    var url = 'https://maps.googleapis.com/maps/api/geocode/json?key='+gmaps_apikey+'&address='+encodeURIComponent(address);
+    // Set a slight delay so that we don't max out the rate limit
+    geocode_sleep += 10;
+    setTimeout(function(){
+      return $.ajax({
+        url: url,
+        type: 'GET',
+        dataType: 'json',
+        success: function(e) {
+          console.info('Geocoding worked: '+address);
+          geocoded_addresses[address] = e;
+        },
+        error: function(e) { console.error(e.responseJSON); alert('Could not geocode address: '+address); }
+      });
+    }, geocode_sleep);
+  }
+
+  // Otherwise, go ahead with TravelTime geocoding which is pretty bad
+  else {
+    var url = 'https://api.traveltimeapp.com/v4/geocoding/search?within.country=SWE&query='+encodeURIComponent(address);
+    return $.ajax({
+      url: url,
+      type: 'GET',
+      dataType: 'json',
+      success: function(e) {
+        console.info('Geocoding worked: '+address, e.features);
+        geocoded_addresses[address] = e;
+      },
+      error: function(e) { console.error(e.responseJSON); alert('Could not geocode address: '+address); },
+      beforeSend: setTimeTravelAPIHeader
+    });
+  }
 }
 
 
@@ -749,13 +794,18 @@ function get_traveltime_commute_times(){
   // Hemnet houses
   var hemnet_house_ids = [];
   for (var k in hemnet_results){
+    // Skip duplicate IDs
+    if(hemnet_house_ids.includes("hemnet location "+hemnet_results[k]['title'])){
+      continue;
+    }
+
     try {
-      var loc = hemnet_results[k]['locations']['geometry']['coordinates'];
+      var latlng = getLatLng(hemnet_results[k]);
       api_request.locations.push({
         "id": "hemnet location "+hemnet_results[k]['title'],
         "coords": {
-          "lat": parseFloat(loc[1]),
-          "lng": parseFloat(loc[0]),
+          "lat": latlng.lat,
+          "lng": latlng.lng,
         }
       });
       hemnet_house_ids.push("hemnet location "+hemnet_results[k]['title']);
@@ -764,11 +814,12 @@ function get_traveltime_commute_times(){
 
   // Commute locations
   for (var i = 0; i < commute_results.length; i++) {
+    var latlng = getLatLng(commute_results[i]);
     api_request.locations.push({
       "id": "commute location "+commute_results[i]['title'],
       "coords": {
-        "lat": commute_results[i]['locations']['geometry']['coordinates'][1],
-        "lng": commute_results[i]['locations']['geometry']['coordinates'][0],
+        "lat": latlng.lat,
+        "lng": latlng.lng,
       }
     });
     api_request.arrival_searches.push({
@@ -812,7 +863,7 @@ function get_traveltime_commute_times(){
       traveltime_travel_matrices[api_post_hash_id] = e;
       saveCache("hemnet-commuter-traveltime_travel_matrices", JSON.stringify(traveltime_travel_matrices));
     },
-    error: function(e) { console.error(e.responseJSON); },
+    error: function(e) { console.error(e.responseJSON); console.log('API request:', api_request); },
     beforeSend: setTimeTravelAPIHeader
   });
 }
@@ -934,7 +985,7 @@ function make_results_map() {
     try {
 
       // Plot the marker
-      var loc = hemnet_results[k]['locations']['geometry']['coordinates'];
+      var latlng = getLatLng(hemnet_results[k]);
       var markerIcon = new L.Icon(make_markerconfig('yellow'));
       if(hemnet_results[k]['locations']['commute_ok'] === undefined){
         markerIcon = new L.Icon(make_markerconfig('blue'));
@@ -944,7 +995,7 @@ function make_results_map() {
         markerIcon = new L.Icon(make_markerconfig('red'));
       }
       var marker = L.marker(
-        [parseFloat(loc[1]), parseFloat(loc[0])],
+        [latlng.lat, latlng.lng],
         {icon: markerIcon}
       ).bindPopup(
         '<h5><a href="'+k+'" target="_blank">'+hemnet_results[k]['title']+'</a></h5> \
@@ -954,7 +1005,7 @@ function make_results_map() {
       marker.house_id = k;
       mapmarkers.push(marker);
     } catch(e){
-      console.warn("Couldn't plot map marker", hemnet_results[k])
+      console.warn("Couldn't plot map marker", hemnet_results[k], e);
     }
 
   }
@@ -1012,4 +1063,19 @@ function loadCache(ckey){
   }
   console.log("Loaded cache for '"+ckey+"'");
   return cdata;
+}
+
+function getLatLng(obj){
+  var lat = 0;
+  var lng = 0;
+  // Try to get lat and lng from Google Maps API result first
+  try {
+    lat = obj['locations']['geometry']['location']['lat'];
+    lng = obj['locations']['geometry']['location']['lng'];
+  } catch(e){
+    // If fails, fall back to the TravelTime geocode result
+    lat = obj['locations']['geometry']['coordinates'][1];
+    lng = obj['locations']['geometry']['coordinates'][0];
+  }
+  return {'lat': parseFloat(lat), 'lng': parseFloat(lng)};
 }

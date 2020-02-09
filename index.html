@@ -21,23 +21,34 @@
   <p>Find out more about this tool on it's <a href="https://github.com/ewels/hemnet-commuter">GitHub page</a>.</p>
   <form>
 
-    <div class="card mb-3" id="traveltime_api_details">
+    <div class="card mb-3" id="api_details">
       <div class="card-block hemnet_rss_card">
-        <h4 class="card-title">Step 0: Enter TravelTime API Credentials</h4>
+        <h4 class="card-title">Step 0: Enter API Credentials</h4>
         <p class="card-text">This tool uses the wonderful API service from <a href="https://www.traveltimeplatform.com" target="_blank">https://www.traveltimeplatform.com/</a>.
         The service is free to use, but you'll need to get your own API keys <a href="https://docs.traveltimeplatform.com/overview/getting-keys" target="_blank">from here</a>.</p>
         <div class="traveltime_rows">
           <div class="input-group mb-1 traveltime_row">
             <span class="input-group-addon">
-              X-Application-Id
+              TravelTime X-Application-Id
             </span>
             <input type="text" class="form-control traveltime_api" name="traveltime_api_id" id="traveltime_api_id" required>
           </div>
           <div class="input-group mb-1 traveltime_row">
             <span class="input-group-addon">
-              X-Api-Key
+              TravelTime X-Api-Key
             </span>
             <input type="text" class="form-control traveltime_api" name="traveltime_api_key" id="traveltime_api_key" required>
+          </div>
+        </div>
+        <p class="card-text">The only downside of the free TravelTime service is that the "geocoding" service that gives a latitude and longitude
+        for each address is pretty bad. Google Maps is way better, but you need to put in credit card details to use it now (though you get $300 free
+        for a year, which is way more than you will need for this tool). If you want to, put in your Google Maps API key here and you will get much better results.</p>
+        <div class="gmap_api_rows">
+          <div class="input-group mb-1 gmap_api_row">
+            <span class="input-group-addon">
+              Google Maps API Key
+            </span>
+            <input type="text" class="form-control traveltime_api" name="gmap_api_key" id="gmap_api_key">
           </div>
         </div>
       </div>
