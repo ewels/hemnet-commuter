@@ -88,7 +88,8 @@ $(function(){
             traveltime_commute_matrix_promise.done(function(data){
               commute_times = data;
 
-              // All done - now plot everything
+              // All done - hide the form and plot the map
+              $('#hemnet_commuter_form').slideUp();
               $('.results_card').show();
               make_results_map();
               $('#status-msg').text("Found "+hemnet_results.length+" properties");
@@ -947,26 +948,12 @@ function make_results_map() {
   var num_houses = 0;
   var num_houses_map_shown = 0;
   var num_houses_map_hidden = 0;
-  var geocode_stats = {
-    score: 0,
-    street: 0,
-    postcode: 0,
-    house_number: 0
-  }
   for (var k in hemnet_results){
     // Check we have a location
     if(!('locations' in hemnet_results[k])){
       continue;
     }
-
     num_houses += 1;
-
-    // Count stats of how well the geocoding worked
-    try { if(hemnet_results[k].locations.properties.score == 1){ geocode_stats.score += 1; } } catch(e){ }
-    try { if(typeof hemnet_results[k].locations.properties.street !== 'undefined'){ geocode_stats.street += 1; } } catch(e){ }
-    try { if(typeof hemnet_results[k].locations.properties.postcode !== 'undefined'){ geocode_stats.postcode += 1; } } catch(e){ }
-    try { if(typeof hemnet_results[k].locations.properties.house_number !== 'undefined'){ geocode_stats.house_number += 1; } } catch(e){ }
-
     // Skip if we can't commute here in time
     var can_commute = true;
     hemnet_results[k]['can_commute'] = {};
@@ -1016,10 +1003,6 @@ function make_results_map() {
   $('.num_houses').text(num_houses+' houses');
   $('.num_houses_map_hidden').text(num_houses_map_hidden+' hidden');
   $('.num_houses_map_shown').text(num_houses_map_shown+' shown');
-  $('.num_houses_geocode_score').text(geocode_stats.score+' ('+((geocode_stats.score/num_houses)*100).toFixed(0)+'%)'+' with perfect geocode score');
-  $('.num_houses_geocode_street').text(geocode_stats.street+' ('+((geocode_stats.street/num_houses)*100).toFixed(0)+'%)'+' with street');
-  $('.num_houses_geocode_postcode').text(geocode_stats.postcode+' ('+((geocode_stats.postcode/num_houses)*100).toFixed(0)+'%)'+' with postcode');
-  $('.num_houses_geocode_house_number').text(geocode_stats.house_number+' ('+((geocode_stats.house_number/num_houses)*100).toFixed(0)+'%)'+' with house number');
 
   // Plot the markers and scale the map
   var mapmarkers_group = L.featureGroup(mapmarkers);

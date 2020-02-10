@@ -19,7 +19,7 @@
   <h1 class="display-4">Hemnet Commuter</h1>
   <p class="lead text-muted mb-3">Given RSS feeds of Hemnet searches, filter for properties that match a commuting preference.</p>
   <p>Find out more about this tool on it's <a href="https://github.com/ewels/hemnet-commuter">GitHub page</a>.</p>
-  <form>
+  <form id="hemnet_commuter_form">
 
     <div class="card mb-3" id="api_details">
       <div class="card-block hemnet_rss_card">
@@ -132,10 +132,6 @@
         <span class="badge badge-pill badge-info num_houses">? houses found</span>
         <span class="badge badge-pill badge-success num_houses_map_shown">? houses shown</span>
         <span class="badge badge-pill badge-warning num_houses_map_hidden">? houses hidden</span>
-        <span class="badge badge-pill badge-info num_houses_geocode_score">? houses with score</span>
-        <span class="badge badge-pill badge-info num_houses_geocode_street">? houses with street</span>
-        <span class="badge badge-pill badge-info num_houses_geocode_postcode">? houses with postcode</span>
-        <span class="badge badge-pill badge-info num_houses_geocode_house_number">? houses with house number</span>
       </p>
       <div id="results_map" class="mb-3"></div>
       <div id="results_focus">
