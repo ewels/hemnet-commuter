@@ -272,7 +272,7 @@ function load_browser_cache(){
   if(geocoded_addresses_cache != null){
     try {
       geocoded_addresses = JSON.parse(geocoded_addresses_cache);
-      console.log('Restored geocoded_addresses cache: ', geocoded_addresses);
+      console.log('Restored '+geocoded_addresses.length+' geocoded addresses from cache');
     } catch(e){
       console.warn("couldn't restore cache", e);
     }
@@ -514,7 +514,7 @@ function get_commute_intersection_map(){
         "lng": latlng.lng,
       },
       "transportation": { "type": "public_transport" },
-      "arrival_time": "2020-01-31T09:00:00Z",
+      "arrival_time": nextFridayDate()+"T09:00:00Z",
       "range": {
         "enabled": true,
         "width": 3600 // allow arrival between 8 and 9
@@ -523,6 +523,7 @@ function get_commute_intersection_map(){
     });
     api_request.intersections[0].search_ids.push("commute from "+commute_results[i]['title']);
   }
+  console.log('TravelTime commute matrix request:', api_request);
   api_request_json = JSON.stringify(api_request);
   api_post_hash_id = make_hash(api_request_json);
 
@@ -620,6 +621,7 @@ function geocode_hemnet_results(){
     $.when.apply($, promises).then(function(d){
       var arguments = (promises.length === 1) ? [arguments] : arguments;
       $.each(arguments, function (i, args) {
+        if(!Array.isArray(args)){ return true; }
         var k = keys[i];
         // First assume this is a result from Google Maps API
         if(args[0].hasOwnProperty('status')){
@@ -1078,4 +1080,14 @@ function getLatLng(obj){
     lng = obj['locations']['geometry']['coordinates'][0];
   }
   return {'lat': parseFloat(lat), 'lng': parseFloat(lng)};
+}
+
+function nextFridayDate() {
+  var ret = new Date();
+  ret.setDate(ret.getDate() + (5 - 1 - ret.getDay() + 7) % 7 + 1);
+
+  var day = ('0' + ret.getUTCDate()).slice(-2);
+  var month = ('0' + (ret.getUTCMonth() + 1)).slice(-2);
+  var year = ret.getUTCFullYear();
+  return year+"-"+month+"-"+day;
 }
