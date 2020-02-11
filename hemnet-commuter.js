@@ -18,7 +18,9 @@ house_comments = {};
 $(function(){
 
   // Load the browser cache
-  load_browser_cache();
+  console.groupCollapsed('Loading cache');
+  load_cache();
+  console.groupEnd();
 
   // Load previous form inputs if we have them saved
   load_form_inputs();
@@ -34,7 +36,12 @@ $(function(){
   // Search!
   $('form').submit(function(e){
     e.preventDefault();
+
+    console.groupCollapsed('Saving form inputs');
     save_form_inputs();
+    console.groupEnd();
+
+    console.groupCollapsed('Loading Hemnet RSS');
     var rss_promise = load_hemnet_rss();
 
     // Something went wrong getting the RSS results
@@ -48,8 +55,10 @@ $(function(){
 
     // Hemnet results fetch worked
     rss_promise.done(function() {
+      console.groupEnd();
 
       // Get the commute locations
+      console.groupCollapsed('Geocoding commute entries');
       var geocode_commute_promise = geocode_commute_entries();
 
       // Something went wrong with getting the commute locations
@@ -63,37 +72,47 @@ $(function(){
 
       // Commute locations worked
       geocode_commute_promise.done(function() {
+        console.groupEnd();
 
         // Get the intersection travel times map
+        console.groupCollapsed('Getting commute intersection map');
         var commute_intersection_map_promise = get_commute_intersection_map();
 
         // Travel time intersection map done
         commute_intersection_map_promise.done(function(data){
+          console.groupEnd();
 
           // Save to global variable
           commute_shapes = data;
 
           // Get the hemnet results locations
+          console.groupCollapsed('Geocoding Hemnet results');
           var geocode_hemnet_promise = geocode_hemnet_results();
 
           // Hemnet geocoding done
           geocode_hemnet_promise.done(function() {
+            console.groupEnd();
 
             // Cache geocoding results
             console.log('Caching geocoding results');
             saveCache("hemnet-commuter-geocoded_addresses", JSON.stringify(geocoded_addresses));
 
             // Get the travel times to each commute location
+            console.groupCollapsed('Getting TravelTime commute times');
             var traveltime_commute_matrix_promise = get_traveltime_commute_times();
             traveltime_commute_matrix_promise.done(function(data){
+              console.groupEnd();
+
               commute_times = data;
 
               // All done - hide the form and plot the map
+              console.groupCollapsed('Rendering results');
               $('#hemnet_commuter_form').slideUp();
               $('.results_card').show();
               make_results_map();
               $('#status-msg').text("Found "+hemnet_results.length+" properties");
               $('#search-btn').val('Search').prop('disabled', false);
+              console.groupEnd();
 
             });
 
@@ -243,7 +262,7 @@ function load_form_inputs(){
 /**
  * Load local storage cache in to global variables
  */
-function load_browser_cache(){
+function load_cache(){
 
   // HemNet RSS Feeds
   hemnet_rss_cache = loadCache("hemnet-commuter-hemnet_rss");
@@ -307,6 +326,14 @@ function load_browser_cache(){
     try {
       scrape_hemnet_results = JSON.parse(scrape_hemnet_results_cache);
       console.log('Restored hemnet scrapes cache');
+      // Delete all old cache results
+      var max_age = (new Date()).getTime() - 86400000; // 24 hours in milliseconds
+      $.each(scrape_hemnet_results, function(url, data){
+        if(data.date_fetched < max_age || !data.hasOwnProperty('date_fetched')){
+          delete scrape_hemnet_results[url];
+          console.log('Deleted old hemnet web page cache for '+url);
+        }
+      });
     } catch(e){
       console.warn("couldn't restore cache", e);
     }
@@ -669,6 +696,7 @@ function scrape_hemnet(url){
     var dfd = new $.Deferred();
     $.post( "mirror_hemnet.php",  { hnurl: url }, function( html ) {
       scrape_hemnet_results[url] = parse_hemnet_scrape(html);
+      scrape_hemnet_results[url].date_fetched = (new Date()).getTime();
       hemnet_results[url].front_image = scrape_hemnet_results[url].front_image;
       hemnet_results[url].dataLayer = scrape_hemnet_results[url].dataLayer;
       hemnet_results[url].infostring = make_info_string(scrape_hemnet_results[url].dataLayer);
