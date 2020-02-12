@@ -6,7 +6,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 
   <!-- Bootstrap & FontAwesome CSS -->
-  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-alpha.6/css/bootstrap.min.css" integrity="sha384-rwoIResjU2yc3z8GV/NPeZWAv56rSmLldC3R/AZzGRnGxQQKnKkoFVhFQhNUwEyJ" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css" integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
   <link href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet" integrity="sha384-wvfXpqpZZVQGK6TAh5PVlGOfQNHSoD2xbE+QkPxCAFlNEevoEH3Sl0sibVcOQVnN" crossorigin="anonymous">
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.6.0/dist/leaflet.css" />
   <link rel="stylesheet" href="styles.css">
@@ -22,7 +22,7 @@
   <form id="hemnet_commuter_form">
 
     <div class="card mb-3" id="api_details">
-      <div class="card-block hemnet_rss_card">
+      <div class="card-body hemnet_rss_card">
         <h4 class="card-title">Step 0: Enter API Credentials</h4>
         <p class="card-text">This tool uses the wonderful API service from <a href="https://www.traveltimeplatform.com" target="_blank">https://www.traveltimeplatform.com/</a>.
         The service is free to use, but you'll need to get your own API keys <a href="https://docs.traveltimeplatform.com/overview/getting-keys" target="_blank">from here</a>.</p>
@@ -56,7 +56,7 @@
 
 
     <div class="card mb-3">
-      <div class="card-block hemnet_rss_card">
+      <div class="card-body hemnet_rss_card">
         <h4 class="card-title">Step 1: Enter Hemnet Search RSS Feed URLs</h4>
         <p class="card-text">On <a href="https://www.hemnet.se" target="_blank">hemnet.se</a> create a search and save it.
           Find the link to the RSS feed for that search (on the list page) and paste that here.<br>
@@ -68,10 +68,10 @@
             <div class="input-group">
               <input type="url" class="form-control hemnet_rss" name="hemnet_rss[]" required>
               <span class="input-group-btn hemnet_rss_delete" style="display:none;">
-                <button class="btn btn-secondary hemnet_rss_delete_btn" type="button"><i class="fa fa-trash-o hemnet_rss_add" aria-hidden="true"></i></button>
+                <button class="btn btn-outline-secondary hemnet_rss_delete_btn" type="button"><i class="fa fa-trash-o hemnet_rss_add" aria-hidden="true"></i></button>
               </span>
               <span class="input-group-btn hemnet_rss_add_btn">
-                <button class="btn btn-secondary hemnet_rss_add_btn" type="button"><i class="fa fa-plus hemnet_rss_add" aria-hidden="true"></i></button>
+                <button class="btn btn-outline-secondary hemnet_rss_add_btn" type="button"><i class="fa fa-plus hemnet_rss_add" aria-hidden="true"></i></button>
               </span>
             </div>
           </div>
@@ -81,7 +81,7 @@
     </div>
 
     <div class="card mb-3">
-      <div class="card-block">
+      <div class="card-body">
         <h4 class="card-title">Step 2: Enter Commute Filters</h4>
         <p class="card-text">Enter one or more addresses, where you must commute to. Add the maximum commute time for each.</p>
         <table class="table table-sm table-striped" id="commute-table">
@@ -96,7 +96,7 @@
             <tr>
               <td><input type="text" class="form-control commute_address" id="commute_address_1" name="commute_address_1" placeholder="eg. Riksgatan 1, 100 12 Stockholm" required></td>
               <td><input type="time" class="form-control commute_time" id="commute_time_1" name="commute_time_1" value="00:40" placeholder="hh:mm" required></td>
-              <td class="text-center"><button class="btn btn-secondary commute_deleterow" id="commute_deleterow_1" disabled><i class="fa fa-trash-o" aria-hidden="true"></i></button></td>
+              <td class="text-center"><button class="btn btn-outline-secondary commute_deleterow" id="commute_deleterow_1" disabled><i class="fa fa-trash-o" aria-hidden="true"></i></button></td>
             </tr>
           </tbody>
         </table>
@@ -113,7 +113,7 @@
     </div>
 
     <div class="card mb-3">
-      <div class="card-block">
+      <div class="card-body">
         <h4 class="card-title">Step 3: Search!</h4>
         <p class="card-text">When you're ready, press search to show a map with filtered properties.</p>
         <p>
@@ -126,7 +126,7 @@
   </form>
 
   <div class="card mb-3 results_card" style="display:none;">
-    <div class="card-block">
+    <div class="card-body">
       <h4 class="card-title">Results</h4>
       <p>
         <span class="badge badge-pill badge-info num_houses">? houses found</span>
@@ -141,28 +141,104 @@
             <img src="" style="width:100%;" class="focus_img">
           </div>
           <div class="col-8">
-            <h5><a href="" target="_blank" class="focus_link"><span class="focus_title"></span></a></h5>
-            <p class="focus_infostring"></p>
-            <p>Hemnet location info:</p>
-            <pre class="focus_hemnet_loc_info bg-faded"></pre>
-            <p>Geocode location info:</p>
-            <pre class="focus_geocode_info bg-faded"></pre>
-            <p>All information:</p>
-            <pre class="focus_data small"></pre>
-            <div class="row">
+            <h3><a href="" target="_blank" class="focus_link"><span class="focus_title"></span> <i class="fa fa-external-link" aria-hidden="true"></i></a></h3>
+            <h3><span class="badge badge-primary focus_price"></span></h3>
+            <h5>
+              <span class="badge badge-info small focus_status"></span>
+              <span class="badge badge-info small focus_bidding"></span>
+            </h5>
+            <dl class="row">
+              <dt class="col-sm-3">Location:</dt>
+              <dd class="col-sm-9"><span class="focus_unique_districts"></span></dd>
+
+              <dt class="col-sm-3">Published:</dt>
+              <dd class="col-sm-9"><span class="badge badge-info focus_published_ago"></span> <span class="badge badge-light focus_published"></span></dd>
+
+              <dt class="col-sm-3">Upcoming open houses:</dt>
+              <dd class="col-sm-9"><span class="focus_upcoming_open_houses"></span></dd>
+
+              <dt class="col-sm-3">Size:</dt>
+              <dd class="col-sm-9"><span class="badge badge-success focus_living_area"></span> <span class="badge badge-warning focus_supplemental_area"></span> <span class="badge badge-secondary focus_land_area"></span></dd>
+
+              <dt class="col-sm-3">Rooms:</dt>
+              <dd class="col-sm-9"><span class="badge badge-info focus_rooms"></span></dd>
+
+              <dt class="col-sm-3">Driftkostnad:</dt>
+              <dd class="col-sm-9"><span class="focus_driftkostnad_month"></span> kr/month <small>(<span class="focus_driftkostnad_year"></span> kr/year)</small></dd>
+
+              <dt class="col-sm-3">Construction year:</dt>
+              <dd class="col-sm-9"><span class="focus_construction_year"></sppan></dd>
+
+              <dt class="col-sm-3">Tenure:</dt>
+              <dd class="col-sm-9"><span class="focus_tenure"></sppan></dd>
+
+            </dl>
+
+            <div class="row my-5">
               <div class="col-6">
+                <h6>Rating: Person 1</h6>
                 <div class="row">
-                  <div class="col-6 text-center"><i class="fa fa-thumbs-down"></i></div>
-                  <div class="col-6 text-center"><i class="fa fa-thumbs-up"></i></div>
+                  <div class="col-6 text-center">
+                    <button class="btn btn-block btn-outline-success mb-2"><i class="fa fa-thumbs-up"></i></button>
+                  </div>
+                  <div class="col-6 text-center">
+                    <button class="btn btn-block btn-outline-danger mb-2"><i class="fa fa-thumbs-down"></i></button>
+                  </div>
                 </div>
+                <dl class="row">
+                  <dt class="col-sm-6">Inside</dt>
+                  <dd class="col-sm-6"><i class="fa fa-star" aria-hidden="true"></i><i class="fa fa-star" aria-hidden="true"></i><i class="fa fa-star" aria-hidden="true"></i><i class="fa fa-star" aria-hidden="true"></i><i class="fa fa-star" aria-hidden="true"></i></dd>
+
+                  <dt class="col-sm-6">Outside</dt>
+                  <dd class="col-sm-6"><i class="fa fa-star" aria-hidden="true"></i><i class="fa fa-star" aria-hidden="true"></i><i class="fa fa-star" aria-hidden="true"></i><i class="fa fa-star" aria-hidden="true"></i><i class="fa fa-star" aria-hidden="true"></i></dd>
+
+                  <dt class="col-sm-6">Surroundings</dt>
+                  <dd class="col-sm-6"><i class="fa fa-star" aria-hidden="true"></i><i class="fa fa-star" aria-hidden="true"></i><i class="fa fa-star" aria-hidden="true"></i><i class="fa fa-star" aria-hidden="true"></i><i class="fa fa-star" aria-hidden="true"></i></dd>
+
+                  <dt class="col-sm-6">Commute</dt>
+                  <dd class="col-sm-6"><i class="fa fa-star" aria-hidden="true"></i><i class="fa fa-star" aria-hidden="true"></i><i class="fa fa-star" aria-hidden="true"></i><i class="fa fa-star" aria-hidden="true"></i><i class="fa fa-star" aria-hidden="true"></i></dd>
+
+                  <dt class="col-sm-6">Drift costs</dt>
+                  <dd class="col-sm-6"><i class="fa fa-star" aria-hidden="true"></i><i class="fa fa-star" aria-hidden="true"></i><i class="fa fa-star" aria-hidden="true"></i><i class="fa fa-star" aria-hidden="true"></i><i class="fa fa-star" aria-hidden="true"></i></dd>
+                </dl>
                 <textarea class="form-control results_comment_1"></textarea>
               </div>
               <div class="col-6">
+                <h6>Rating: Person 2</h6>
                 <div class="row">
-                  <div class="col-6 text-center"><i class="fa fa-thumbs-down"></i></div>
-                  <div class="col-6 text-center"><i class="fa fa-thumbs-up"></i></div>
+                  <div class="col-6 text-center">
+                    <button class="btn btn-block btn-outline-success mb-2"><i class="fa fa-thumbs-up"></i></button>
+                  </div>
+                  <div class="col-6 text-center">
+                    <button class="btn btn-block btn-outline-danger mb-2"><i class="fa fa-thumbs-down"></i></button>
+                  </div>
                 </div>
+                <dl class="row">
+                  <dt class="col-sm-6">Inside</dt>
+                  <dd class="col-sm-6"><i class="fa fa-star" aria-hidden="true"></i><i class="fa fa-star" aria-hidden="true"></i><i class="fa fa-star" aria-hidden="true"></i><i class="fa fa-star" aria-hidden="true"></i><i class="fa fa-star" aria-hidden="true"></i></dd>
+
+                  <dt class="col-sm-6">Outside</dt>
+                  <dd class="col-sm-6"><i class="fa fa-star" aria-hidden="true"></i><i class="fa fa-star" aria-hidden="true"></i><i class="fa fa-star" aria-hidden="true"></i><i class="fa fa-star" aria-hidden="true"></i><i class="fa fa-star" aria-hidden="true"></i></dd>
+
+                  <dt class="col-sm-6">Surroundings</dt>
+                  <dd class="col-sm-6"><i class="fa fa-star" aria-hidden="true"></i><i class="fa fa-star" aria-hidden="true"></i><i class="fa fa-star" aria-hidden="true"></i><i class="fa fa-star" aria-hidden="true"></i><i class="fa fa-star" aria-hidden="true"></i></dd>
+
+                  <dt class="col-sm-6">Commute</dt>
+                  <dd class="col-sm-6"><i class="fa fa-star" aria-hidden="true"></i><i class="fa fa-star" aria-hidden="true"></i><i class="fa fa-star" aria-hidden="true"></i><i class="fa fa-star" aria-hidden="true"></i><i class="fa fa-star" aria-hidden="true"></i></dd>
+
+                  <dt class="col-sm-6">Drift costs</dt>
+                  <dd class="col-sm-6"><i class="fa fa-star" aria-hidden="true"></i><i class="fa fa-star" aria-hidden="true"></i><i class="fa fa-star" aria-hidden="true"></i><i class="fa fa-star" aria-hidden="true"></i><i class="fa fa-star" aria-hidden="true"></i></dd>
+                </dl>
                 <textarea class="form-control results_comment_2"></textarea>
+              </div>
+            </div>
+
+            <a class="btn btn-outline-primary mb-2" data-toggle="collapse" href="#allJSON_info" role="button" aria-expanded="false" aria-controls="allJSON_info">
+              Show all information
+            </a>
+            <div class="collapse" id="allJSON_info">
+              <div class="card card-body">
+                <pre class="focus_data small"></pre>
               </div>
             </div>
           </div>
@@ -185,9 +261,12 @@
 
 <!-- jQuery, then Tether, Bootstrap JS, Google Maps, custom JS -->
 <script src="https://code.jquery.com/jquery-3.2.1.min.js" integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4=" crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js" integrity="sha384-Q6E9RHvbIyZFJoft+2mJbHaEWldlvI9IOYy5n3zV9zzTtmI3UksdQRVvoxMfooAo" crossorigin="anonymous"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js" integrity="sha384-wfSDF2E50Y2D1uUdj0O3uMBJnjuUD4Ih7YwaYd1iqfktj0Uod8GCExl3Og8ifwB6" crossorigin="anonymous"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/tether/1.4.0/js/tether.min.js" integrity="sha384-DztdAPBWPRXSA/3eYEEUWrWCy7G5KFbe8fFjk5JAIxUYHKkDx6Qin1DkWx51bBrb" crossorigin="anonymous"></script>
 <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-alpha.6/js/bootstrap.min.js" integrity="sha384-vBWWzlZJ8ea9aCX4pEW3rVHjgjt7zpkNpZk+02D9phzyeVkE+jo0ieGizqPLForn" crossorigin="anonymous"></script>
 <script src="https://unpkg.com/leaflet@1.6.0/dist/leaflet.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.24.0/moment.min.js" integrity="sha256-4iQZ6BVL4qNKlQ27TExEhBN1HFPvAvAMbFavKKosSWQ=" crossorigin="anonymous"></script>
 <script src="hemnet-commuter.js"></script>
 </body>
 </html>

@@ -733,6 +733,7 @@ function make_info_string(dataLayer){
       if($.inArray(el, unique_districts) === -1) unique_districts.push(el);
     });
     infostring += '<small class="text-muted">'+unique_districts.join(', ')+'</small>';
+    dataLayer['unique_districts'] = unique_districts.join(', ');
   } catch(e){ }
   try { var boarea = dataLayer['living_area'].toLocaleString(); } catch(e) { var boarea = '?'; }
   try { var biarea = dataLayer['supplemental_area'].toLocaleString(); } catch(e) { var biarea = '?'; }
@@ -1047,9 +1048,23 @@ function make_results_map() {
     $('.focus_img').attr('src', house.front_image);
     $('.focus_link').attr('href', house_url);
     $('.focus_title').text(house.title);
-    $('.focus_infostring').html(house.infostring);
-    $('.focus_hemnet_loc_info').html(JSON.stringify(house.dataLayer.locations, null, 2));
-    $('.focus_geocode_info').html(JSON.stringify(house.locations.properties, null, 2));
+    $('.focus_price').text((house.dataLayer.price/1000000).toFixed(2)+' MKr');
+    $('.focus_bidding').text(house.dataLayer.bidding ? 'Bidding now' : 'No bidding yet');
+    $('.focus_bidding').removeClass('badge-warning badge-secondary').addClass(house.dataLayer.bidding ? 'badge-warning' : 'badge-secondary');
+    $('.focus_status').html(house.dataLayer.status.replace('_', ' '));
+    $('.focus_status').removeClass('badge-secondary badge-success').addClass(house.dataLayer.status == 'for_sale' ? 'badge-success' : 'badge-secondary');
+    $('.focus_unique_districts').html(house.dataLayer.unique_districts);
+    $('.focus_published_ago').html(moment(house.dataLayer.publication_date).fromNow());
+    $('.focus_published').html(house.dataLayer.publication_date);
+    $('.focus_upcoming_open_houses').html(house.dataLayer.upcoming_open_houses ? '<span class="badge badge-warning">Yes</span>' : '<span class="badge badge-secondary">No</span>');
+    $('.focus_living_area').html(house.dataLayer.living_area === undefined ? '?' : house.dataLayer.living_area+' m<sup>2</sup> Bo');
+    $('.focus_supplemental_area').html(house.dataLayer.supplemental_area === undefined ? '?' : house.dataLayer.supplemental_area+' m<sup>2</sup> Bi');
+    $('.focus_land_area').html(house.dataLayer.land_area === undefined ? '?' : house.dataLayer.land_area+' m<sup>2</sup> Land');
+    $('.focus_rooms').html(house.dataLayer.rooms);
+    $('.focus_driftkostnad_month').html(isNaN(house.dataLayer.driftkostnad) ? '?' : (house.dataLayer.driftkostnad/12).toFixed(0));
+    $('.focus_driftkostnad_year').html(isNaN(house.dataLayer.driftkostnad) ? '?' : house.dataLayer.driftkostnad);
+    $('.focus_construction_year').html(house.dataLayer.construction_year === undefined ? '?' : house.dataLayer.construction_year);
+    $('.focus_tenure').html(house.dataLayer.tenure === undefined ? '?' : house.dataLayer.tenure);
     $('.focus_data').html(JSON.stringify(house, null, 2));
   });
 }
