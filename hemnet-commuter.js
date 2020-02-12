@@ -17,6 +17,9 @@ house_comments = {};
 
 $(function(){
 
+  // Interactivity for ratings and comments
+  set_up_feedback_interactivity();
+
   // Load the browser cache
   console.groupCollapsed('Loading cache');
   load_cache();
@@ -1116,4 +1119,26 @@ function nextFridayDate() {
   var month = ('0' + (ret.getUTCMonth() + 1)).slice(-2);
   var year = ret.getUTCFullYear();
   return year+"-"+month+"-"+day;
+}
+
+
+// Code for the form interactibity to save comments etc
+function set_up_feedback_interactivity(){
+  // Show coloured stars on hover
+  $('.rating_person').on('mouseenter', '.rating_stars:not(.rating_set) .fa-star', function(){
+    $(this).parents('dd').find('.fa-star').removeClass('text-black-50 text-warning text-light');
+    $(this).prevAll().addBack().addClass('text-warning');
+    $(this).nextAll().addClass('text-light');
+  });
+  // Reset coloured stars off hover
+  $('.rating_person').on('mouseleave', '.rating_stars:not(.rating_set) .fa-star', function(){
+    $(this).parents('dd').find('.fa-star').removeClass('text-black-50 text-warning text-light').addClass('text-black-50');
+  });
+  // Click on a star
+  $(".rating_stars .fa-star").click(function(){
+    $(this).parents('dd').find('.fa-star').removeClass('text-black-50 text-warning text-light');
+    $(this).prevAll().addBack().addClass('text-warning');
+    $(this).nextAll().addClass('text-light');
+    $(this).parents('.rating_stars').addClass('rating_set');
+  });
 }

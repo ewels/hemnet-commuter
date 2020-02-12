@@ -65,3 +65,8 @@ footer a {
   color: #999;
   text-decoration: underline;
 }
+
+
+.rating_stars {
+    cursor: pointer;
+}
