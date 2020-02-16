@@ -12,29 +12,29 @@ if ($mysqli -> connect_errno) {
   exit();
 }
 
-// Return cache results
+// Return hncache results
 if(isset($_GET['ckey']) && strlen($_GET['ckey']) > 0){
-  $sql = 'SELECT `cache` FROM `cache` WHERE `ckey` = "'.$mysqli->real_escape_string($_GET['ckey']).'"';
+  $sql = 'SELECT `hncache` FROM `hncache` WHERE `ckey` = "'.$mysqli->real_escape_string($_GET['ckey']).'"';
   if ($result = $mysqli -> query($sql)) {
     while ($row = $result -> fetch_row()) {
       echo $row[0];
     }
     $result -> free_result();
   } else {
-    echo 'no results';
+    echo '{}';
   }
 }
 
-// Save cache results
+// Save hncache results
 if(isset($_POST['ckey']) && strlen($_POST['ckey']) > 0){
 
-  $sql = 'DELETE FROM `cache` WHERE `ckey` = "'.$mysqli->real_escape_string($_POST['ckey']).'"';
+  $sql = 'DELETE FROM `hncache` WHERE `ckey` = "'.$mysqli->real_escape_string($_POST['ckey']).'"';
   $mysqli -> query($sql);
 
   $sql = '
-    INSERT INTO `cache`
+    INSERT INTO `hncache`
     SET `ckey` = "'.$mysqli->real_escape_string($_POST['ckey']).'",
-        `cache` = "'.$mysqli->real_escape_string($_POST['cache']).'"
+        `hncache` = "'.$mysqli->real_escape_string($_POST['hncache']).'"
   ';
 
   if (!$mysqli -> query($sql)) {
