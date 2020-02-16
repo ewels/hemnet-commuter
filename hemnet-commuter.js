@@ -14,6 +14,8 @@ hemnet_results = {};
 commute_shapes = {};
 commute_times = {};
 house_comments = {};
+mapmarkers_group = false;
+map_markers = {};
 
 $(function(){
 
@@ -967,15 +969,26 @@ function make_results_map() {
 
   // Custom colour marker icons
   function make_markerconfig(mcol){
-    return markerconfig = {
+    return L.icon({
       iconUrl: 'https://cdn.rawgit.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-'+mcol+'.png',
       shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png',
       iconSize: [25, 41],
       iconAnchor: [12, 41],
       popupAnchor: [1, -34],
       shadowSize: [41, 41]
-    };
+    });
   }
+  map_markers = {
+    blue: make_markerconfig('blue'),
+    gold: make_markerconfig('gold'),
+    red: make_markerconfig('red'),
+    green: make_markerconfig('green'),
+    orange: make_markerconfig('orange'),
+    yellow: make_markerconfig('yellow'),
+    violet: make_markerconfig('violet'),
+    grey: make_markerconfig('grey'),
+    black: make_markerconfig('black')
+  };
 
   // Plot the hemnet results
   var mapmarkers = [];
@@ -1009,17 +1022,9 @@ function make_results_map() {
 
       // Plot the marker
       var latlng = getLatLng(hemnet_results[k]);
-      var markerIcon = new L.Icon(make_markerconfig('yellow'));
-      if(hemnet_results[k]['locations']['commute_ok'] === undefined){
-        markerIcon = new L.Icon(make_markerconfig('blue'));
-      } else if(hemnet_results[k]['locations']['commute_ok'] === true){
-        markerIcon = new L.Icon(make_markerconfig('green'));
-      } else {
-        markerIcon = new L.Icon(make_markerconfig('red'));
-      }
       var marker = L.marker(
         [latlng.lat, latlng.lng],
-        {icon: markerIcon}
+        {icon: map_markers.blue}
       ).bindPopup(
         '<h5><a href="'+k+'" target="_blank">'+hemnet_results[k]['title']+'</a></h5> \
         <p><img src="'+hemnet_results[k]['front_image']+'" style="width:100%"></p> \
@@ -1027,6 +1032,9 @@ function make_results_map() {
       );
       marker.house_id = k;
       mapmarkers.push(marker);
+
+      // Load the ratings and colour the marker, async
+      load_house_ratings(k, false, marker);
     } catch(e){
       console.warn("Couldn't plot map marker", hemnet_results[k], e);
     }
@@ -1039,7 +1047,7 @@ function make_results_map() {
   $('.num_houses_map_shown').text(num_houses_map_shown+' shown');
 
   // Plot the markers and scale the map
-  var mapmarkers_group = L.featureGroup(mapmarkers);
+  mapmarkers_group = L.featureGroup(mapmarkers);
   mapmarkers_group.addTo(map);
   map.fitBounds(mapmarkers_group.getBounds());
 
@@ -1112,7 +1120,7 @@ function make_results_map() {
     $('.focus_data').html(JSON.stringify(house, null, 2));
 
     // Load the house ratings
-    load_house_ratings(house_url);
+    load_house_ratings(house_url, true, e.layer);
   });
 }
 
@@ -1248,61 +1256,87 @@ function save_house_ratings(){
     }
   };
   // Save to DB
-  console.log("saving ratings...", ratings);
   $.post( "ratings_api.php", { house_id: house_id, ratings: JSON.stringify(ratings) }).done(function( e ) {
-    console.log("Saved ratings '"+house_id+"'", e);
     // Too fast otherwise
     setTimeout(function(){
       $('#saving_ratings_notification').fadeOut();
     }, 500);
   });
+
+  // Re-render the marker
+  mapmarkers_group.eachLayer(function(layer){
+    load_house_ratings(layer.house_id, false, layer);
+  });
 }
 
-function load_house_ratings(house_id){
+function load_house_ratings(house_id, render_on_page, marker){
   // Reset the form
-  $('.house_ratings').data('house_id', house_id);
-  $('.rating_stars').removeClass('rating_set');
-  $('.fa-star').removeClass('text-warning text-light').addClass('text-black-50');
-  $('.rating_yesno .btn').removeClass('active');
+  if(render_on_page){
+    $('.house_ratings').data('house_id', house_id);
+    $('.rating_stars').removeClass('rating_set');
+    $('.fa-star').removeClass('text-warning text-light').addClass('text-black-50');
+    $('.rating_yesno .btn').removeClass('active');
+  }
 
   // Get the new data
   $.ajax({
     url: "ratings_api.php?house_id="+house_id,
     success: function (data) {
-      if(data == ''){
-        console.log("No saved ratings found for '"+house_id+"'");
-        return;
-      }
+      if(data == ''){ return; }
       ratings = JSON.parse(data);
-      console.log("Loaded ratings for '"+house_id+"'", ratings);
 
       // Set ratings on the page
-      $('.house_ratings').data('house_id', house_id);
-      function set_overall_rating(person, ratings){
-        if(ratings['rating_person_'+person].rating_overall == 'yes'){
-          $('.rating_person_'+person+' .rating_overall_yes').addClass('active');
-        } else if (ratings['rating_person_'+person].rating_overall == 'no') {
-          $('.rating_person_'+person+' .rating_overall_no').addClass('active');
+      if(render_on_page){
+        $('.house_ratings').data('house_id', house_id);
+        function set_overall_rating(person, ratings){
+          if(ratings['rating_person_'+person].rating_overall == 'yes'){
+            $('.rating_person_'+person+' .rating_overall_yes').addClass('active');
+          } else if (ratings['rating_person_'+person].rating_overall == 'no') {
+            $('.rating_person_'+person+' .rating_overall_no').addClass('active');
+          }
         }
-      }
-      function set_star_rating(person, rating_type, ratings){
-        var rating = parseInt(ratings['rating_person_'+person][rating_type]);
-        if(!isNaN(rating)){
-          $('.rating_person_'+person+' .'+rating_type).addClass('rating_set');
-          $('.rating_person_'+person+' .'+rating_type+' .fa-star').removeClass('text-black-50');
-          $('.rating_person_'+person+' .'+rating_type+' .fa-star:lt('+rating+')').addClass('text-warning');
-          $('.rating_person_'+person+' .'+rating_type+' .fa-star:gt('+rating+'), .rating_person_'+person+' .'+rating_type+' .fa-star:eq('+rating+')').addClass('text-light');
+        function set_star_rating(person, rating_type, ratings){
+          var rating = parseInt(ratings['rating_person_'+person][rating_type]);
+          if(!isNaN(rating)){
+            $('.rating_person_'+person+' .'+rating_type).addClass('rating_set');
+            $('.rating_person_'+person+' .'+rating_type+' .fa-star').removeClass('text-black-50');
+            $('.rating_person_'+person+' .'+rating_type+' .fa-star:lt('+rating+')').addClass('text-warning');
+            $('.rating_person_'+person+' .'+rating_type+' .fa-star:gt('+rating+'), .rating_person_'+person+' .'+rating_type+' .fa-star:eq('+rating+')').addClass('text-light');
+          }
         }
+        [1,2].forEach(function(i) {
+          set_overall_rating(i, ratings);
+          set_star_rating(i, 'rating_inside', ratings);
+          set_star_rating(i, 'rating_outside', ratings);
+          set_star_rating(i, 'rating_surroundings', ratings);
+          set_star_rating(i, 'rating_commute', ratings);
+          set_star_rating(i, 'rating_drift_costs', ratings);
+          $('.rating_person_'+i+' .results_comment').val(ratings['rating_person_'+i].results_comment);
+        });
       }
-      [1,2].forEach(function(i) {
-        set_overall_rating(i, ratings);
-        set_star_rating(i, 'rating_inside', ratings);
-        set_star_rating(i, 'rating_outside', ratings);
-        set_star_rating(i, 'rating_surroundings', ratings);
-        set_star_rating(i, 'rating_commute', ratings);
-        set_star_rating(i, 'rating_drift_costs', ratings);
-        $('.rating_person_'+i+' .results_comment').val(ratings['rating_person_'+i].results_comment);
-      });
+
+      // Colour the marker
+      var yeses = 0;
+      var nos = 0;
+      if(ratings['rating_person_1'].rating_overall == 'yes'){ yeses += 1; }
+      if(ratings['rating_person_2'].rating_overall == 'yes'){ yeses += 1; }
+      if(ratings['rating_person_1'].rating_overall == 'no'){ nos += 1; }
+      if(ratings['rating_person_2'].rating_overall == 'no'){ nos += 1; }
+      if(yeses == 2){
+        marker.setIcon(map_markers.green);
+      } else if (yeses == 1 && nos == 0) {
+        marker.setIcon(map_markers.yellow);
+      } else if (yeses == 1 && nos == 1) {
+        marker.setIcon(map_markers.gold);
+      } else if (yeses == 0 && nos == 1) {
+        marker.setIcon(map_markers.orange);
+      } else if (nos == 2) {
+        marker.setIcon(map_markers.red);
+      } else {
+        marker.setIcon(map_markers.blue);
+      }
+
+      return ratings;
     }
   });
 }
