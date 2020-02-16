@@ -1046,10 +1046,41 @@ function make_results_map() {
     $('#results_focus_row').show();
     var house_url = e.layer.house_id;
     var house = hemnet_results[ house_url ];
-    var gmaps_commute_links = '';
-    $.each(commute_results, function(i, cr){
-      var url = 'https://www.google.se/maps/preview?=daddr'+cr.title+'&saddr='+house.geocode_address_used+'&dirflg=r';
-      gmaps_commute_links += '<a href="'+url+'" target="_blank" class="badge badge-success"><i class="fa fa-map-marker" aria-hidden="true"></i> '+cr.title+' <i class="fa fa-external-link" aria-hidden="true"></i></a> &nbsp; ';
+
+    // Summary of commute travel
+    var tt_commute_descriptions = '';
+    $.each(commute_times.results, function(i, cresult){
+      tt_commute_descriptions += '<dt class="col-sm-3 focus_commute_descriptions">'+cresult.search_id.replace('commute to ', '')+'</dt>';
+      tt_commute_descriptions += '<dd class="col-sm-9 focus_commute_descriptions">';
+      var gmaps_col = 'danger';
+      $.each(cresult.locations, function(k, location){
+        if(location.id == 'hemnet location '+house.title){
+          gmaps_col = 'success';
+          tt_commute_descriptions += Math.round(moment.duration(location.properties[0].travel_time, "seconds").asMinutes())+' mins &nbsp; ';
+          $.each(location.properties[0].distance_breakdown, function(j, dist){
+            switch(location.properties[0].distance_breakdown[j].mode) {
+              case 'walk':
+                tt_commute_descriptions += '<i class="fa fa-male text-secondary" aria-hidden="true" title="walk"></i> &nbsp; ';
+                break;
+              case 'bus':
+                tt_commute_descriptions += '<i class="fa fa-bus text-danger" aria-hidden="true" title="bus"></i> &nbsp; ';
+                break;
+              case 'train':
+                tt_commute_descriptions += '<i class="fa fa-train text-primary" aria-hidden="true" title="train"></i> &nbsp; ';
+                break;
+              case 'subway':
+                tt_commute_descriptions += '<i class="fa fa-subway text-info" aria-hidden="true" title="subway"></i> &nbsp; ';
+                break;
+              default:
+                tt_commute_descriptions += '<span class="badge badge-secondary">'+location.properties[0].distance_breakdown[j].mode+'</span> ';
+            }
+          });
+        }
+      });
+      // Google maps link
+      var gmaps_url = 'https://www.google.se/maps/preview?daddr='+cresult.search_id.replace('commute to ', '')+'&saddr='+house.geocode_address_used+'&dirflg=r';
+      tt_commute_descriptions += '<a href="'+gmaps_url+'" target="_blank" class="badge badge-'+gmaps_col+'"><i class="fa fa-map-marker" aria-hidden="true"></i> Google maps &nbsp; <i class="fa fa-external-link" aria-hidden="true"></i></a> <br>';
+      tt_commute_descriptions += '</dd>';
     });
 
     $('.focus_img').attr('src', house.front_image);
@@ -1072,7 +1103,8 @@ function make_results_map() {
     $('.focus_driftkostnad_year').html(isNaN(house.dataLayer.driftkostnad) ? '?' : house.dataLayer.driftkostnad);
     $('.focus_construction_year').html(house.dataLayer.construction_year === undefined ? '?' : house.dataLayer.construction_year);
     $('.focus_tenure').html(house.dataLayer.tenure === undefined ? '?' : house.dataLayer.tenure);
-    $('.focus_gmaps_commute_links').html(gmaps_commute_links);
+    $('.focus_commute_descriptions').remove();
+    $('.focus_dl').append(tt_commute_descriptions);
 
     $('.focus_data').html(JSON.stringify(house, null, 2));
   });
