@@ -225,7 +225,7 @@ function load_form_inputs(){
     if(form_data['traveltime_api_id'] != undefined && form_data['traveltime_api_key'] != undefined && form_data['gmap_api_key'] != undefined){
       $('#api_details').hide();
     }
-    if(form_data['commute_hidemarkers_outside'] != undefined || form_data['commute_hidemarkers_outside']){
+    if(form_data['commute_hidemarkers_outside']){
       $('#commute_hidemarkers_outside').attr('checked', true);
     }
 
@@ -770,7 +770,7 @@ function setTimeTravelAPIHeader(xhr) {
 geocode_sleep = 0;
 function geocode_address(address){
   // Check if we already have this cached
-  if(geocoded_addresses.hasOwnProperty(address)){
+  if(geocoded_addresses.hasOwnProperty(address) && geocoded_addresses[address].results.length > 0){
     console.log('Skipping geocoding '+address+' as found in the browser cache');
     return $.Deferred().resolve([geocoded_addresses[address], 'success']);
   }
@@ -779,20 +779,19 @@ function geocode_address(address){
   var gmaps_apikey = $('#gmap_api_key').val();
   if(typeof gmaps_apikey !== 'undefined' && gmaps_apikey.length > 0){
     var url = 'https://maps.googleapis.com/maps/api/geocode/json?key='+gmaps_apikey+'&address='+encodeURIComponent(address);
-    // Set a slight delay so that we don't max out the rate limit
-    geocode_sleep += 10;
-    setTimeout(function(){
-      return $.ajax({
-        url: url,
-        type: 'GET',
-        dataType: 'json',
-        success: function(e) {
-          console.info('Geocoding worked: '+address);
-          geocoded_addresses[address] = e;
-        },
-        error: function(e) { console.error(e.responseJSON); alert('Could not geocode address: '+address); }
-      });
-    }, geocode_sleep);
+    console.log("Pausing 200");
+    pause(200);
+    console.log('Trying to do google maps geocoding for: '+address);
+    return $.ajax({
+      url: url,
+      type: 'GET',
+      dataType: 'json',
+      success: function(e) {
+        console.info('Google maps geocoding worked: '+address);
+        geocoded_addresses[address] = e;
+      },
+      error: function(e) { console.error(e.responseJSON); alert('Could not geocode address: '+address); }
+    });
   }
 
   // Otherwise, go ahead with TravelTime geocoding which is pretty bad
@@ -803,7 +802,7 @@ function geocode_address(address){
       type: 'GET',
       dataType: 'json',
       success: function(e) {
-        console.info('Geocoding worked: '+address, e.features);
+        console.info('TravelTime geocoding worked: '+address, e.features);
         geocoded_addresses[address] = e;
       },
       error: function(e) { console.error(e.responseJSON); alert('Could not geocode address: '+address); },
@@ -1047,6 +1046,11 @@ function make_results_map() {
     $('#results_focus_row').show();
     var house_url = e.layer.house_id;
     var house = hemnet_results[ house_url ];
+    var gmaps_commute_links = '';
+    $.each(commute_results, function(i, cr){
+      var url = 'https://www.google.se/maps/preview?=daddr'+cr.title+'&saddr='+house.geocode_address_used+'&dirflg=r';
+      gmaps_commute_links += '<a href="'+url+'" target="_blank" class="badge badge-success"><i class="fa fa-map-marker" aria-hidden="true"></i> '+cr.title+' <i class="fa fa-external-link" aria-hidden="true"></i></a> &nbsp; ';
+    });
 
     $('.focus_img').attr('src', house.front_image);
     $('.focus_link').attr('href', house_url);
@@ -1068,6 +1072,8 @@ function make_results_map() {
     $('.focus_driftkostnad_year').html(isNaN(house.dataLayer.driftkostnad) ? '?' : house.dataLayer.driftkostnad);
     $('.focus_construction_year').html(house.dataLayer.construction_year === undefined ? '?' : house.dataLayer.construction_year);
     $('.focus_tenure').html(house.dataLayer.tenure === undefined ? '?' : house.dataLayer.tenure);
+    $('.focus_gmaps_commute_links').html(gmaps_commute_links);
+
     $('.focus_data').html(JSON.stringify(house, null, 2));
   });
 }
@@ -1141,4 +1147,10 @@ function set_up_feedback_interactivity(){
     $(this).nextAll().addClass('text-light');
     $(this).parents('.rating_stars').addClass('rating_set');
   });
+}
+
+// Synchronous pause where we halt the code execution
+function pause(milliseconds) {
+  var dt = new Date();
+  while ((new Date()) - dt <= milliseconds) { /* Do nothing */ }
 }
