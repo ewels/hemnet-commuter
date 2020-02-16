@@ -1094,8 +1094,8 @@ function make_results_map() {
 }
 
 
-function saveCache(ckey, cache){
-  $.post( "cache_result.php", { ckey: ckey, cache: cache }).done(function( e ) {
+function saveCache(ckey, hncache){
+  $.post( "cache_result.php", { ckey: ckey, hncache: hncache }).done(function( e ) {
     console.log("Saved cache '"+ckey+"'", e);
   });
 }
