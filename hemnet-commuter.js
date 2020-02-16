@@ -18,7 +18,7 @@ house_comments = {};
 $(function(){
 
   // Interactivity for ratings and comments
-  set_up_feedback_interactivity();
+  set_up_rating_interactivity();
 
   // Load the browser cache
   console.groupCollapsed('Loading cache');
@@ -27,6 +27,9 @@ $(function(){
 
   // Load previous form inputs if we have them saved
   load_form_inputs();
+
+  $('#cache_load_text').hide();
+  $('#hemnet_commuter_form').show();
 
   // Add Hemnet RSS searches
   $(".hemnet_rss_card").on('click', '.hemnet_rss_add_btn', function(e){ e.preventDefault(); e.stopPropagation(); add_rss_row(); });
@@ -109,13 +112,13 @@ $(function(){
               commute_times = data;
 
               // All done - hide the form and plot the map
-              console.groupCollapsed('Rendering results');
+              // console.groupCollapsed('Rendering results');
               $('#hemnet_commuter_form').slideUp();
               $('.results_card').show();
               make_results_map();
               $('#status-msg').text("Found "+hemnet_results.length+" properties");
               $('#search-btn').val('Search').prop('disabled', false);
-              console.groupEnd();
+              // console.groupEnd();
 
             });
 
@@ -1107,6 +1110,9 @@ function make_results_map() {
     $('.focus_dl').append(tt_commute_descriptions);
 
     $('.focus_data').html(JSON.stringify(house, null, 2));
+
+    // Load the house ratings
+    load_house_ratings(house_url);
   });
 }
 
@@ -1160,8 +1166,15 @@ function nextFridayDate() {
 }
 
 
-// Code for the form interactibity to save comments etc
-function set_up_feedback_interactivity(){
+// Synchronous pause where we halt the code execution
+function pause(milliseconds) {
+  var dt = new Date();
+  while ((new Date()) - dt <= milliseconds) { /* Do nothing */ }
+}
+
+
+// Code for the rating interactivity
+function set_up_rating_interactivity(){
   // Show coloured stars on hover
   $('.rating_person').on('mouseenter', '.rating_stars:not(.rating_set) .fa-star', function(){
     $(this).parents('dd').find('.fa-star').removeClass('text-black-50 text-warning text-light');
@@ -1170,7 +1183,7 @@ function set_up_feedback_interactivity(){
   });
   // Reset coloured stars off hover
   $('.rating_person').on('mouseleave', '.rating_stars:not(.rating_set) .fa-star', function(){
-    $(this).parents('dd').find('.fa-star').removeClass('text-black-50 text-warning text-light').addClass('text-black-50');
+    $(this).parents('dd').find('.fa-star').removeClass('text-warning text-light').addClass('text-black-50');
   });
   // Click on a star
   $(".rating_stars .fa-star").click(function(){
@@ -1178,11 +1191,118 @@ function set_up_feedback_interactivity(){
     $(this).prevAll().addBack().addClass('text-warning');
     $(this).nextAll().addClass('text-light');
     $(this).parents('.rating_stars').addClass('rating_set');
+    // Save
+    save_house_ratings();
+  });
+
+  // Yes/No buttons
+  $('.rating_person').on('click', '.rating_yesno .btn', function(){
+    // Remove other active classes
+    $(this).siblings().not(this).removeClass('active');
+    // Toggle this class
+    $(this).toggleClass('active');
+    // Save
+    save_house_ratings();
+  });
+
+  // Comment
+  $('.rating_person').on('blur', '.results_comment', function(){
+    // Save
+    save_house_ratings();
   });
 }
 
-// Synchronous pause where we halt the code execution
-function pause(milliseconds) {
-  var dt = new Date();
-  while ((new Date()) - dt <= milliseconds) { /* Do nothing */ }
+
+function save_house_ratings(){
+  $('#saving_ratings_notification').show();
+  var house_id = $('.house_ratings').data('house_id');
+  // Get ratings from the page
+  function get_overall_rating(person){
+    if($('.rating_person_'+person+' .rating_overall_yes').hasClass('active')){ return 'yes'; }
+    if($('.rating_person_'+person+' .rating_overall_no').hasClass('active')){ return 'no'; }
+    return 'unset';
+  }
+  function get_star_rating(person, rating_type){
+    if( !$('.rating_person_'+person+' .'+rating_type).hasClass('rating_set') ){ return 'unset'; }
+    return $('.rating_person_'+person+' .'+rating_type+' .fa-star.text-warning').length;
+  }
+  var ratings = {
+    house_id: house_id,
+    rating_person_1: {
+      rating_overall: get_overall_rating('1'),
+      rating_inside: get_star_rating('1', 'rating_inside'),
+      rating_outside: get_star_rating('1', 'rating_outside'),
+      rating_surroundings: get_star_rating('1', 'rating_surroundings'),
+      rating_commute: get_star_rating('1', 'rating_commute'),
+      rating_drift_costs: get_star_rating('1', 'rating_drift_costs'),
+      results_comment: $('.rating_person_1 .results_comment').val()
+    },
+    rating_person_2: {
+      rating_overall: get_overall_rating('2'),
+      rating_inside: get_star_rating('2', 'rating_inside'),
+      rating_outside: get_star_rating('2', 'rating_outside'),
+      rating_surroundings: get_star_rating('2', 'rating_surroundings'),
+      rating_commute: get_star_rating('2', 'rating_commute'),
+      rating_drift_costs: get_star_rating('2', 'rating_drift_costs'),
+      results_comment: $('.rating_person_2 .results_comment').val()
+    }
+  };
+  // Save to DB
+  console.log("saving ratings...", ratings);
+  $.post( "ratings_api.php", { house_id: house_id, ratings: JSON.stringify(ratings) }).done(function( e ) {
+    console.log("Saved ratings '"+house_id+"'", e);
+    // Too fast otherwise
+    setTimeout(function(){
+      $('#saving_ratings_notification').fadeOut();
+    }, 500);
+  });
+}
+
+function load_house_ratings(house_id){
+  // Reset the form
+  $('.house_ratings').data('house_id', house_id);
+  $('.rating_stars').removeClass('rating_set');
+  $('.fa-star').removeClass('text-warning text-light').addClass('text-black-50');
+  $('.rating_yesno .btn').removeClass('active');
+
+  // Get the new data
+  $.ajax({
+    url: "ratings_api.php?house_id="+house_id,
+    success: function (data) {
+      if(data == ''){
+        console.log("No saved ratings found for '"+house_id+"'");
+        return;
+      }
+      ratings = JSON.parse(data);
+      console.log("Loaded ratings for '"+house_id+"'", ratings);
+
+      // Set ratings on the page
+      $('.house_ratings').data('house_id', house_id);
+      function set_overall_rating(person, ratings){
+        if(ratings['rating_person_'+person].rating_overall == 'yes'){
+          $('.rating_person_'+person+' .rating_overall_yes').addClass('active');
+        } else if (ratings['rating_person_'+person].rating_overall == 'no') {
+          $('.rating_person_'+person+' .rating_overall_no').addClass('active');
+        }
+      }
+      function set_star_rating(person, rating_type, ratings){
+        var rating = parseInt(ratings['rating_person_'+person][rating_type]);
+        if(!isNaN(rating)){
+          $('.rating_person_'+person+' .'+rating_type).addClass('rating_set');
+          $('.rating_person_'+person+' .'+rating_type+' .fa-star').removeClass('text-black-50');
+          $('.rating_person_'+person+' .'+rating_type+' .fa-star:lt('+rating+')').addClass('text-warning');
+          $('.rating_person_'+person+' .'+rating_type+' .fa-star:gt('+rating+'), .rating_person_'+person+' .'+rating_type+' .fa-star:eq('+rating+')').addClass('text-light');
+        }
+      }
+      [1,2].forEach(function(i) {
+        set_overall_rating(i, ratings);
+        set_star_rating(i, 'rating_inside', ratings);
+        set_star_rating(i, 'rating_outside', ratings);
+        set_star_rating(i, 'rating_surroundings', ratings);
+        set_star_rating(i, 'rating_commute', ratings);
+        set_star_rating(i, 'rating_drift_costs', ratings);
+        $('.rating_person_'+i+' .results_comment').val(ratings['rating_person_'+i].results_comment);
+      });
+    }
+  });
 }
