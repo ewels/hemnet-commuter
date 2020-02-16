@@ -1,3 +1,4 @@
+<?php $ini_array = parse_ini_file("hemnet_commuter_config.ini"); ?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -34,13 +35,13 @@
             <span class="input-group-addon">
               TravelTime X-Application-Id
             </span>
-            <input type="text" class="form-control traveltime_api" name="traveltime_api_id" id="traveltime_api_id" required>
+            <input type="text" class="form-control traveltime_api" name="traveltime_api_id" id="traveltime_api_id" required value="<?php echo $ini_array['traveltime_api_id']; ?>">
           </div>
           <div class="input-group mb-1 traveltime_row">
             <span class="input-group-addon">
               TravelTime X-Api-Key
             </span>
-            <input type="text" class="form-control traveltime_api" name="traveltime_api_key" id="traveltime_api_key" required>
+            <input type="text" class="form-control traveltime_api" name="traveltime_api_key" id="traveltime_api_key" required value="<?php echo $ini_array['traveltime_api_key']; ?>">
           </div>
         </div>
         <p class="card-text">The only downside of the free TravelTime service is that the "geocoding" service that gives a latitude and longitude
@@ -51,7 +52,7 @@
             <span class="input-group-addon">
               Google Maps API Key
             </span>
-            <input type="text" class="form-control traveltime_api" name="gmap_api_key" id="gmap_api_key">
+            <input type="text" class="form-control traveltime_api" name="gmap_api_key" id="gmap_api_key" value="<?php echo $ini_array['gmap_api_key']; ?>">
           </div>
         </div>
       </div>
@@ -140,10 +141,10 @@
       <div id="results_focus">
         <p id="results_nofocus" class="text-muted">Click a house marker on the map to see more information here.</p>
         <div id="results_focus_row" style="display:none;" class="row">
-          <div class="col-4">
+          <div class="col-sm-4">
             <img src="" style="width:100%;" class="focus_img">
           </div>
-          <div class="col-8">
+          <div class="col-sm-8">
             <h3><a href="" target="_blank" class="focus_link"><span class="focus_title"></span> <i class="fa fa-external-link" aria-hidden="true"></i></a></h3>
             <h3><span class="badge badge-primary focus_price"></span></h3>
             <h5>
@@ -179,7 +180,7 @@
 
             <div class="row my-5 house_ratings" data-house_id="">
               <div class="col-6 rating_person rating_person_1">
-                <h6>Rating: Person 1</h6>
+                <h4>Rating: <?php echo $ini_array['person_1_name']; ?></h4>
                 <div class="btn-group d-flex rating_yesno" role="group">
                   <button class="btn w-100 btn-outline-success mb-2 rating_overall_yes"><i class="fa fa-thumbs-up"></i></button>
                   <button class="btn w-100 btn-outline-danger mb-2 rating_overall_no"><i class="fa fa-thumbs-down"></i></button>
@@ -203,7 +204,7 @@
                 <textarea class="form-control results_comment"></textarea>
               </div>
               <div class="col-6 rating_person rating_person_2">
-                <h6>Rating: Person 2</h6>
+                <h4>Rating: <?php echo $ini_array['person_2_name']; ?></h4>
                 <div class="btn-group d-flex rating_yesno" role="group">
                   <button class="btn w-100 btn-outline-success mb-2 rating_overall_yes"><i class="fa fa-thumbs-up"></i></button>
                   <button class="btn w-100 btn-outline-danger mb-2 rating_overall_no"><i class="fa fa-thumbs-down"></i></button>

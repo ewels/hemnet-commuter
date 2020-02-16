@@ -4,7 +4,9 @@ ini_set('display_errors', 1);
 ini_set('display_startup_errors', 1);
 error_reporting(E_ALL);
 
-$mysqli = new mysqli("localhost", "hemnet_commuter_cache", "hemnet_commuter_cache", "hemnet_commuter_cache");
+$ini_array = parse_ini_file("hemnet_commuter_config.ini");
+
+$mysqli = new mysqli("localhost", $ini_array['db_user'], $ini_array['db_password'], $ini_array['db_name']);
 if ($mysqli -> connect_errno) {
   echo "Failed to connect to MySQL: " . $mysqli -> connect_error;
   exit();
