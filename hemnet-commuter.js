@@ -1245,6 +1245,7 @@ function load_house_ratings(house_id, render_on_page, marker){
     $('.rating_stars').removeClass('rating_set');
     $('.fa-star').removeClass('text-warning text-light').addClass('text-black-50');
     $('.rating_yesno .btn').removeClass('active');
+    $('.rating_person_1 .results_comment, .rating_person_2 .results_comment').val('');
   }
 
   // Get the new data
