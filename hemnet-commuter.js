@@ -697,7 +697,6 @@ function scrape_hemnet(url){
     console.log('Found cache of Hemnet webpage '+url);
     hemnet_results[url].front_image = scrape_hemnet_results[url].front_image;
     hemnet_results[url].dataLayer = scrape_hemnet_results[url].dataLayer;
-    hemnet_results[url].infostring = make_info_string(scrape_hemnet_results[url].dataLayer);
     return new $.Deferred().resolve();
 
   } else {
@@ -707,7 +706,6 @@ function scrape_hemnet(url){
       scrape_hemnet_results[url].date_fetched = (new Date()).getTime();
       hemnet_results[url].front_image = scrape_hemnet_results[url].front_image;
       hemnet_results[url].dataLayer = scrape_hemnet_results[url].dataLayer;
-      hemnet_results[url].infostring = make_info_string(scrape_hemnet_results[url].dataLayer);
       dfd.resolve();
     });
     return dfd.promise();
@@ -729,34 +727,6 @@ function parse_hemnet_scrape(html){
     }
   }
   return scraped_info;
-}
-function make_info_string(dataLayer){
-  var infostring = '';
-  // Parse variables
-  try{
-    // District can be weirdly duplicated
-    var districts = dataLayer['locations']['district'].split(', ');
-    var unique_districts = [];
-    $.each(districts, function(i, el){
-      if($.inArray(el, unique_districts) === -1) unique_districts.push(el);
-    });
-    infostring += '<small class="text-muted">'+unique_districts.join(', ')+'</small>';
-    dataLayer['unique_districts'] = unique_districts.join(', ');
-  } catch(e){ }
-  try { var boarea = dataLayer['living_area'].toLocaleString(); } catch(e) { var boarea = '?'; }
-  try { var biarea = dataLayer['supplemental_area'].toLocaleString(); } catch(e) { var biarea = '?'; }
-  try { var price = (dataLayer['price']/1000000).toFixed(2); } catch(e) { var price = '?'; }
-  try { var driftk = parseInt(dataLayer['driftkostnad'] / 12).toLocaleString(); } catch(e) { var driftk = '?'; }
-  try { var const_yr = parseInt(dataLayer['construction_year']); } catch(e) { var const_yr = '?'; }
-  try { var avgift = dataLayer['borattavgift'].toLocaleString(); } catch(e) { var avgift = '?'; }
-
-  // Make a string
-  infostring += '<br><small class="text-muted">Pris: <strong>'+price+' Mkr</strong>, Drift: '+driftk+' kr/m</small>';
-  infostring += '<br><small class="text-muted mr-3">Bo: '+boarea+' m<sup>2</sup>, Bi: '+biarea+' m<sup>2</sup></small>';
-  infostring += '<br><small class="text-muted">Built: '+const_yr+'</small>';
-  if(avgift != '?') { infostring += '<br><small class="text-muted">'+avgift+' kr avgift</small>'; }
-
-  return infostring;
 }
 
 
@@ -1026,9 +996,8 @@ function make_results_map() {
         [latlng.lat, latlng.lng],
         {icon: map_markers.blue}
       ).bindPopup(
-        '<h5><a href="'+k+'" target="_blank">'+hemnet_results[k]['title']+'</a></h5> \
-        <p><img src="'+hemnet_results[k]['front_image']+'" style="width:100%"></p> \
-        <p style="font-size:130%">'+hemnet_results[k]['infostring']+'</p>'
+        '<h6><a href="'+k+'" target="_blank">'+hemnet_results[k]['title']+'</a></h6> \
+        <p><img src="'+hemnet_results[k]['front_image']+'" style="width:100%"></p>'
       );
       marker.house_id = k;
       mapmarkers.push(marker);
