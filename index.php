@@ -131,12 +131,30 @@
 
   <div class="card mb-3 results_card" style="display:none;">
     <div class="card-body">
-      <h4 class="card-title">Results</h4>
-      <p>
-        <span class="badge badge-pill badge-info num_houses">? houses found</span>
-        <span class="badge badge-pill badge-success num_houses_map_shown">? houses shown</span>
-        <span class="badge badge-pill badge-warning num_houses_map_hidden">? houses hidden</span>
-      </p>
+      <div class="row">
+        <div class="col-sm-4">
+          <h4 class="card-title">Results</h4>
+          <p>
+            <span class="badge badge-pill badge-info num_houses">? houses found</span>
+            <span class="badge badge-pill badge-success num_houses_map_shown">? houses shown</span>
+            <span class="badge badge-pill badge-warning num_houses_map_hidden">? houses hidden</span>
+          </p>
+        </div>
+        <div class="col-sm-4">
+          <div class="form-check">
+            <div class="form-check"><input class="form-check-input rating_filter" type="checkbox" checked="checked" id="person_1_unrated"><label class="form-check-label" for="person_1_unrated"><?php echo $ini_array['person_1_name']; ?> Unrated</label></div>
+            <div class="form-check"><input class="form-check-input rating_filter" type="checkbox" checked="checked" id="person_1_yes"><label class="form-check-label" for="person_1_yes"><?php echo $ini_array['person_1_name']; ?> Yes</label></div>
+            <div class="form-check"><input class="form-check-input rating_filter" type="checkbox" checked="checked" id="person_1_no"><label class="form-check-label" for="person_1_no"><?php echo $ini_array['person_1_name']; ?> No</label></div>
+          </div>
+        </div>
+        <div class="col-sm-4">
+          <div class="form-check">
+            <div class="form-check"><input class="form-check-input rating_filter" type="checkbox" checked="checked" id="person_2_unrated"><label class="form-check-label" for="person_2_unrated"><?php echo $ini_array['person_2_name']; ?> Unrated</label></div>
+            <div class="form-check"><input class="form-check-input rating_filter" type="checkbox" checked="checked" id="person_2_yes"><label class="form-check-label" for="person_2_yes"><?php echo $ini_array['person_2_name']; ?> Yes</label></div>
+            <div class="form-check"><input class="form-check-input rating_filter" type="checkbox" checked="checked" id="person_2_no"><label class="form-check-label" for="person_2_no"><?php echo $ini_array['person_2_name']; ?> No</label></div>
+          </div>
+        </div>
+      </div>
       <div id="results_map" class="mb-3"></div>
       <div id="results_focus">
         <p id="results_nofocus" class="text-muted">Click a house marker on the map to see more information here.</p>

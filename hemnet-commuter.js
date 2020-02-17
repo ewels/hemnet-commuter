@@ -1187,6 +1187,11 @@ function set_up_rating_interactivity(){
     // Save
     save_house_ratings();
   });
+
+  // Rating filter checkboxes
+  $('.rating_filter').click(function(){
+    filter_markers_rating();
+  });
 }
 
 
@@ -1306,7 +1311,36 @@ function load_house_ratings(house_id, render_on_page, marker){
         marker.setIcon(map_markers.blue);
       }
 
+      // Save the ratings to the marker
+      marker.house_ratings = {
+        rating_person_1: ratings['rating_person_1'].rating_overall,
+        rating_person_2: ratings['rating_person_2'].rating_overall
+      }
+
       return ratings;
+    }
+  });
+}
+
+// Use checkboxes to filter which markers are shown on the map
+function filter_markers_rating(){
+  mapmarkers_group.eachLayer(function(layer){
+    var show_marker = false;
+    if(layer.house_ratings === undefined){
+      if($('#person_1_unrated').is(':checked') && $('#person_2_unrated').is(':checked')){ show_marker = true; }
+    } else {
+      if($('#person_1_unrated').is(':checked') && layer.house_ratings.rating_person_1 == 'unrated'){ show_marker = true; }
+      if($('#person_1_yes').is(':checked') && layer.house_ratings.rating_person_1 == 'yes'){ show_marker = true; }
+      if($('#person_1_no').is(':checked') && layer.house_ratings.rating_person_1 == 'no'){ show_marker = true; }
+      if($('#person_2_unrated').is(':checked') && layer.house_ratings.rating_person_2 == 'unrated'){ show_marker = true; }
+      if($('#person_2_yes').is(':checked') && layer.house_ratings.rating_person_2 == 'yes'){ show_marker = true; }
+      if($('#person_2_no ').is(':checked') && layer.house_ratings.rating_person_2 == 'no'){ show_marker = true; }
+    }
+
+    if(show_marker){
+      layer.setOpacity(1);
+    } else {
+      layer.setOpacity(0);
     }
   });
 }
