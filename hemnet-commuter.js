@@ -836,7 +836,7 @@ function get_traveltime_commute_times(){
       "arrival_location_id": "commute location "+commute_results[i]['title'],
       "departure_location_ids": hemnet_house_ids,
       "transportation": { "type": "public_transport" },
-      "arrival_time": "2020-02-03T09:00:00Z",
+      "arrival_time": nextFridayDate()+"T09:00:00Z",
       "range": {
         "enabled": true,
         "width": 3600, // allow arrival between 8 and 9
