@@ -7,10 +7,13 @@
 /* Google fonts - Open Sans (to match Hemnet) */
 @import url('https://fonts.googleapis.com/css?family=Bitter:700|Open+Sans:400,600');
 
+body, html {
+  height: 100%;
+}
 body {
   font-family: 'Open Sans', sans-serif;
   border-top: 3px solid #39aa35;
-  padding-top: 60px;
+  padding-top: 30px;
 }
 h2, h3, h4, h5, h6 {
   font-family: 'Bitter', serif;
@@ -48,9 +51,15 @@ h2, h3, h4, h5, h6 {
 }
 
 #results_map {
-  height: 400px;
+  height: 100%;
   width: 100%;
   background-color: #ededed;
+}
+#results_focus {
+  background-color: #ffffff;
+}
+.results_card{
+  height: 100%;
 }
 
 footer {

@@ -14,7 +14,7 @@
 </head>
 <body>
 
-<div class="container-fluid">
+<div class="container-fluid" id="hemnet_commuter_form" style="display:none;">
 
   <img id="hemnet-logo" src="hemnet.svg">
   <h1 class="display-4">Hemnet Commuter</h1>
@@ -23,7 +23,7 @@
 
   <p class="text-muted text-center my-5" id="cache_load_text">Loading previous results.. <i class="fa fa-refresh fa-spin fa-fw"></i></p>
 
-  <form id="hemnet_commuter_form" style="display:none;">
+  <form>
 
     <div class="card mb-3" id="api_details">
       <div class="card-body hemnet_rss_card">
@@ -128,9 +128,11 @@
     </div>
 
   </form>
+</div>
 
-  <div class="card mb-3 results_card" style="display:none;">
-    <div class="card-body">
+<div class="container-fluid results_card" style="display:none;">
+  <div class="row h-100">
+    <div class="col-md-9 h-100 order-2">
       <div class="row">
         <div class="col-sm-4">
           <h4 class="card-title">Results</h4>
@@ -156,92 +158,91 @@
         </div>
       </div>
       <div id="results_map" class="mb-3"></div>
+    </div>
+    <div class="col-md-3 order-1">
       <div id="results_focus">
         <p id="results_nofocus" class="text-muted">Click a house marker on the map to see more information here.</p>
-        <div id="results_focus_row" style="display:none;" class="row">
-          <div class="col-sm-4">
-            <img src="" style="width:100%;" class="focus_img">
-          </div>
-          <div class="col-sm-8">
+        <div id="results_focus_row" style="display:none;">
             <h3><a href="" target="_blank" class="focus_link"><span class="focus_title"></span> <i class="fa fa-external-link" aria-hidden="true"></i></a></h3>
             <h3><span class="badge badge-primary focus_price"></span></h3>
             <h5>
               <span class="badge badge-info small focus_status"></span>
               <span class="badge badge-info small focus_bidding"></span>
             </h5>
-            <dl class="row focus_dl">
-              <dt class="col-sm-3">Location:</dt>
-              <dd class="col-sm-9"><span class="focus_unique_districts"></span></dd>
+            <img src="" style="width:100%;" class="focus_img">
+            <dl class="row focus_dl small">
+              <dt class="col-xl-5">Location:</dt>
+              <dd class="col-xl-7"><span class="focus_unique_districts"></span></dd>
 
-              <dt class="col-sm-3">Published:</dt>
-              <dd class="col-sm-9"><span class="badge badge-info focus_published_ago"></span> <span class="badge badge-light focus_published"></span></dd>
+              <dt class="col-xl-5">Published:</dt>
+              <dd class="col-xl-7"><span class="badge badge-info focus_published_ago"></span> <span class="badge badge-light focus_published"></span></dd>
 
-              <dt class="col-sm-3">Upcoming open houses:</dt>
-              <dd class="col-sm-9"><span class="focus_upcoming_open_houses"></span></dd>
+              <dt class="col-xl-5">Upcoming open houses:</dt>
+              <dd class="col-xl-7"><span class="focus_upcoming_open_houses"></span></dd>
 
-              <dt class="col-sm-3">Size:</dt>
-              <dd class="col-sm-9"><span class="badge badge-success focus_living_area"></span> <span class="badge badge-warning focus_supplemental_area"></span> <span class="badge badge-secondary focus_land_area"></span></dd>
+              <dt class="col-xl-5">Size:</dt>
+              <dd class="col-xl-7"><span class="badge badge-success focus_living_area"></span> <span class="badge badge-warning focus_supplemental_area"></span> <span class="badge badge-secondary focus_land_area"></span></dd>
 
-              <dt class="col-sm-3">Rooms:</dt>
-              <dd class="col-sm-9"><span class="badge badge-info focus_rooms"></span></dd>
+              <dt class="col-xl-5">Rooms:</dt>
+              <dd class="col-xl-7"><span class="badge badge-info focus_rooms"></span></dd>
 
-              <dt class="col-sm-3">Driftkostnad:</dt>
-              <dd class="col-sm-9"><span class="focus_driftkostnad_month"></span> kr/month <small>(<span class="focus_driftkostnad_year"></span> kr/year)</small></dd>
+              <dt class="col-xl-5">Driftkostnad:</dt>
+              <dd class="col-xl-7"><span class="focus_driftkostnad_month"></span> kr/month <small>(<span class="focus_driftkostnad_year"></span> kr/year)</small></dd>
 
-              <dt class="col-sm-3">Construction year:</dt>
-              <dd class="col-sm-9"><span class="focus_construction_year"></sppan></dd>
+              <dt class="col-xl-5">Construction year:</dt>
+              <dd class="col-xl-7"><span class="focus_construction_year"></sppan></dd>
 
-              <dt class="col-sm-3">Tenure:</dt>
-              <dd class="col-sm-9"><span class="focus_tenure"></sppan></dd>
+              <dt class="col-xl-5">Tenure:</dt>
+              <dd class="col-xl-7"><span class="focus_tenure"></sppan></dd>
 
             </dl>
 
             <div class="row my-5 house_ratings" data-house_id="">
               <div class="col-6 rating_person rating_person_1">
-                <h4>Rating: <?php echo $ini_array['person_1_name']; ?></h4>
+                <h4><span class="d-none d-xl-inline">Rating:</span> <?php echo $ini_array['person_1_name']; ?></h4>
                 <div class="btn-group d-flex rating_yesno" role="group">
                   <button class="btn w-100 btn-outline-success mb-2 rating_overall_yes"><i class="fa fa-thumbs-up"></i></button>
                   <button class="btn w-100 btn-outline-danger mb-2 rating_overall_no"><i class="fa fa-thumbs-down"></i></button>
                 </div>
                 <dl class="row">
-                  <dt class="col-sm-6">Inside</dt>
-                  <dd class="col-sm-6 rating_stars rating_inside"><i class="fa fa-star text-black-50" aria-hidden="true"></i><i class="fa fa-star text-black-50" aria-hidden="true"></i><i class="fa fa-star text-black-50" aria-hidden="true"></i><i class="fa fa-star text-black-50" aria-hidden="true"></i><i class="fa fa-star text-black-50" aria-hidden="true"></i></dd>
+                  <dt class="col-xl-6">Inside</dt>
+                  <dd class="col-xl-6 rating_stars rating_inside"><i class="fa fa-star text-black-50" aria-hidden="true"></i><i class="fa fa-star text-black-50" aria-hidden="true"></i><i class="fa fa-star text-black-50" aria-hidden="true"></i><i class="fa fa-star text-black-50" aria-hidden="true"></i><i class="fa fa-star text-black-50" aria-hidden="true"></i></dd>
 
-                  <dt class="col-sm-6">Outside</dt>
-                  <dd class="col-sm-6 rating_stars rating_outside"><i class="fa fa-star text-black-50" aria-hidden="true"></i><i class="fa fa-star text-black-50" aria-hidden="true"></i><i class="fa fa-star text-black-50" aria-hidden="true"></i><i class="fa fa-star text-black-50" aria-hidden="true"></i><i class="fa fa-star text-black-50" aria-hidden="true"></i></dd>
+                  <dt class="col-xl-6">Outside</dt>
+                  <dd class="col-xl-6 rating_stars rating_outside"><i class="fa fa-star text-black-50" aria-hidden="true"></i><i class="fa fa-star text-black-50" aria-hidden="true"></i><i class="fa fa-star text-black-50" aria-hidden="true"></i><i class="fa fa-star text-black-50" aria-hidden="true"></i><i class="fa fa-star text-black-50" aria-hidden="true"></i></dd>
 
-                  <dt class="col-sm-6">Surroundings</dt>
-                  <dd class="col-sm-6 rating_stars rating_surroundings"><i class="fa fa-star text-black-50" aria-hidden="true"></i><i class="fa fa-star text-black-50" aria-hidden="true"></i><i class="fa fa-star text-black-50" aria-hidden="true"></i><i class="fa fa-star text-black-50" aria-hidden="true"></i><i class="fa fa-star text-black-50" aria-hidden="true"></i></dd>
+                  <dt class="col-xl-6">Surroundings</dt>
+                  <dd class="col-xl-6 rating_stars rating_surroundings"><i class="fa fa-star text-black-50" aria-hidden="true"></i><i class="fa fa-star text-black-50" aria-hidden="true"></i><i class="fa fa-star text-black-50" aria-hidden="true"></i><i class="fa fa-star text-black-50" aria-hidden="true"></i><i class="fa fa-star text-black-50" aria-hidden="true"></i></dd>
 
-                  <dt class="col-sm-6">Commute</dt>
-                  <dd class="col-sm-6 rating_stars rating_commute"><i class="fa fa-star text-black-50" aria-hidden="true"></i><i class="fa fa-star text-black-50" aria-hidden="true"></i><i class="fa fa-star text-black-50" aria-hidden="true"></i><i class="fa fa-star text-black-50" aria-hidden="true"></i><i class="fa fa-star text-black-50" aria-hidden="true"></i></dd>
+                  <dt class="col-xl-6">Commute</dt>
+                  <dd class="col-xl-6 rating_stars rating_commute"><i class="fa fa-star text-black-50" aria-hidden="true"></i><i class="fa fa-star text-black-50" aria-hidden="true"></i><i class="fa fa-star text-black-50" aria-hidden="true"></i><i class="fa fa-star text-black-50" aria-hidden="true"></i><i class="fa fa-star text-black-50" aria-hidden="true"></i></dd>
 
-                  <dt class="col-sm-6">Drift costs</dt>
-                  <dd class="col-sm-6 rating_stars rating_drift_costs"><i class="fa fa-star text-black-50" aria-hidden="true"></i><i class="fa fa-star text-black-50" aria-hidden="true"></i><i class="fa fa-star text-black-50" aria-hidden="true"></i><i class="fa fa-star text-black-50" aria-hidden="true"></i><i class="fa fa-star text-black-50" aria-hidden="true"></i></dd>
+                  <dt class="col-xl-6">Drift costs</dt>
+                  <dd class="col-xl-6 rating_stars rating_drift_costs"><i class="fa fa-star text-black-50" aria-hidden="true"></i><i class="fa fa-star text-black-50" aria-hidden="true"></i><i class="fa fa-star text-black-50" aria-hidden="true"></i><i class="fa fa-star text-black-50" aria-hidden="true"></i><i class="fa fa-star text-black-50" aria-hidden="true"></i></dd>
                 </dl>
                 <textarea class="form-control results_comment"></textarea>
               </div>
               <div class="col-6 rating_person rating_person_2">
-                <h4>Rating: <?php echo $ini_array['person_2_name']; ?></h4>
+                <h4><span class="d-none d-xl-inline">Rating:</span> <?php echo $ini_array['person_2_name']; ?></h4>
                 <div class="btn-group d-flex rating_yesno" role="group">
                   <button class="btn w-100 btn-outline-success mb-2 rating_overall_yes"><i class="fa fa-thumbs-up"></i></button>
                   <button class="btn w-100 btn-outline-danger mb-2 rating_overall_no"><i class="fa fa-thumbs-down"></i></button>
                 </div>
                 <dl class="row">
-                  <dt class="col-sm-6">Inside</dt>
-                  <dd class="col-sm-6 rating_stars rating_inside"><i class="fa fa-star text-black-50" aria-hidden="true"></i><i class="fa fa-star text-black-50" aria-hidden="true"></i><i class="fa fa-star text-black-50" aria-hidden="true"></i><i class="fa fa-star text-black-50" aria-hidden="true"></i><i class="fa fa-star text-black-50" aria-hidden="true"></i></dd>
+                  <dt class="col-xl-6">Inside</dt>
+                  <dd class="col-xl-6 rating_stars rating_inside"><i class="fa fa-star text-black-50" aria-hidden="true"></i><i class="fa fa-star text-black-50" aria-hidden="true"></i><i class="fa fa-star text-black-50" aria-hidden="true"></i><i class="fa fa-star text-black-50" aria-hidden="true"></i><i class="fa fa-star text-black-50" aria-hidden="true"></i></dd>
 
-                  <dt class="col-sm-6">Outside</dt>
-                  <dd class="col-sm-6 rating_stars rating_outside"><i class="fa fa-star text-black-50" aria-hidden="true"></i><i class="fa fa-star text-black-50" aria-hidden="true"></i><i class="fa fa-star text-black-50" aria-hidden="true"></i><i class="fa fa-star text-black-50" aria-hidden="true"></i><i class="fa fa-star text-black-50" aria-hidden="true"></i></dd>
+                  <dt class="col-xl-6">Outside</dt>
+                  <dd class="col-xl-6 rating_stars rating_outside"><i class="fa fa-star text-black-50" aria-hidden="true"></i><i class="fa fa-star text-black-50" aria-hidden="true"></i><i class="fa fa-star text-black-50" aria-hidden="true"></i><i class="fa fa-star text-black-50" aria-hidden="true"></i><i class="fa fa-star text-black-50" aria-hidden="true"></i></dd>
 
-                  <dt class="col-sm-6">Surroundings</dt>
-                  <dd class="col-sm-6 rating_stars rating_surroundings"><i class="fa fa-star text-black-50" aria-hidden="true"></i><i class="fa fa-star text-black-50" aria-hidden="true"></i><i class="fa fa-star text-black-50" aria-hidden="true"></i><i class="fa fa-star text-black-50" aria-hidden="true"></i><i class="fa fa-star text-black-50" aria-hidden="true"></i></dd>
+                  <dt class="col-xl-6">Surroundings</dt>
+                  <dd class="col-xl-6 rating_stars rating_surroundings"><i class="fa fa-star text-black-50" aria-hidden="true"></i><i class="fa fa-star text-black-50" aria-hidden="true"></i><i class="fa fa-star text-black-50" aria-hidden="true"></i><i class="fa fa-star text-black-50" aria-hidden="true"></i><i class="fa fa-star text-black-50" aria-hidden="true"></i></dd>
 
-                  <dt class="col-sm-6">Commute</dt>
-                  <dd class="col-sm-6 rating_stars rating_commute"><i class="fa fa-star text-black-50" aria-hidden="true"></i><i class="fa fa-star text-black-50" aria-hidden="true"></i><i class="fa fa-star text-black-50" aria-hidden="true"></i><i class="fa fa-star text-black-50" aria-hidden="true"></i><i class="fa fa-star text-black-50" aria-hidden="true"></i></dd>
+                  <dt class="col-xl-6">Commute</dt>
+                  <dd class="col-xl-6 rating_stars rating_commute"><i class="fa fa-star text-black-50" aria-hidden="true"></i><i class="fa fa-star text-black-50" aria-hidden="true"></i><i class="fa fa-star text-black-50" aria-hidden="true"></i><i class="fa fa-star text-black-50" aria-hidden="true"></i><i class="fa fa-star text-black-50" aria-hidden="true"></i></dd>
 
-                  <dt class="col-sm-6">Drift costs</dt>
-                  <dd class="col-sm-6 rating_stars rating_drift_costs"><i class="fa fa-star text-black-50" aria-hidden="true"></i><i class="fa fa-star text-black-50" aria-hidden="true"></i><i class="fa fa-star text-black-50" aria-hidden="true"></i><i class="fa fa-star text-black-50" aria-hidden="true"></i><i class="fa fa-star text-black-50" aria-hidden="true"></i></dd>
+                  <dt class="col-xl-6">Drift costs</dt>
+                  <dd class="col-xl-6 rating_stars rating_drift_costs"><i class="fa fa-star text-black-50" aria-hidden="true"></i><i class="fa fa-star text-black-50" aria-hidden="true"></i><i class="fa fa-star text-black-50" aria-hidden="true"></i><i class="fa fa-star text-black-50" aria-hidden="true"></i><i class="fa fa-star text-black-50" aria-hidden="true"></i></dd>
                 </dl>
                 <textarea class="form-control results_comment"></textarea>
               </div>
@@ -258,7 +259,6 @@
               </div>
             </div>
           </div>
-        </div>
       </div>
 
     </div>

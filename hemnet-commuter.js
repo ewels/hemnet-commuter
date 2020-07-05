@@ -115,7 +115,7 @@ $(function(){
 
               // All done - hide the form and plot the map
               // console.groupCollapsed('Rendering results');
-              $('#hemnet_commuter_form').slideUp();
+              $('#hemnet_commuter_form').hide();
               $('.results_card').show();
               make_results_map();
               $('#status-msg').text("Found "+hemnet_results.length+" properties");
@@ -1030,8 +1030,8 @@ function make_results_map() {
     // Summary of commute travel
     var tt_commute_descriptions = '';
     $.each(commute_times.results, function(i, cresult){
-      tt_commute_descriptions += '<dt class="col-sm-3 focus_commute_descriptions">'+cresult.search_id.replace('commute to ', '')+'</dt>';
-      tt_commute_descriptions += '<dd class="col-sm-9 focus_commute_descriptions">';
+      tt_commute_descriptions += '<dt class="col-xl-6 focus_commute_descriptions">'+cresult.search_id.replace('commute to ', '')+'</dt>';
+      tt_commute_descriptions += '<dd class="col-xl-6 focus_commute_descriptions">';
       var gmaps_col = 'danger';
       $.each(cresult.locations, function(k, location){
         if(location.id == 'hemnet location '+house.title){
