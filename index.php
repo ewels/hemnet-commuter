@@ -14,6 +14,12 @@
 </head>
 <body>
 
+<?php
+if(!file_exists("hemnet_commuter_config.ini")){
+  die('<div class="m-5 alert alert-danger">Error! Configuration file <code>hemnet_commuter_config.ini</code> not found!</div></body></html>');
+}
+?>
+
 <div class="container-fluid" id="hemnet_commuter_form" style="display:none;">
 
   <img id="hemnet-logo" src="hemnet.svg">
