@@ -67,9 +67,16 @@ if(!file_exists("hemnet_commuter_config.ini")){
 
     <div class="card mb-3">
       <div class="card-body hemnet_rss_card">
-        <h4 class="card-title">Step 1: Enter Hemnet Search RSS Feed URLs</h4>
-        <p class="card-text">On <a href="https://www.hemnet.se" target="_blank">hemnet.se</a> create a search and save it.
-          Find the link to the RSS feed for that search (on the list page) and paste that here.<br>
+        <h4 class="card-title">Step 1: Enter Hemnet Search URLs</h4>
+        <h5>Web page URLs</h5>
+        <p class="card-text">On <a href="https://www.hemnet.se" target="_blank">hemnet.se</a> create a search and save it. Once saved, load and paste the URL here:</p>
+          <div class="form-group">
+            <input type="text" class="form-control" id="hemnet_saved_search_url">
+            <p class="text-muted"><small>For example: <samp>https://www.hemnet.se/bostader?by=creation&order=desc&subscription=00000000</samp></small></p>
+          </div>
+
+        <h5>and / or: RSS feed URLs</h5>
+        <p class="card-text">Find the link to the RSS feed for that search (on the list page) and paste that here.<br>
           <small class="text-muted"><span class="text-danger"><i class="fa fa-exclamation-triangle" aria-hidden="true"></i> Only the <strong>most recent 30</strong> items are returned.</span>
           Enter multiple search RSS addresses to retrieve more results.</small></p>
         <div class="hemnet_rss_rows">

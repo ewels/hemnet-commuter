@@ -360,8 +360,54 @@ function load_cache(){
 }
 
 /**
- * Main hemnet-commuter search function
+ * Main hemnet-commuter search functions
  */
+
+function load_hemnet_saved_search() {
+
+  // Disable search button and show loading status
+  $('#search-btn').val('Searching..').prop('disabled', true);
+  $('#status-text').show();
+
+  $('#status-msg').text("Fetching search data");
+
+  var hemnet_search_id_matches = $('#hemnet_saved_search_url').val().match(/subscription=/(\d+)/);
+  if(hemnet_search_id_matches == null){
+    dfd.reject("Hemnet Search URL did not match expected pattern: "+$('#hemnet_saved_search_url').val());
+    return false;
+  }
+  console.log("Hemnet search ID: "+hemnet_search_id_matches[1]);
+
+  return request = $.post( "mirror_hemnet.php",  { s_page_id: hemnet_search_id_matches[1] }, function( data ) {
+    try {
+      // Something was wrong
+      if(data['status'] == "error"){
+        dfd.reject("Could not load RSS "+data['msg']);
+        return false;
+      }
+      // All good - save the results
+      hemnet_rss[rss_url] = data;
+      hemnet_rss[rss_url].date_fetched = (new Date()).getTime();
+      for (var i = 0; i < data['item'].length; i++) {
+        d = data['item'][i];
+        hemnet_results[d['link']] = d;
+      }
+      // Show title and how many results this RSS feed had, warn if 30
+      hemnet_row.find('.hemnet_rss_title').html('<span class="badge badge-pill badge-info">'+hemnet_rss[rss_url].title+'</span> <span class="badge badge-pill badge-success">'+hemnet_rss[rss_url].item.length+' results</span>');
+      if(hemnet_rss[rss_url].item.length >= 30){
+        hemnet_row.find('.hemnet_rss_title').addClass('bg-danger text-white px-1').removeClass('text-muted');
+        hemnet_row.find('.hemnet_rss_title .badge').addClass('badge-warning').removeClass('badge-success');
+      }
+
+    } catch (e){
+      dfd.reject("Something went wrong whilst parsing the Hemnet RSS.");
+      console.error(e);
+      console.info(data);
+      return false;
+    }
+  });
+}
+
 function load_hemnet_rss(){
 
   // jQuery promise
