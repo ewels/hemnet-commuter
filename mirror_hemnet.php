@@ -20,23 +20,6 @@ if(isset($_REQUEST['s_id']) ){
 } elseif(isset($_REQUEST['gmaps'])){
   header("Content-type: text/json; charset=utf-8");
   echo file_get_contents($_REQUEST['gmaps']);
-
-// Scrape the search web page in one go
-} elseif(isset($_REQUEST['s_page_id'])){
-  $base_url = "https://www.hemnet.se/bostader?subscription=".$_REQUEST['s_page_id'];
-  $page = file_get_contents($base_url);
-  preg_match('/<script type="application\/ld\+json">(.|\n)*?<\/script>/', $page, $matches);
-  foreach($matches as $match){
-    $schema = json_decode($match);
-    if(!isset($schema['itemListElement'])){
-      echo("Nope");
-      echo($match);
-      continue;
-    }
-    print("FOund something!");
-  }
-
-
 } else {
   header("Content-type: text/json; charset=utf-8");
   echo json_encode(array("status"=>"error", "msg" => "Error: No input supplied"));
