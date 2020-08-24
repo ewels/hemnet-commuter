@@ -26,7 +26,7 @@ function scrape_hemnet_house($house_id){
     $result->free_result();
   }
 
-  if(!$hn_url) die("Could not find Hemnet URL");
+  if(!$hn_url) return false;
   $html_page = file_get_contents($hn_url);
 
   // Find details from javascript chunk in HTML
@@ -42,6 +42,9 @@ function scrape_hemnet_house($house_id){
   preg_match_all('/<script type="application\/ld\+json">(?P<json>(.|\n)*?)<\/script>/', $html_page, $matches);
   if($matches && isset($matches['json'])){
     foreach($matches['json'] as $json_str){
+      // Fix broken hemnet JSON
+      $json_str = preg_replace('/"postalCode"\s*:\s*\n/', '"postalCode": ""', $json_str);
+      // Try to parse JSON
       $schema = json_decode($json_str);
       // Property address
       if(isset($schema->{'@type'}) && $schema->{'@type'} == "Place" && isset($schema->address)){
@@ -91,7 +94,7 @@ function scrape_hemnet_house($house_id){
     if(isset($data_layer->{$field})) $sql_fields[$field] = $data_layer->{$field};
   }
 
-  if(count($sql_fields) == 0) die("No SQL to insert!");
+  if(count($sql_fields) == 0) return false;
 
   // Delete any existing entries that we have in the database
   $sql = 'DELETE FROM `house_details` WHERE `id` = "'.$mysqli->real_escape_string($house_id).'"';
@@ -103,6 +106,8 @@ function scrape_hemnet_house($house_id){
     $sql .= ", `$field` = '".$mysqli->real_escape_string($var)."'";
   }
   $mysqli->query($sql);
+
+  return true;
 }
 
 /////////
