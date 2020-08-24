@@ -174,7 +174,7 @@ if(isset($_POST['house_geocode_fetch_missing'])){
   foreach($missing_geocode_ids as $house_id){
     $loc = geocode_house_address($house_id);
     if(isset($loc['status']) && $loc['status'] == 'error'){
-      $msgs[] = ['danger', $loc['msg']];
+      $msgs[] = ['danger', $loc['msg'].' - <strong><a href="#" class="alert-link geocode_manual" data-houseid="'.$house_id.'">Click here to manually enter</a></strong>'];
     } else {
       $success_count++;
     }
@@ -284,5 +284,25 @@ if(!file_exists("hemnet_commuter_config.ini")){
 <script src="https://unpkg.com/leaflet@1.6.0/dist/leaflet.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.24.0/moment.min.js" integrity="sha256-4iQZ6BVL4qNKlQ27TExEhBN1HFPvAvAMbFavKKosSWQ=" crossorigin="anonymous"></script>
 <script src="hemnet-commuter.js"></script>
+
+<script type="text/javascript">
+$(function(){
+  $('.geocode_manual').click(function(e){
+    e.preventDefault();
+    var house_id = $(this).data('houseid');
+    var lat = prompt("Latitute");
+    if (lat == null) { return; }
+    var lng = prompt("Longitude");
+    if (lng == null) { return; }
+
+    var api_url = "geocode_address.php?id="+house_id+"&fix_lat="+lat+"&fix_lng="+lng;
+
+    $.getJSON(api_url, function( data ) {
+      alert("Status: "+data.status+": "+data.msg+". Refresh the page to see the new count totals.");
+    });
+  });
+});
+</script>
+
 </body>
 </html>

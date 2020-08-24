@@ -18,13 +18,17 @@ function geocode_house_address($house_id){
   $sql = 'SELECT `address`,`streetAddress`,`addressLocality`,`postalCode` FROM `house_details` WHERE `id` = "'.$mysqli->real_escape_string($house_id).'"';
   if ($result = $mysqli->query($sql)) {
     while($house_address = $result->fetch_object()){
-      if(!is_null($house_address->streetAddress) && !is_null($house_address->postalCode)){
+      // Main street address
+      if(!is_null($house_address->streetAddress) && strlen(trim($house_address->streetAddress)) > 0){
         $address_str = $house_address->streetAddress;
-      }
-      if(!is_null($house_address->postalCode)){
-        $address_str .= ', '.$house_address->postalCode;
-      } else if(!is_null($house_address->addressLocality)){
-        $address_str .= ', '.$house_address->addressLocality;
+        // Post code
+        if(!is_null($house_address->postalCode) && strlen(trim($house_address->postalCode)) > 0){
+          $address_str .= ', '.$house_address->postalCode;
+        }
+        // Locality if no post code
+        else if(!is_null($house_address->addressLocality) && strlen(trim($house_address->addressLocality)) > 0){
+          $address_str .= ', '.$house_address->addressLocality;
+        }
       }
     }
     $result->free_result();
@@ -62,8 +66,12 @@ function geocode_address($address, $house_id=false){
   $google_url = 'https://maps.googleapis.com/maps/api/geocode/json?key='.$ini_array['gmap_api_key'].'&address='.urlencode($address);
   $results = json_decode(file_get_contents($google_url));
   if(isset($results->results)){
+    $err_address = '<code>'.$address.'</code>';
+    if($house_id){
+      $err_address = '<a href="https://www.hemnet.se/bostad/'.$house_id.'" target="_blank">"'.$address.'"</a>';
+    }
     if(count($results->results) == 0){
-      return array("status"=>"error", "msg" => 'Error: Empty result for search <a href="'.$google_url.'" target="_blank">"'.$address.'"</a>');
+      return array("status"=>"error", "msg" => 'Error: Empty result for search '.$err_address.'<!-- '.$google_url."\n".print_r($results, true).' -->');
     }
 
     $loc['lat'] = $results->results[0]->geometry->location->lat;
@@ -90,12 +98,17 @@ function geocode_address($address, $house_id=false){
 
 function fix_geocode_result($house_id, $lat, $lng){
   global $mysqli;
+
+  // Delete any existing entries that we have in the database
+  $sql = 'DELETE FROM `geocoding_results` WHERE `house_id` = "'.$mysqli->real_escape_string($house_id).'"';
+  $mysqli->query($sql);
+
+  // Insert manually fixed lat/lng
   $sql = '
-  UPDATE `geocoding_results`
+    INSERT INTO `geocoding_results`
     SET
       `lat` = "'.$mysqli->real_escape_string($lat).'",
-      `lng` = "'.$mysqli->real_escape_string($lng).'"
-    WHERE
+      `lng` = "'.$mysqli->real_escape_string($lng).'",
       `house_id` = "'.$mysqli->real_escape_string($house_id).'"
   ';
   $mysqli->query($sql);
