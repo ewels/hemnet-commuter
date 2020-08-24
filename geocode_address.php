@@ -13,20 +13,26 @@ function geocode_house_address($house_id){
   global $mysqli;
 
   // Get house address
+  $address_str = false;
   $house_address = false;
   $sql = 'SELECT `address`,`streetAddress`,`addressLocality`,`postalCode` FROM `house_details` WHERE `id` = "'.$mysqli->real_escape_string($house_id).'"';
   if ($result = $mysqli->query($sql)) {
-    $house_address = $result->fetch_object();
+    while($house_address = $result->fetch_object()){
+      if(!is_null($house_address->streetAddress) && !is_null($house_address->postalCode)){
+        $address_str = $house_address->streetAddress;
+      }
+      if(!is_null($house_address->postalCode)){
+        $address_str .= ', '.$house_address->postalCode;
+      } else if(!is_null($house_address->addressLocality)){
+        $address_str .= ', '.$house_address->addressLocality;
+      }
+    }
     $result->free_result();
   }
 
-  $address_str = false;
-  if(!is_null($house_address->streetAddress) && !is_null($house_address->postalCode)){
-    $address_str = $house_address->streetAddress.", ".$house_address->postalCode;
-  }
 
   if(!$address_str){
-    die(json_encode(array("status"=>"error", "msg" => "Could not find house address")));
+    return array("status"=>"error", "msg" => 'Error: Could not build address string for house <a href="https://www.hemnet.se/bostad/'.$house_id.'" target="_blank">'.$house_id.'</a>');
   }
 
   return geocode_address($address_str, $house_id);
@@ -56,6 +62,10 @@ function geocode_address($address, $house_id=false){
   $google_url = 'https://maps.googleapis.com/maps/api/geocode/json?key='.$ini_array['gmap_api_key'].'&address='.urlencode($address);
   $results = json_decode(file_get_contents($google_url));
   if(isset($results->results)){
+    if(count($results->results) == 0){
+      return array("status"=>"error", "msg" => 'Error: Empty result for search <a href="'.$google_url.'" target="_blank">"'.$address.'"</a>');
+    }
+
     $loc['lat'] = $results->results[0]->geometry->location->lat;
     $loc['lng'] = $results->results[0]->geometry->location->lng;
   }
