@@ -9,34 +9,16 @@
  * Scrape the Hemnet "Saved Search" HTML page
  */
 
-
-// Connect to the database
-ini_set('display_errors', 1);
-ini_set('display_startup_errors', 1);
-error_reporting(E_ALL);
-
-$ini_array = parse_ini_file("hemnet_commuter_config.ini");
-
-$mysqli = new mysqli("localhost", $ini_array['db_user'], $ini_array['db_password'], $ini_array['db_name']);
-if ($mysqli->connect_errno) {
-  die("Failed to connect to MySQL: " . $mysqli->connect_error);
-}
-
-// Truncate the house search results table if requested
-if(isset($_REQUEST['truncate']) && $_REQUEST['truncate'] == 'true'){
-  $sql = 'TRUNCATE TABLE `search_result_urls`';
-  $mysqli->query($sql);
-}
-
 // Scrape hemnet
-if(isset($_REQUEST['s_page_id'])){
+function scrape_hemnet_search($search_id){
+  global $mysqli;
 
   $house_urls = [];
   $numberOfItems = false;
   $page_number = 1;
   $max_pages = 20;
   while($numberOfItems === false || count($house_urls) < $numberOfItems){
-    $hn_url = "https://www.hemnet.se/bostader?subscription=".$_REQUEST['s_page_id']."&page=".$page_number;
+    $hn_url = "https://www.hemnet.se/bostader?subscription=".$search_id."&page=".$page_number;
     $html_page = file_get_contents($hn_url);
     preg_match_all('/<script type="application\/ld\+json">(?P<json>(.|\n)*?)<\/script>/', $html_page, $matches);
     if($matches && isset($matches['json'])){
@@ -71,11 +53,51 @@ if(isset($_REQUEST['s_page_id'])){
     $mysqli->query($sql);
   }
 
-  // Return success message
-  echo json_encode(array("status"=>"success", "msg" => "Found ".count($house_urls)." houses", "num_houses_found" => count($house_urls)));
+  return $house_urls;
+}
+
+// Truncate the house search table
+function scrape_hemnet_search_table(){
+  global $mysqli;
+  $sql = 'TRUNCATE TABLE `search_result_urls`';
+  $mysqli->query($sql);
+}
 
 
-} else {
-  header("Content-type: text/json; charset=utf-8");
-  echo json_encode(array("status"=>"error", "msg" => "Error: No input supplied"));
+
+/////////
+// CALLED DIRECTLY - API usage
+/////////
+if ( basename(__FILE__) == basename($_SERVER["SCRIPT_FILENAME"]) ) {
+
+  // Connect to the database
+  ini_set('display_errors', 1);
+  ini_set('display_startup_errors', 1);
+  error_reporting(E_ALL);
+
+  $ini_array = parse_ini_file("hemnet_commuter_config.ini");
+
+  $mysqli = new mysqli("localhost", $ini_array['db_user'], $ini_array['db_password'], $ini_array['db_name']);
+  if ($mysqli->connect_errno) {
+    die("Failed to connect to MySQL: " . $mysqli->connect_error);
+  }
+
+  // Truncate the house search results table if requested
+  if(isset($_REQUEST['truncate']) && $_REQUEST['truncate'] == 'true'){
+    scrape_hemnet_search_table();
+  }
+
+  // Scrape hemnet
+  if(isset($_REQUEST['s_page_id'])){
+
+    $house_urls = scrape_hemnet_search($_REQUEST['s_page_id']);
+
+    // Return success message
+    echo json_encode(array("status"=>"success", "msg" => "Found ".count($house_urls)." houses", "num_houses_found" => count($house_urls)));
+
+
+  } else {
+    header("Content-type: text/json; charset=utf-8");
+    echo json_encode(array("status"=>"error", "msg" => "Error: No input supplied"));
+  }
 }
