@@ -94,20 +94,20 @@
       </h1>
       <hr>
       <div class="row">
-        <div class="col-6"><a href="#" class="btn btn-block btn-secondary">Show filters</a></div>
-        <div class="col-6"><a href="update.php" class="btn btn-block btn-info">Update results</a></div>
+        <div class="col-6"><a href="#" class="btn btn-block btn-secondary"><i class="fa fa-filter mr-2"></i> Filters</a></div>
+        <div class="col-6"><a href="update.php" class="btn btn-block btn-info"><i class="fa fa-refresh mr-2"></i> Update</a></div>
       </div>
       <hr>
       <p ng-show="active_id == false" class="text-muted">Click a house marker on the map to see more information here.</p>
       <div ng-hide="active_id == false" >
         <h3><a ng-href="{{active_house.url}}" target="_blank"><span ng-bind="active_house.streetAddress"></span> <i class="fa fa-external-link" aria-hidden="true"></i></a></h3>
-        <h4>
-          <span class="badge badge-primary"><span ng-bind="active_house.price / 1000000 | number:3"></span> MKr</span>
-          <small>
-            <span class="badge badge-info" ng-bind="active_house.status.replace('_', ' ')" style="text-transform:capitalize;"></span>
-            <span class="badge" ng-class="{'badge-info': active_house.bidding != 1, 'badge-warning': active_house.bidding == 1}" ng-bind="active_house.bidding == 1 ? 'Bidding now' : 'No bidding yet'"></span>
-          </small>
-        </h4>
+        <h3>
+          <span class="badge" ng-class="{'badge-success': active_house.price < 4000000, 'badge-primary': active_house.price > 4000000 && active_house.price < 5700000, 'badge-danger': active_house.price > 5700000}"><span ng-bind="active_house.price / 1000000 | number:3"></span> MKr</span>
+          <span class="float-right small mt-2">
+            <span class="badge" ng-class="{'badge-info': active_house.status == 'for_sale', 'badge-success': active_house.status == 'upcoming'}"  ng-bind="active_house.status.replace('_', ' ')" style="text-transform:capitalize;"></span>
+            <span class="badge" ng-class="{'badge-secondary': active_house.bidding != 1, 'badge-warning': active_house.bidding == 1}" ng-bind="active_house.bidding == 1 ? 'Bidding now' : 'No bids'"></span>
+          </span>
+        </h3>
         <img ng-src="{{active_house.front_image}}" class="w-100 my-2">
         <dl class="row focus_dl small">
           <dt class="col-xl-5">Location:</dt>
