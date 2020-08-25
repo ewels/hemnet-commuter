@@ -133,6 +133,7 @@ if ( basename(__FILE__) == basename($_SERVER["SCRIPT_FILENAME"]) ) {
     scrape_hemnet_house($_REQUEST['id']);
 
     // Return success message
+    header("Content-type: text/json; charset=utf-8");
     echo json_encode(array("status"=>"success", "msg" => "Found house details"));
 
 

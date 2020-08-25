@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="en" ng-app="hemnetCommuterApp">
+<head>
+  <!-- Required meta tags -->
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+  <!-- Angular -->
+  <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.8.0/angular.min.js"></script>
+  <!-- Leaflet -->
+  <script src="https://unpkg.com/leaflet@1.6.0/dist/leaflet.js"></script>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.6.0/dist/leaflet.css" />
+  <!-- Angular Simple Logger -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/angular-simple-logger/0.1.7/angular-simple-logger.min.js"></script>
+  <!-- Angular UI for Leaflet -->
+  <script src="https://cdn.jsdelivr.net/npm/ui-leaflet@1.0.3/dist/ui-leaflet.min.js"></script>
+  <!-- Bootstrap -->
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" integrity="sha384-JcKb8q3iqJ61gNV9KGb8thSsNjpSL0n8PARn9HuZOnIxN0hoP+VmmDGMN5t9UJ0Z" crossorigin="anonymous">
+  <!-- FontAwesome -->
+  <link href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet" integrity="sha384-wvfXpqpZZVQGK6TAh5PVlGOfQNHSoD2xbE+QkPxCAFlNEevoEH3Sl0sibVcOQVnN" crossorigin="anonymous">
+
+  <!-- Hemnet Commuter -->
+  <link rel="stylesheet" href="styles.css">
+
+  <script type="text/javascript">
+    var app = angular.module("hemnetCommuterApp", ['ui-leaflet']);
+    app.controller("hemnetCommuterController", [ '$scope', '$http', function($scope, $http) {
+
+      // Variable defaults
+      $scope.active_id = false;
+      $scope.active_house = false;
+      $scope.results = [];
+
+      // Set up the map
+      angular.extend($scope, {
+        stockholm: {
+          lat: 59.334591,
+          lng: 18.063240,
+          zoom: 10
+        },
+        markers: {},
+        position: {
+          lat: 51,
+          lng: 0
+        }
+      });
+
+      // Get the map markers
+      $scope.updateMarkers = function() {
+        // Get the house data from the database
+        $http.get("api_houses.php").then(function(response) {
+          $scope.results = response.data.results;
+
+          // Make nice object of map markers
+          var markers = {};
+          angular.forEach($scope.results, function (house, key) {
+            markers[house.house_id] = {
+              house_id: house.house_id,
+              lat: parseFloat(house.lat),
+              lng: parseFloat(house.lng),
+              message: '<h6><a href="'+house.url+'" target="_blank">'+house.streetAddress+'</a></h6><p><img src="'+house.front_image+'" style="width:100%"></p>'
+            }
+          });
+
+          // Update the markers on the map
+          angular.extend($scope, { markers: markers });
+        });
+      };
+
+      // Initialise the map with markers on load
+      $scope.updateMarkers();
+
+      // Leaflet marker clicked
+      $scope.$on('leafletDirectiveMarker.click', function(event, args){
+        $scope.active_id = args.model.house_id;
+        $scope.active_house = $scope.results[$scope.active_id];
+        console.log($scope.active_house);
+      });
+
+    }]);
+  </script>
+</head>
+<body ng-controller="hemnetCommuterController" style="padding:0;">
+
+<div class="row mr-0 h-100" style="position:relative;">
+  <div class="col-md-9 pl-0 h-100 order-2">
+      <leaflet lf-center="stockholm" event-broadcast="events" markers="markers" style="position: absolute; top: 0; bottom: 0; width: 100%;"></leaflet>
+  </div>
+  <div class="col-md-3 pr-0 order-1">
+    <div class="container pt-3">
+      <h1 class="h2">
+        <img src="hemnet.svg" class="float-right" style="width: 40px; margin-top:-5px;">
+        Hemnet Commuter
+      </h1>
+      <hr>
+      <div class="row">
+        <div class="col-6"><a href="#" class="btn btn-block btn-secondary">Show filters</a></div>
+        <div class="col-6"><a href="update.php" class="btn btn-block btn-info">Update results</a></div>
+      </div>
+      <hr>
+      <p ng-show="active_id == false" class="text-muted">Click a house marker on the map to see more information here.</p>
+      <div ng-hide="active_id == false" >
+        <h3><a ng-href="{{active_house.url}}" target="_blank"><span ng-bind="active_house.streetAddress"></span> <i class="fa fa-external-link" aria-hidden="true"></i></a></h3>
+        <h4>
+          <span class="badge badge-primary"><span ng-bind="active_house.price / 1000000 | number:3"></span> MKr</span>
+          <small>
+            <span class="badge badge-info" ng-bind="active_house.status.replace('_', ' ')" style="text-transform:capitalize;"></span>
+            <span class="badge" ng-class="{'badge-info': active_house.bidding != 1, 'badge-warning': active_house.bidding == 1}" ng-bind="active_house.bidding == 1 ? 'Bidding now' : 'No bidding yet'"></span>
+          </small>
+        </h4>
+        <img ng-src="{{active_house.front_image}}" class="w-100 my-2">
+        <dl class="row focus_dl small">
+          <dt class="col-xl-5">Location:</dt>
+          <dd class="col-xl-7" ng-bind="active_house.addressLocality"></dd>
+
+          <dt class="col-xl-5">Published:</dt>
+          <dd class="col-xl-7">
+            <span class="badge badge-info" ng-bind="active_house.publication_date"></span>
+            <span class="badge badge-light" ng-bind="active_house.publication_date"></span>
+          </dd>
+
+          <dt class="col-xl-5">Upcoming visning:</dt>
+          <dd class="col-xl-7"><span class="badge" ng-class="{'badge-info': active_house.upcoming_open_houses != 1, 'badge-warning': active_house.upcoming_open_houses == 1}" ng-bind="active_house.upcoming_open_houses == 1 ? 'Yes' : 'No'"></span></dd>
+
+          <dt class="col-xl-5">Size:</dt>
+          <dd class="col-xl-7">
+            <span class="badge badge-success"><span ng-bind="active_house.living_area"></span> m<sup>2</sup> Bo</span>
+            <span class="badge badge-warning"><span ng-bind="active_house.supplemental_area"></span> m<sup>2</sup> Bi</span>
+            <span class="badge badge-secondary"><span ng-bind="active_house.land_area | number:0"></span> m<sup>2</sup> Land</span>
+          </dd>
+
+          <dt class="col-xl-5">Rooms:</dt>
+          <dd class="col-xl-7"><span class="badge badge-info" ng-bind="active_house.rooms"></span></dd>
+
+          <dt class="col-xl-5">Driftkostnad:</dt>
+          <dd class="col-xl-7"><span ng-bind="active_house.driftkostnad / 12 | number:0"></span> kr/month <small>(<span ng-bind="active_house.driftkostnad | number:0"></span> kr/year)</small></dd>
+
+          <dt class="col-xl-5">Construction year:</dt>
+          <dd class="col-xl-7"><span ng-bind="active_house.construction_year"></span></dd>
+
+          <dt class="col-xl-5">Tenure:</dt>
+          <dd class="col-xl-7"><span ng-bind="active_house.tenure"></span></dd>
+
+        </dl>
+
+        <div class="row my-5 house_ratings" data-house_id="">
+          <div class="col-6 rating_person rating_person_1">
+            <h4><span class="d-none d-xl-inline">Rating:</span> <?php echo $ini_array['person_1_name']; ?></h4>
+            <div class="btn-group d-flex rating_yesno" role="group">
+              <button class="btn w-100 btn-outline-success mb-2 rating_overall_yes"><i class="fa fa-thumbs-up"></i></button>
+              <button class="btn w-100 btn-outline-danger mb-2 rating_overall_no"><i class="fa fa-thumbs-down"></i></button>
+            </div>
+            <dl class="row">
+              <dt class="col-xl-6">Inside</dt>
+              <dd class="col-xl-6 rating_stars rating_inside"><i class="fa fa-star text-black-50" aria-hidden="true"></i><i class="fa fa-star text-black-50" aria-hidden="true"></i><i class="fa fa-star text-black-50" aria-hidden="true"></i><i class="fa fa-star text-black-50" aria-hidden="true"></i><i class="fa fa-star text-black-50" aria-hidden="true"></i></dd>
+
+              <dt class="col-xl-6">Outside</dt>
+              <dd class="col-xl-6 rating_stars rating_outside"><i class="fa fa-star text-black-50" aria-hidden="true"></i><i class="fa fa-star text-black-50" aria-hidden="true"></i><i class="fa fa-star text-black-50" aria-hidden="true"></i><i class="fa fa-star text-black-50" aria-hidden="true"></i><i class="fa fa-star text-black-50" aria-hidden="true"></i></dd>
+
+              <dt class="col-xl-6">Surroundings</dt>
+              <dd class="col-xl-6 rating_stars rating_surroundings"><i class="fa fa-star text-black-50" aria-hidden="true"></i><i class="fa fa-star text-black-50" aria-hidden="true"></i><i class="fa fa-star text-black-50" aria-hidden="true"></i><i class="fa fa-star text-black-50" aria-hidden="true"></i><i class="fa fa-star text-black-50" aria-hidden="true"></i></dd>
+
+              <dt class="col-xl-6">Commute</dt>
+              <dd class="col-xl-6 rating_stars rating_commute"><i class="fa fa-star text-black-50" aria-hidden="true"></i><i class="fa fa-star text-black-50" aria-hidden="true"></i><i class="fa fa-star text-black-50" aria-hidden="true"></i><i class="fa fa-star text-black-50" aria-hidden="true"></i><i class="fa fa-star text-black-50" aria-hidden="true"></i></dd>
+
+              <dt class="col-xl-6">Drift costs</dt>
+              <dd class="col-xl-6 rating_stars rating_drift_costs"><i class="fa fa-star text-black-50" aria-hidden="true"></i><i class="fa fa-star text-black-50" aria-hidden="true"></i><i class="fa fa-star text-black-50" aria-hidden="true"></i><i class="fa fa-star text-black-50" aria-hidden="true"></i><i class="fa fa-star text-black-50" aria-hidden="true"></i></dd>
+            </dl>
+            <textarea class="form-control results_comment"></textarea>
+          </div>
+          <div class="col-6 rating_person rating_person_2">
+            <h4><span class="d-none d-xl-inline">Rating:</span> <?php echo $ini_array['person_2_name']; ?></h4>
+            <div class="btn-group d-flex rating_yesno" role="group">
+              <button class="btn w-100 btn-outline-success mb-2 rating_overall_yes"><i class="fa fa-thumbs-up"></i></button>
+              <button class="btn w-100 btn-outline-danger mb-2 rating_overall_no"><i class="fa fa-thumbs-down"></i></button>
+            </div>
+            <dl class="row">
+              <dt class="col-xl-6">Inside</dt>
+              <dd class="col-xl-6 rating_stars rating_inside"><i class="fa fa-star text-black-50" aria-hidden="true"></i><i class="fa fa-star text-black-50" aria-hidden="true"></i><i class="fa fa-star text-black-50" aria-hidden="true"></i><i class="fa fa-star text-black-50" aria-hidden="true"></i><i class="fa fa-star text-black-50" aria-hidden="true"></i></dd>
+
+              <dt class="col-xl-6">Outside</dt>
+              <dd class="col-xl-6 rating_stars rating_outside"><i class="fa fa-star text-black-50" aria-hidden="true"></i><i class="fa fa-star text-black-50" aria-hidden="true"></i><i class="fa fa-star text-black-50" aria-hidden="true"></i><i class="fa fa-star text-black-50" aria-hidden="true"></i><i class="fa fa-star text-black-50" aria-hidden="true"></i></dd>
+
+              <dt class="col-xl-6">Surroundings</dt>
+              <dd class="col-xl-6 rating_stars rating_surroundings"><i class="fa fa-star text-black-50" aria-hidden="true"></i><i class="fa fa-star text-black-50" aria-hidden="true"></i><i class="fa fa-star text-black-50" aria-hidden="true"></i><i class="fa fa-star text-black-50" aria-hidden="true"></i><i class="fa fa-star text-black-50" aria-hidden="true"></i></dd>
+
+              <dt class="col-xl-6">Commute</dt>
+              <dd class="col-xl-6 rating_stars rating_commute"><i class="fa fa-star text-black-50" aria-hidden="true"></i><i class="fa fa-star text-black-50" aria-hidden="true"></i><i class="fa fa-star text-black-50" aria-hidden="true"></i><i class="fa fa-star text-black-50" aria-hidden="true"></i><i class="fa fa-star text-black-50" aria-hidden="true"></i></dd>
+
+              <dt class="col-xl-6">Drift costs</dt>
+              <dd class="col-xl-6 rating_stars rating_drift_costs"><i class="fa fa-star text-black-50" aria-hidden="true"></i><i class="fa fa-star text-black-50" aria-hidden="true"></i><i class="fa fa-star text-black-50" aria-hidden="true"></i><i class="fa fa-star text-black-50" aria-hidden="true"></i><i class="fa fa-star text-black-50" aria-hidden="true"></i></dd>
+            </dl>
+            <textarea class="form-control results_comment"></textarea>
+          </div>
+        </div>
+        <p class="p-3 mb-2 bg-success text-white" style="display:none;" id="saving_ratings_notification">Saving ratings..</p>
+
+        <hr class="my-5">
+        <a class="btn btn-outline-secondary btn-sm mb-2" data-toggle="collapse" href="#allJSON_info" role="button" aria-expanded="false" aria-controls="allJSON_info">
+          Show all information
+        </a>
+        <div class="collapse" id="allJSON_info">
+          <div class="card card-body">
+            <pre class="focus_data small"></pre>
+          </div>
+        </div>
+      </div>
+    </div>
+    <footer>
+        Hemnet-Commuter was written by <a href="http://phil.ewels.co.uk">Phil Ewels</a>. It is in no way connected with, or endorsed by,
+        <a href="https://www.hemnet.se">hemnet.se</a>.<br>
+        The code for this website is released with the MIT open-source licence and can be
+        viewed on GitHub: <a href="https://github.com/ewels/hemnet-commuter">https://github.com/ewels/hemnet-commuter</a>.
+    </footer>
+  </div>
+</div>
+
+</body>
+</html>
