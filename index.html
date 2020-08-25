@@ -86,7 +86,7 @@
   <div class="col-md-9 pl-0 h-100 order-2">
       <leaflet lf-center="stockholm" event-broadcast="events" markers="markers" style="position: absolute; top: 0; bottom: 0; width: 100%;"></leaflet>
   </div>
-  <div class="col-md-3 pr-0 order-1">
+  <div class="col-md-3 pr-0 order-1 h-100 overflow-auto">
     <div class="container pt-3">
       <h1 class="h2">
         <img src="hemnet.svg" class="float-right" style="width: 40px; margin-top:-5px;">
@@ -143,67 +143,29 @@
 
         </dl>
 
-        <div class="row my-5 house_ratings" data-house_id="">
-          <div class="col-6 rating_person rating_person_1">
-            <h4><span class="d-none d-xl-inline">Rating:</span> <?php echo $ini_array['person_1_name']; ?></h4>
-            <div class="btn-group d-flex rating_yesno" role="group">
-              <button class="btn w-100 btn-outline-success mb-2 rating_overall_yes"><i class="fa fa-thumbs-up"></i></button>
-              <button class="btn w-100 btn-outline-danger mb-2 rating_overall_no"><i class="fa fa-thumbs-down"></i></button>
+        <div class="row my-5 house_ratings">
+          <div class="col-6">
+            <h4>Freya NOT WRITTEN YET</h4>
+            <div class="btn-group d-flex" role="group">
+              <button class="btn w-100 btn-outline-success"><i class="fa fa-thumbs-up"></i></button>
+              <button class="btn w-100 btn-outline-info"><i class="fa fa-question"></i></button>
+              <button class="btn w-100 btn-outline-danger"><i class="fa fa-thumbs-down"></i></button>
             </div>
-            <dl class="row">
-              <dt class="col-xl-6">Inside</dt>
-              <dd class="col-xl-6 rating_stars rating_inside"><i class="fa fa-star text-black-50" aria-hidden="true"></i><i class="fa fa-star text-black-50" aria-hidden="true"></i><i class="fa fa-star text-black-50" aria-hidden="true"></i><i class="fa fa-star text-black-50" aria-hidden="true"></i><i class="fa fa-star text-black-50" aria-hidden="true"></i></dd>
-
-              <dt class="col-xl-6">Outside</dt>
-              <dd class="col-xl-6 rating_stars rating_outside"><i class="fa fa-star text-black-50" aria-hidden="true"></i><i class="fa fa-star text-black-50" aria-hidden="true"></i><i class="fa fa-star text-black-50" aria-hidden="true"></i><i class="fa fa-star text-black-50" aria-hidden="true"></i><i class="fa fa-star text-black-50" aria-hidden="true"></i></dd>
-
-              <dt class="col-xl-6">Surroundings</dt>
-              <dd class="col-xl-6 rating_stars rating_surroundings"><i class="fa fa-star text-black-50" aria-hidden="true"></i><i class="fa fa-star text-black-50" aria-hidden="true"></i><i class="fa fa-star text-black-50" aria-hidden="true"></i><i class="fa fa-star text-black-50" aria-hidden="true"></i><i class="fa fa-star text-black-50" aria-hidden="true"></i></dd>
-
-              <dt class="col-xl-6">Commute</dt>
-              <dd class="col-xl-6 rating_stars rating_commute"><i class="fa fa-star text-black-50" aria-hidden="true"></i><i class="fa fa-star text-black-50" aria-hidden="true"></i><i class="fa fa-star text-black-50" aria-hidden="true"></i><i class="fa fa-star text-black-50" aria-hidden="true"></i><i class="fa fa-star text-black-50" aria-hidden="true"></i></dd>
-
-              <dt class="col-xl-6">Drift costs</dt>
-              <dd class="col-xl-6 rating_stars rating_drift_costs"><i class="fa fa-star text-black-50" aria-hidden="true"></i><i class="fa fa-star text-black-50" aria-hidden="true"></i><i class="fa fa-star text-black-50" aria-hidden="true"></i><i class="fa fa-star text-black-50" aria-hidden="true"></i><i class="fa fa-star text-black-50" aria-hidden="true"></i></dd>
-            </dl>
-            <textarea class="form-control results_comment"></textarea>
+            <textarea class="form-control form-control-sm my-2" placeholder="Comment"></textarea>
+            <p class="small mb-2"><a href="#" class="text-muted">[ reset status ]</a></p>
           </div>
-          <div class="col-6 rating_person rating_person_2">
-            <h4><span class="d-none d-xl-inline">Rating:</span> <?php echo $ini_array['person_2_name']; ?></h4>
-            <div class="btn-group d-flex rating_yesno" role="group">
-              <button class="btn w-100 btn-outline-success mb-2 rating_overall_yes"><i class="fa fa-thumbs-up"></i></button>
-              <button class="btn w-100 btn-outline-danger mb-2 rating_overall_no"><i class="fa fa-thumbs-down"></i></button>
+          <div class="col-6">
+            <h4>Phil NOT WRITTEN YET</h4>
+            <div class="btn-group d-flex" role="group">
+              <button class="btn w-100 btn-outline-success"><i class="fa fa-thumbs-up"></i></button>
+              <button class="btn w-100 btn-outline-info"><i class="fa fa-question"></i></button>
+              <button class="btn w-100 btn-outline-danger"><i class="fa fa-thumbs-down"></i></button>
             </div>
-            <dl class="row">
-              <dt class="col-xl-6">Inside</dt>
-              <dd class="col-xl-6 rating_stars rating_inside"><i class="fa fa-star text-black-50" aria-hidden="true"></i><i class="fa fa-star text-black-50" aria-hidden="true"></i><i class="fa fa-star text-black-50" aria-hidden="true"></i><i class="fa fa-star text-black-50" aria-hidden="true"></i><i class="fa fa-star text-black-50" aria-hidden="true"></i></dd>
-
-              <dt class="col-xl-6">Outside</dt>
-              <dd class="col-xl-6 rating_stars rating_outside"><i class="fa fa-star text-black-50" aria-hidden="true"></i><i class="fa fa-star text-black-50" aria-hidden="true"></i><i class="fa fa-star text-black-50" aria-hidden="true"></i><i class="fa fa-star text-black-50" aria-hidden="true"></i><i class="fa fa-star text-black-50" aria-hidden="true"></i></dd>
-
-              <dt class="col-xl-6">Surroundings</dt>
-              <dd class="col-xl-6 rating_stars rating_surroundings"><i class="fa fa-star text-black-50" aria-hidden="true"></i><i class="fa fa-star text-black-50" aria-hidden="true"></i><i class="fa fa-star text-black-50" aria-hidden="true"></i><i class="fa fa-star text-black-50" aria-hidden="true"></i><i class="fa fa-star text-black-50" aria-hidden="true"></i></dd>
-
-              <dt class="col-xl-6">Commute</dt>
-              <dd class="col-xl-6 rating_stars rating_commute"><i class="fa fa-star text-black-50" aria-hidden="true"></i><i class="fa fa-star text-black-50" aria-hidden="true"></i><i class="fa fa-star text-black-50" aria-hidden="true"></i><i class="fa fa-star text-black-50" aria-hidden="true"></i><i class="fa fa-star text-black-50" aria-hidden="true"></i></dd>
-
-              <dt class="col-xl-6">Drift costs</dt>
-              <dd class="col-xl-6 rating_stars rating_drift_costs"><i class="fa fa-star text-black-50" aria-hidden="true"></i><i class="fa fa-star text-black-50" aria-hidden="true"></i><i class="fa fa-star text-black-50" aria-hidden="true"></i><i class="fa fa-star text-black-50" aria-hidden="true"></i><i class="fa fa-star text-black-50" aria-hidden="true"></i></dd>
-            </dl>
-            <textarea class="form-control results_comment"></textarea>
+            <textarea class="form-control form-control-sm my-2" placeholder="Comment"></textarea>
+            <p class="small mb-2"><a href="#" class="text-muted">[ reset status ]</a></p>
           </div>
         </div>
         <p class="p-3 mb-2 bg-success text-white" style="display:none;" id="saving_ratings_notification">Saving ratings..</p>
-
-        <hr class="my-5">
-        <a class="btn btn-outline-secondary btn-sm mb-2" data-toggle="collapse" href="#allJSON_info" role="button" aria-expanded="false" aria-controls="allJSON_info">
-          Show all information
-        </a>
-        <div class="collapse" id="allJSON_info">
-          <div class="card card-body">
-            <pre class="focus_data small"></pre>
-          </div>
-        </div>
       </div>
     </div>
     <footer>
