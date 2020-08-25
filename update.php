@@ -153,6 +153,19 @@ if(isset($_POST['house_detail_fetch_expiry']) && isset($_POST['house_detail_fetc
 ///////////////////////////
 require_once('geocode_address.php');
 
+// Get current geocodes
+$sql = 'SELECT house_id, location_type FROM geocoding_results';
+$geocode_results = [];
+if ($result = $mysqli->query($sql)) {
+  while ($row = $result->fetch_row()) {
+    if(!in_array($row[1], array_keys($geocode_results))){
+      $geocode_results[$row[1]] = [];
+    }
+    $geocode_results[$row[1]][] = $row[0];
+  }
+  $result->free_result();
+}
+
 // Get missing detail house IDs
 $sql = '
   SELECT search_result_urls.id FROM search_result_urls
@@ -263,11 +276,24 @@ if(!file_exists("hemnet_commuter_config.ini")){
     <small class="form-text text-muted">Warning: Fetching a lot of geocoded addresses can take a while...</small>
   </form>
 
+  <p>Location precisions:</p>
+  <ul>
+    <?php
+    foreach($geocode_results as $loc_type => $house_ids){
+      echo '<li><a data-toggle="collapse" href="#geo_loctype_houses_'.$loc_type.'" role="button">'.$loc_type.'</a> - <span class="badge badge-secondary">'.count($house_ids).'</span> (click to view / edit) <ul class="collapse" id="geo_loctype_houses_'.$loc_type.'">';
+      foreach($house_ids as $house_id){
+        echo '<li><a href="https://www.hemnet.se/bostad/'.$house_id.'" target="_blank">'.$house_id.'</a> &nbsp; <a href="#" class="alert-link geocode_manual" data-houseid="'.$house_id.'">[edit]</a></li>';
+      }
+      echo '</ul></li>';
+    }
+    ?>
+  </ul>
+
 
 </div>
 
 <footer>
-  <div class="container">
+  <div class="container-fluid">
     Hemnet-Commuter was written by <a href="http://phil.ewels.co.uk">Phil Ewels</a>. It is in no way connected with, or endorsed by,
     <a href="https://www.hemnet.se">hemnet.se</a>.<br>
     The code for this website is released with the MIT open-source licence and can be

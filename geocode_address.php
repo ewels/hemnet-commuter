@@ -76,6 +76,7 @@ function geocode_address($address, $house_id=false){
 
     $loc['lat'] = $results->results[0]->geometry->location->lat;
     $loc['lng'] = $results->results[0]->geometry->location->lng;
+    $loc['location_type'] = $results->results[0]->geometry->location_type;
   }
 
   // Save to the database
@@ -84,7 +85,8 @@ function geocode_address($address, $house_id=false){
       INSERT INTO `geocoding_results` SET
         `address` = "'.$mysqli->real_escape_string($address).'",
         `lat` = "'.$mysqli->real_escape_string($loc['lat']).'",
-        `lng` = "'.$mysqli->real_escape_string($loc['lng']).'"
+        `lng` = "'.$mysqli->real_escape_string($loc['lng']).'",
+        `location_type` = "'.$mysqli->real_escape_string($loc['location_type']).'"
     ';
     if($house_id){
       $sql .= ', `house_id` = "'.$mysqli->real_escape_string($house_id).'"';
@@ -109,6 +111,7 @@ function fix_geocode_result($house_id, $lat, $lng){
     SET
       `lat` = "'.$mysqli->real_escape_string($lat).'",
       `lng` = "'.$mysqli->real_escape_string($lng).'",
+      `location_type` = "MANUAL",
       `house_id` = "'.$mysqli->real_escape_string($house_id).'"
   ';
   $mysqli->query($sql);
