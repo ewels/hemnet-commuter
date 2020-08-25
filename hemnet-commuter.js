@@ -371,7 +371,7 @@ function load_hemnet_saved_search() {
 
   $('#status-msg').text("Fetching search data");
 
-  var hemnet_search_id_matches = $('#hemnet_saved_search_url').val().match(/subscription=/(\d+)/);
+  var hemnet_search_id_matches = $('#hemnet_saved_search_url').val().match(/subscription=(\d+)/);
   if(hemnet_search_id_matches == null){
     dfd.reject("Hemnet Search URL did not match expected pattern: "+$('#hemnet_saved_search_url').val());
     return false;

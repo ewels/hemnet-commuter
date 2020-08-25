@@ -154,14 +154,14 @@ if(isset($_POST['house_detail_fetch_expiry']) && isset($_POST['house_detail_fetc
 require_once('geocode_address.php');
 
 // Get current geocodes
-$sql = 'SELECT house_id, location_type FROM geocoding_results';
+$sql = 'SELECT house_id, lat, lng, address, location_type FROM geocoding_results';
 $geocode_results = [];
 if ($result = $mysqli->query($sql)) {
-  while ($row = $result->fetch_row()) {
-    if(!in_array($row[1], array_keys($geocode_results))){
-      $geocode_results[$row[1]] = [];
+  while ($row = $result->fetch_assoc()) {
+    if(!in_array($row['location_type'], array_keys($geocode_results))){
+      $geocode_results[$row['location_type']] = [];
     }
-    $geocode_results[$row[1]][] = $row[0];
+    $geocode_results[$row['location_type']][] = $row;
   }
   $result->free_result();
 }
@@ -279,10 +279,10 @@ if(!file_exists("hemnet_commuter_config.ini")){
   <p>Location precisions:</p>
   <ul>
     <?php
-    foreach($geocode_results as $loc_type => $house_ids){
-      echo '<li><a data-toggle="collapse" href="#geo_loctype_houses_'.$loc_type.'" role="button">'.$loc_type.'</a> - <span class="badge badge-secondary">'.count($house_ids).'</span> (click to view / edit) <ul class="collapse" id="geo_loctype_houses_'.$loc_type.'">';
-      foreach($house_ids as $house_id){
-        echo '<li><a href="https://www.hemnet.se/bostad/'.$house_id.'" target="_blank">'.$house_id.'</a> &nbsp; <a href="#" class="alert-link geocode_manual" data-houseid="'.$house_id.'">[edit]</a></li>';
+    foreach($geocode_results as $loc_type => $houses){
+      echo '<li><a data-toggle="collapse" href="#geo_loctype_houses_'.$loc_type.'" role="button">'.$loc_type.'</a> - <span class="badge badge-secondary">'.count($houses).'</span> (click to view / edit) <ul class="collapse" id="geo_loctype_houses_'.$loc_type.'">';
+      foreach($houses as $house){
+        echo '<li class="my-2">'.$house['address'].' - <a href="https://www.hemnet.se/bostad/'.$house['house_id'].'" target="_blank">Hemnet</a> / <a href="https://www.google.com/maps?q=loc:'.$house['lat'].','.$house['lng'].'" target="_blank">Current G Maps</a> <small>(<a href="#" class="geocode_manual" data-houseid="'.$house['house_id'].'">Edit</a>)</small></li>';
       }
       echo '</ul></li>';
     }
@@ -309,17 +309,35 @@ if(!file_exists("hemnet_commuter_config.ini")){
 <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-alpha.6/js/bootstrap.min.js" integrity="sha384-vBWWzlZJ8ea9aCX4pEW3rVHjgjt7zpkNpZk+02D9phzyeVkE+jo0ieGizqPLForn" crossorigin="anonymous"></script>
 <script src="https://unpkg.com/leaflet@1.6.0/dist/leaflet.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.24.0/moment.min.js" integrity="sha256-4iQZ6BVL4qNKlQ27TExEhBN1HFPvAvAMbFavKKosSWQ=" crossorigin="anonymous"></script>
-<script src="hemnet-commuter.js"></script>
 
 <script type="text/javascript">
 $(function(){
   $('.geocode_manual').click(function(e){
     e.preventDefault();
     var house_id = $(this).data('houseid');
-    var lat = prompt("Latitute");
-    if (lat == null) { return; }
-    var lng = prompt("Longitude");
-    if (lng == null) { return; }
+    var lat = false;
+    var lng = false;
+    var gmaps_link = prompt("Google maps link (leave blank for manual lat / lng)");
+    if(gmaps_link != null){
+      var matches = gmaps_link.match(/https?:\/\/www\.google\.com\/maps\/\@(\d+\.\d+),(\d+\.\d+)/);
+      if(matches != null){
+        lat = matches[1];
+        lng = matches[2];
+        if(!confirm("Got lat "+lat+" and lng "+lng+" from Google maps URL")){
+          return;
+        };
+      }
+    }
+    if(!lat || !lng){
+      lat = prompt("Latitute");
+      if (lat == null) { return; }
+      lng = prompt("Longitude");
+      if (lng == null) { return; }
+    }
+    if(!parseFloat(lat) > 0 || !parseFloat(lat) > 0){
+      alert("Lat and lng should be numeric. Got "+lat+" and "+lng);
+      return;
+    }
 
     var api_url = "geocode_address.php?id="+house_id+"&fix_lat="+lat+"&fix_lng="+lng;
 
