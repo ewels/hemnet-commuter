@@ -74,10 +74,26 @@
 
       // Leaflet marker clicked
       $scope.$on('leafletDirectiveMarker.click', function(event, args){
+        // Get house details
         $scope.active_id = args.model.house_id;
         $scope.active_house = $scope.results[$scope.active_id];
         console.log($scope.active_house);
       });
+
+      // Ratings tag clicked
+      $scope.save_tag = function(tag_id){
+        var is_selected = ! $scope.active_house.ratings.tags[tag_id].selected;
+        // Get the house data from the database
+        var post_data = {
+          'house_id': $scope.active_id,
+          'r_key': 'tag_'+tag_id,
+          'r_value': is_selected
+        };
+        $http.post("api/ratings.php", JSON.stringify(post_data)).then(function(response) {
+          // Set the scope selected to switch the button
+          $scope.active_house.ratings.tags[tag_id].selected = is_selected;
+        });
+      }
 
     }]);
   </script>
@@ -167,11 +183,7 @@
           </div>
           <div class="col-12">
             <h6>Tags</h6>
-            <button class="btn btn-outline-secondary" style="padding: .2rem; font-size: .7rem; line-height: 1.2; border-radius: .2rem;">High driftkostnad</button>
-            <button class="btn btn-outline-secondary" style="padding: .2rem; font-size: .7rem; line-height: 1.2; border-radius: .2rem;">Small tomt</button>
-            <button class="btn btn-outline-secondary" style="padding: .2rem; font-size: .7rem; line-height: 1.2; border-radius: .2rem;">Long commute</button>
-            <button class="btn btn-outline-secondary" style="padding: .2rem; font-size: .7rem; line-height: 1.2; border-radius: .2rem;">Too suburban</button>
-            <button class="btn btn-outline-secondary" style="padding: .2rem; font-size: .7rem; line-height: 1.2; border-radius: .2rem;">Needs renovation</button>
+            <button ng-repeat="(tag_id, tag) in active_house.ratings.tags" ng-click="save_tag(tag_id)" ng-class="{'active': tag.selected}" class="btn btn-outline-secondary p-1 mr-2 mb-2" style="font-size: .7rem;">{{tag.label}}</button>
           </div>
         </div>
         <p class="p-3 mb-2 bg-success text-white" style="display:none;" id="saving_ratings_notification">Saving ratings..</p>

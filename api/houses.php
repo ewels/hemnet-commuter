@@ -39,4 +39,10 @@ if ($result = $mysqli->query($sql)) {
   $result->free_result();
 }
 
+// Get ratings
+require_once('ratings.php');
+foreach($results as $house_id => $house){
+  $results[$house_id]['ratings'] = get_house_ratings($house_id);
+}
+
 echo json_encode(array("status"=>"success", "results"=>$results));
