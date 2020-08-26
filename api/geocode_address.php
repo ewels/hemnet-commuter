@@ -43,6 +43,7 @@ function geocode_house_address($house_id){
 }
 
 function geocode_address($address, $house_id=false){
+  global $ini_array;
   global $mysqli;
   $loc = array("lat" => false, "lng" => false);
 
@@ -60,8 +61,6 @@ function geocode_address($address, $house_id=false){
       return $loc;
     }
   }
-
-  $ini_array = parse_ini_file("hemnet_commuter_config.ini");
 
   $google_url = 'https://maps.googleapis.com/maps/api/geocode/json?key='.$ini_array['gmap_api_key'].'&address='.urlencode($address);
   $results = json_decode(file_get_contents($google_url));
@@ -129,7 +128,7 @@ if ( basename(__FILE__) == basename($_SERVER["SCRIPT_FILENAME"]) ) {
   ini_set('display_startup_errors', 1);
   error_reporting(E_ALL);
 
-  $ini_array = parse_ini_file("hemnet_commuter_config.ini");
+  $ini_array = parse_ini_file("../hemnet_commuter_config.ini");
 
   $mysqli = new mysqli("localhost", $ini_array['db_user'], $ini_array['db_password'], $ini_array['db_name']);
   if ($mysqli->connect_errno) {
