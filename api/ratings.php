@@ -27,9 +27,19 @@ function get_house_ratings($house_id){
     $result->free_result();
   }
 
+  // Get all users
+  $sql = 'SELECT `id`, `name` FROM `users`';
+  $users = [];
+  if ($result = $mysqli->query($sql)) {
+    while ($row = $result->fetch_assoc()) {
+      $users[$row['id']] = $row['name'];
+    }
+    $result->free_result();
+  }
+
   // Get ratings for this house
   $sql = 'SELECT * FROM `house_ratings` WHERE `house_id` = "'.$mysqli->real_escape_string($house_id).'"';
-  $results = array('tags' => $tags, 'users' => [], );
+  $results = array('tags' => $tags, 'users' => $users, 'ratings' => []);
   if ($result = $mysqli->query($sql)) {
     while ($row = $result->fetch_assoc()) {
       // Tags - not user specific
@@ -41,10 +51,10 @@ function get_house_ratings($house_id){
       else {
         if(is_null($row['user_id'])) continue;
         // New user id
-        if(!in_array($row['user_id'], $results)){
-          $results['users'][$row['user_id']] = [];
+        if(!in_array($row['user_id'], $results['ratings'])){
+          $results['ratings'][$row['user_id']] = [];
         }
-        $results['users'][$row['r_key']] = $row['r_value'];
+        $results['ratings'][$row['user_id']][$row['r_key']] = $row['r_value'];
       }
     }
     $result->free_result();

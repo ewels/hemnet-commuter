@@ -81,17 +81,34 @@
       });
 
       // Ratings tag clicked
-      $scope.save_tag = function(tag_id){
-        var is_selected = ! $scope.active_house.ratings.tags[tag_id].selected;
-        // Get the house data from the database
+      $scope.save_rating = function(r_key, r_value, r_user_id){
+        var tag_id = false;
+        // Tags
+        if(r_key.substring(0,4) == 'tag_'){
+          tag_id = r_key.substring(4);
+          r_value = ! $scope.active_house.ratings.tags[tag_id].selected;
+        }
+        // Deselect ratings
+        if(r_key == 'rating' && r_value == $scope.active_house.ratings.ratings[r_user_id][r_key]){
+          r_value = 'unset';
+        }
+
+        // Build post data and send to API
         var post_data = {
           'house_id': $scope.active_id,
-          'r_key': 'tag_'+tag_id,
-          'r_value': is_selected
+          'r_key': r_key,
+          'r_value': r_value
         };
+        if(r_user_id){
+          post_data.user_id = r_user_id;
+        }
         $http.post("api/ratings.php", JSON.stringify(post_data)).then(function(response) {
           // Set the scope selected to switch the button
-          $scope.active_house.ratings.tags[tag_id].selected = is_selected;
+          if(tag_id){
+            $scope.active_house.ratings.tags[tag_id].selected = r_value;
+          } else {
+            $scope.active_house.ratings.ratings[r_user_id][r_key] = r_value;
+          }
         });
       }
 
@@ -167,28 +184,18 @@
         </dl>
 
         <div class="row my-5 house_ratings">
-          <h3 class="mb-0">RATINGS DON'T WORK YET</h3>
-          <div class="col-6">
-            <h5>Freya</h5>
+          <div ng-repeat="(user_id, user_name) in active_house.ratings.users" class="col-6">
+            <h5>{{ user_name }}</h5>
             <div class="btn-group d-flex" role="group">
-              <button class="btn w-100 btn-outline-success"><i class="fa fa-thumbs-up"></i></button>
-              <button class="btn w-100 btn-outline-info"><i class="fa fa-question"></i></button>
-              <button class="btn w-100 btn-outline-danger"><i class="fa fa-thumbs-down"></i></button>
+              <button ng-click="save_rating('rating', 'yes', user_id)" ng-class="{'active': active_house.ratings.ratings[user_id]['rating'] == 'yes'}"  class="btn w-100 btn-outline-success"><i class="fa fa-thumbs-up"></i></button>
+              <button ng-click="save_rating('rating', 'maybe', user_id)" ng-class="{'active': active_house.ratings.ratings[user_id]['rating'] == 'maybe'}"  class="btn w-100 btn-outline-info"><i class="fa fa-question"></i></button>
+              <button ng-click="save_rating('rating', 'no', user_id)" ng-class="{'active': active_house.ratings.ratings[user_id]['rating'] == 'no'}"  class="btn w-100 btn-outline-danger"><i class="fa fa-thumbs-down"></i></button>
             </div>
-            <textarea class="form-control form-control-sm my-2" placeholder="Comment"></textarea>
-          </div>
-          <div class="col-6">
-            <h5>Phil</h5>
-            <div class="btn-group d-flex" role="group">
-              <button class="btn w-100 btn-outline-success"><i class="fa fa-thumbs-up"></i></button>
-              <button class="btn w-100 btn-outline-info"><i class="fa fa-question"></i></button>
-              <button class="btn w-100 btn-outline-danger"><i class="fa fa-thumbs-down"></i></button>
-            </div>
-            <textarea class="form-control form-control-sm my-2" placeholder="Comment"></textarea>
+            <textarea class="form-control form-control-sm my-2" placeholder="Comment">COMMENTS DON'T WORK YET</textarea>
           </div>
           <div class="col-12">
             <h6>Tags</h6>
-            <button ng-repeat="(tag_id, tag) in active_house.ratings.tags" ng-click="save_tag(tag_id)" ng-class="{'active': tag.selected}" class="btn btn-outline-secondary p-1 mr-2 mb-2" style="font-size: .7rem;">{{tag.label}}</button>
+            <button ng-repeat="(tag_id, tag) in active_house.ratings.tags" ng-click="save_rating('tag_'+tag_id)" ng-class="{'active': tag.selected}" class="btn btn-outline-secondary p-1 mr-2 mb-2" style="font-size: .7rem;">{{tag.label}}</button>
           </div>
         </div>
         <p class="p-3 mb-2 bg-success text-white" style="display:none;" id="saving_ratings_notification">Saving ratings..</p>
