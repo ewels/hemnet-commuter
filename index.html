@@ -142,8 +142,13 @@
 
           <dt class="col-xl-5">Size:</dt>
           <dd class="col-xl-7">
-            <span class="badge badge-success"><span ng-bind="active_house.living_area"></span> m<sup>2</sup> Bo</span>
-            <span class="badge badge-warning"><span ng-bind="active_house.supplemental_area"></span> m<sup>2</sup> Bi</span>
+            <span class="badge badge-success"><span ng-bind="(active_house.living_area * 1) + (active_house.supplemental_area * 1)"></span> m<sup>2</sup> total</span>
+            (<span class="badge badge-light"><span ng-bind="active_house.living_area"></span> Bo</span> + <span class="badge badge-light"><span ng-bind="active_house.supplemental_area ? active_house.supplemental_area : 0"></span> Bi</span>)
+            </span>
+          </dd>
+
+          <dt class="col-xl-5">Tomt:</dt>
+          <dd class="col-xl-7">
             <span class="badge badge-secondary"><span ng-bind="active_house.land_area | number:0"></span> m<sup>2</sup> Land</span>
           </dd>
 
