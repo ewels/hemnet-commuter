@@ -1276,7 +1276,7 @@ function save_house_ratings(){
     }
   };
   // Save to DB
-  $.post( "ratings_api.php", { house_id: house_id, ratings: JSON.stringify(ratings) }).done(function( e ) {
+  $.post( "api/ratings.php", { house_id: house_id, ratings: JSON.stringify(ratings) }).done(function( e ) {
     // Too fast otherwise
     setTimeout(function(){
       $('#saving_ratings_notification').fadeOut();
@@ -1301,7 +1301,7 @@ function load_house_ratings(house_id, render_on_page, marker){
 
   // Get the new data
   $.ajax({
-    url: "ratings_api.php?house_id="+house_id,
+    url: "api/ratings.php?house_id="+house_id,
     success: function (data) {
       if(data == ''){ return; }
       ratings = JSON.parse(data);

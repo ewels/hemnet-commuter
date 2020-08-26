@@ -48,7 +48,7 @@
       // Get the map markers
       $scope.updateMarkers = function() {
         // Get the house data from the database
-        $http.get("api_houses.php").then(function(response) {
+        $http.get("api/houses.php").then(function(response) {
           $scope.results = response.data.results;
 
           // Make nice object of map markers
@@ -144,25 +144,32 @@
         </dl>
 
         <div class="row my-5 house_ratings">
+          <h3 class="mb-0">RATINGS DON'T WORK YET</h3>
           <div class="col-6">
-            <h4>Freya NOT WRITTEN YET</h4>
+            <h5>Freya</h5>
             <div class="btn-group d-flex" role="group">
               <button class="btn w-100 btn-outline-success"><i class="fa fa-thumbs-up"></i></button>
               <button class="btn w-100 btn-outline-info"><i class="fa fa-question"></i></button>
               <button class="btn w-100 btn-outline-danger"><i class="fa fa-thumbs-down"></i></button>
             </div>
             <textarea class="form-control form-control-sm my-2" placeholder="Comment"></textarea>
-            <p class="small mb-2"><a href="#" class="text-muted">[ reset status ]</a></p>
           </div>
           <div class="col-6">
-            <h4>Phil NOT WRITTEN YET</h4>
+            <h5>Phil</h5>
             <div class="btn-group d-flex" role="group">
               <button class="btn w-100 btn-outline-success"><i class="fa fa-thumbs-up"></i></button>
               <button class="btn w-100 btn-outline-info"><i class="fa fa-question"></i></button>
               <button class="btn w-100 btn-outline-danger"><i class="fa fa-thumbs-down"></i></button>
             </div>
             <textarea class="form-control form-control-sm my-2" placeholder="Comment"></textarea>
-            <p class="small mb-2"><a href="#" class="text-muted">[ reset status ]</a></p>
+          </div>
+          <div class="col-12">
+            <h6>Tags</h6>
+            <button class="btn btn-outline-secondary" style="padding: .2rem; font-size: .7rem; line-height: 1.2; border-radius: .2rem;">High driftkostnad</button>
+            <button class="btn btn-outline-secondary" style="padding: .2rem; font-size: .7rem; line-height: 1.2; border-radius: .2rem;">Small tomt</button>
+            <button class="btn btn-outline-secondary" style="padding: .2rem; font-size: .7rem; line-height: 1.2; border-radius: .2rem;">Long commute</button>
+            <button class="btn btn-outline-secondary" style="padding: .2rem; font-size: .7rem; line-height: 1.2; border-radius: .2rem;">Too suburban</button>
+            <button class="btn btn-outline-secondary" style="padding: .2rem; font-size: .7rem; line-height: 1.2; border-radius: .2rem;">Needs renovation</button>
           </div>
         </div>
         <p class="p-3 mb-2 bg-success text-white" style="display:none;" id="saving_ratings_notification">Saving ratings..</p>

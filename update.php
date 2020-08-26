@@ -18,7 +18,7 @@ if ($mysqli->connect_errno) {
 ///////////////////////////
 // SAVED SEARCHES
 ///////////////////////////
-require_once('scrape_hemnet_saved_search.php');
+require_once('api/scrape_hemnet_saved_search.php');
 
 // Get current search IDs
 $search_ids = [];
@@ -79,7 +79,7 @@ if(isset($_POST['saved_search_ids'])){
 ///////////////////////////
 // HOUSE DETAILS
 ///////////////////////////
-require_once('scrape_hemnet_house.php');
+require_once('api/scrape_hemnet_house.php');
 
 // POST - Delete old detail fetches
 if(isset($_POST['house_detail_fetch_expiry']) && isset($_POST['house_detail_delete_old'])){
@@ -151,7 +151,7 @@ if(isset($_POST['house_detail_fetch_expiry']) && isset($_POST['house_detail_fetc
 ///////////////////////////
 // GEOCODING
 ///////////////////////////
-require_once('geocode_address.php');
+require_once('api/geocode_address.php');
 
 // Get current geocodes
 $sql = 'SELECT house_id, lat, lng, address, location_type FROM geocoding_results';
@@ -339,7 +339,7 @@ $(function(){
       return;
     }
 
-    var api_url = "geocode_address.php?id="+house_id+"&fix_lat="+lat+"&fix_lng="+lng;
+    var api_url = "api/geocode_address.php?id="+house_id+"&fix_lat="+lat+"&fix_lng="+lng;
 
     $.getJSON(api_url, function( data ) {
       alert("Status: "+data.status+": "+data.msg+". Refresh the page to see the new count totals.");
