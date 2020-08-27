@@ -24,11 +24,28 @@
 
   <script type="text/javascript">
     var app = angular.module("hemnetCommuterApp", ['ui-leaflet']);
-    app.controller("hemnetCommuterController", [ '$scope', '$http', function($scope, $http) {
+    app.controller("hemnetCommuterController", [ '$scope', '$http', '$timeout', function($scope, $http, $timeout) {
 
-      // Variable defaults
+      // Filters
+      $scope.show_filters = false;
+      $scope.filters = {
+        price_min: 0,
+        price_max: 10000000,
+        size_total_min: 0,
+      }
+      $scope.stats = {
+        price: [0, 10000000],
+        size_total: [0, 10000],
+      }
+
+      // House results
+      $scope.call_active = false;
+      $scope.call_requested = false;
       $scope.active_id = false;
       $scope.active_house = false;
+      $scope.num_total_results = 0;
+      $scope.all_results = [];
+      $scope.num_results = 0;
       $scope.results = [];
 
       // Set up the map
@@ -38,10 +55,44 @@
       });
 
       // Get the map markers
-      $scope.updateMarkers = function() {
+      $scope.updateMarkers = function(init_call) {
+
+        // Don't fire too frequently
+        if($scope.call_active){
+          $scope.call_requested = true;
+          return;
+        }
+        $scope.call_active = true;
+        $scope.call_requested = false;
+
+        // Build filters POST data
+        var postdata = {
+          'price_min': $scope.filters.price_min,
+          'price_max': $scope.filters.price_max,
+          'size_total_min': $scope.filters.size_total_min,
+        }
+
         // Get the house data from the database
-        $http.get("api/houses.php").then(function(response) {
+        $http.post("api/houses.php", postdata).then(function(response) {
+
+          // Assign results
+          $scope.num_results = response.data.num_results;
           $scope.results = response.data.results;
+
+          function get_min_max(key, results){
+            var vals_arr = Object.values(results).map(a => parseFloat(a[key]));
+            var vals_arr = vals_arr.filter(function (el) { return !isNaN(el); });
+            return [ Math.min.apply(Math, vals_arr), Math.max.apply(Math, vals_arr) ];
+          }
+
+          // First time we have fetched results
+          if(init_call === true){
+            $scope.num_total_results = response.data.num_results;
+            $scope.all_results = response.data.results;
+            // Get stats
+            $scope.stats.price = get_min_max('price', response.data.results);
+            $scope.stats.size_total = get_min_max('size_total', response.data.results);
+          }
 
           // Make nice object of map markers
           var markers = {};
@@ -66,11 +117,20 @@
             bounds: bounds,
             markers: markers
           });
+
+          // Allow function to call again in 1 second
+          $timeout(function () {
+            $scope.call_active = false;
+            if($scope.call_requested){
+              $scope.updateMarkers();
+            }
+          }, 1000);
+
         });
       };
 
       // Initialise the map with markers on load
-      $scope.updateMarkers();
+      $scope.updateMarkers(true);
 
       // Leaflet marker clicked
       $scope.$on('leafletDirectiveMarker.click', function(event, args){
@@ -163,8 +223,26 @@
       </h1>
       <hr>
       <div class="row">
-        <div class="col-6"><a href="#" class="btn btn-block btn-secondary"><i class="fa fa-filter mr-2"></i> Filters</a></div>
+        <div class="col-6"><button ng-click="show_filters = !show_filters" class="btn btn-block btn-secondary"><i class="fa fa-filter mr-2"></i> Filters</button></div>
         <div class="col-6"><a href="update.php" class="btn btn-block btn-info"><i class="fa fa-refresh mr-2"></i> Update</a></div>
+      </div>
+      <div ng-show="show_filters" class="small pt-3">
+        <p>Showing <span ng-bind="num_results" class="badge badge-secondary"></span> out of <span ng-bind="num_total_results" class="badge badge-secondary"></span></p>
+        <div class="row">
+          <div class="col-4"><label for="price_min">Min Price</label></div>
+          <div class="col-5"><input id="price_min" ng-model="filters.price_min" type="range" class="form-control-range" min="{{stats.price[0]}}" max="{{stats.price[1]}}" ng-change="updateMarkers()"></div>
+          <div class="col-3 text-muted" ng-bind="filters.price_min"></div>
+        </div>
+        <div class="row">
+          <div class="col-4"><label for="price_max">Max Price</label></div>
+          <div class="col-5"><input id="price_max" ng-model="filters.price_max" type="range" class="form-control-range" min="{{stats.price[0]}}" max="{{stats.price[1]}}" ng-change="updateMarkers()"></div>
+          <div class="col-3 text-muted" ng-bind="filters.price_max"></div>
+        </div>
+        <div class="row">
+          <div class="col-4"><label for="size_total_min">Min (Bo + Bi)</label></div>
+          <div class="col-5"><input id="size_total_min" ng-model="filters.size_total_min" type="range" class="form-control-range" min="{{stats.size_total[0]}}" max="{{stats.size_total[1]}}" ng-change="updateMarkers()"></div>
+          <div class="col-3 text-muted" ng-bind="filters.size_total_min"></div>
+        </div>
       </div>
       <hr>
       <p ng-show="active_id == false" class="text-muted">Click a house marker on the map to see more information here.</p>
