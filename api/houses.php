@@ -39,6 +39,12 @@ if ($result = $mysqli->query($sql)) {
   $result->free_result();
 }
 
+// Unencode JSON strings
+foreach($results as $house_id => $house){
+  $results[$house_id]['address'] = @json_decode($results[$house_id]['address']);
+  $results[$house_id]['data_layer'] = @json_decode($results[$house_id]['data_layer']);
+}
+
 // Get ratings
 require_once('ratings.php');
 foreach($results as $house_id => $house){

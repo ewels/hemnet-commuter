@@ -158,44 +158,53 @@
           </span>
         </h3>
         <img ng-src="{{active_house.front_image}}" class="w-100 my-2">
-        <dl class="row focus_dl small">
-          <dt class="col-xl-5">Location:</dt>
-          <dd class="col-xl-7" ng-bind="active_house.addressLocality"></dd>
-
-          <dt class="col-xl-5">Published:</dt>
-          <dd class="col-xl-7">
-            <span class="badge badge-info" ng-bind="active_house.publication_date"></span>
-            <span class="badge badge-light" ng-bind="active_house.publication_date"></span>
-          </dd>
-
-          <dt class="col-xl-5">Upcoming visning:</dt>
-          <dd class="col-xl-7"><span class="badge" ng-class="{'badge-info': active_house.upcoming_open_houses != 1, 'badge-warning': active_house.upcoming_open_houses == 1}" ng-bind="active_house.upcoming_open_houses == 1 ? 'Yes' : 'No'"></span></dd>
-
-          <dt class="col-xl-5">Size:</dt>
-          <dd class="col-xl-7">
-            <span class="badge badge-success"><span ng-bind="(active_house.living_area * 1) + (active_house.supplemental_area * 1)"></span> m<sup>2</sup> total</span>
-            (<span class="badge badge-light"><span ng-bind="active_house.living_area"></span> Bo</span> + <span class="badge badge-light"><span ng-bind="active_house.supplemental_area ? active_house.supplemental_area : 0"></span> Bi</span>)
-            </span>
-          </dd>
-
-          <dt class="col-xl-5">Tomt:</dt>
-          <dd class="col-xl-7">
-            <span class="badge badge-secondary"><span ng-bind="active_house.land_area | number:0"></span> m<sup>2</sup> Land</span>
-          </dd>
-
-          <dt class="col-xl-5">Rooms:</dt>
-          <dd class="col-xl-7"><span class="badge badge-info" ng-bind="active_house.rooms"></span></dd>
-
-          <dt class="col-xl-5">Driftkostnad:</dt>
-          <dd class="col-xl-7"><span ng-bind="active_house.driftkostnad / 12 | number:0"></span> kr/month <small>(<span ng-bind="active_house.driftkostnad | number:0"></span> kr/year)</small></dd>
-
-          <dt class="col-xl-5">Construction year:</dt>
-          <dd class="col-xl-7"><span ng-bind="active_house.construction_year"></span></dd>
-
-          <dt class="col-xl-5">Tenure:</dt>
-          <dd class="col-xl-7"><span ng-bind="active_house.tenure"></span></dd>
-
-        </dl>
+        <table class="table table-sm small table-hover">
+          <tr>
+            <th>Location:</th>
+            <td ng-bind="active_house.addressLocality"></td>
+          </tr>
+          <tr>
+            <th>Published:</th>
+            <td>
+              <span ng-bind="active_house.publication_date"></span>
+            </td>
+          </tr>
+          <tr>
+            <th style="white-space: nowrap;">Upcoming visning:</th>
+            <td>
+              <span ng-bind="active_house.upcoming_open_houses == 1 ? 'Yes' : 'No'"></span>
+            </td>
+          </tr>
+          <tr>
+            <th>Size:</th>
+            <td>
+              <span ng-bind="(active_house.living_area * 1) + (active_house.supplemental_area * 1)"></span> m<sup>2</sup>
+              <small>(<span ng-bind="active_house.living_area"></span> Bo + <span ng-bind="active_house.supplemental_area ? active_house.supplemental_area : 0"></span> Bi)</small>
+            </td>
+          </tr>
+          <tr>
+            <th>Tomt:</th>
+            <td>
+              <span ng-bind="active_house.land_area | number:0"></span> m<sup>2</sup>
+            </td>
+          </tr>
+          <tr>
+            <th>Rooms:</th>
+            <td><span ng-bind="active_house.rooms"></span></td>
+          </tr>
+          <tr>
+            <th>Driftkostnad:</th>
+            <td><span ng-bind="active_house.driftkostnad | number:0"></span> kr/year <small>( <span ng-bind="active_house.driftkostnad / 12 | number:0"></span> kr/month)</small></td>
+          </tr>
+          <tr>
+            <th>Construction:</th>
+            <td><span ng-bind="active_house.construction_year"></span></td>
+          </tr>
+          <tr>
+            <th>Tenure:</th>
+            <td><span ng-bind="active_house.tenure"></span></td>
+          </tr>
+        </table>
 
         <div class="row my-5 house_ratings">
           <div ng-repeat="(user_id, rating) in active_house.ratings" class="col-6">
