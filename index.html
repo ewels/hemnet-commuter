@@ -153,8 +153,8 @@
         <h3>
           <span class="badge" ng-class="{'badge-success': active_house.price < 4000000, 'badge-primary': active_house.price > 4000000 && active_house.price < 5700000, 'badge-danger': active_house.price > 5700000}"><span ng-bind="active_house.price / 1000000 | number:3"></span> MKr</span>
           <span class="float-right small mt-2">
-            <span class="badge" ng-class="{'badge-info': active_house.status == 'for_sale', 'badge-success': active_house.status == 'upcoming'}"  ng-bind="active_house.status.replace('_', ' ')" style="text-transform:capitalize;"></span>
-            <span class="badge" ng-class="{'badge-secondary': active_house.bidding != 1, 'badge-warning': active_house.bidding == 1}" ng-bind="active_house.bidding == 1 ? 'Bidding now' : 'No bids'"></span>
+            <span ng-show="active_house.status == 'upcoming'" class="badge badge-success">Kommande</span>
+            <span ng-show="active_house.bidding == 1" class="badge badge-warning"><i class="fa fa-certificate" aria-hidden="true"></i> Budgivning pågår</span>
           </span>
         </h3>
         <img ng-src="{{active_house.front_image}}" class="w-100 my-2">
@@ -179,7 +179,7 @@
             <th>Size:</th>
             <td>
               <span ng-bind="(active_house.living_area * 1) + (active_house.supplemental_area * 1)"></span> m<sup>2</sup>
-              <small>(<span ng-bind="active_house.living_area"></span> Bo + <span ng-bind="active_house.supplemental_area ? active_house.supplemental_area : 0"></span> Bi)</small>
+              <small>(<span ng-bind="active_house.living_area"></span> Bo <span ng-show="active_house.supplemental_area > 0">+ <span ng-bind="active_house.supplemental_area"></span> Bi</span>)</small>
             </td>
           </tr>
           <tr>
@@ -192,7 +192,7 @@
             <th>Rooms:</th>
             <td><span ng-bind="active_house.rooms"></span></td>
           </tr>
-          <tr>
+          <tr ng-show="active_house.driftkostnad > 0">
             <th>Driftkostnad:</th>
             <td><span ng-bind="active_house.driftkostnad | number:0"></span> kr/year <small>( <span ng-bind="active_house.driftkostnad / 12 | number:0"></span> kr/month)</small></td>
           </tr>
