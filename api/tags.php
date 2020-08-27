@@ -30,7 +30,10 @@ function get_house_tags($house_id){
   $sql = 'SELECT `tag_id` FROM `house_tags` WHERE `house_id` = "'.$mysqli->real_escape_string($house_id).'"';
   if ($result = $mysqli->query($sql)) {
     while ($row = $result->fetch_row()) {
-      $results[$row[0]]['selected'] = true;
+      // Skip old deleted tag IDs
+      if(array_key_exists($row[0], $results)){
+        $results[$row[0]]['selected'] = true;
+      }
     }
     $result->free_result();
   }
