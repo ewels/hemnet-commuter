@@ -45,6 +45,12 @@ foreach($results as $house_id => $house){
   $results[$house_id]['ratings'] = get_house_ratings($house_id);
 }
 
+// Get comments
+require_once('comments.php');
+foreach($results as $house_id => $house){
+  $results[$house_id]['comments'] = get_house_comments($house_id);
+}
+
 // Get tags
 require_once('tags.php');
 foreach($results as $house_id => $house){

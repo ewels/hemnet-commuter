@@ -6,57 +6,60 @@
 //////////////////////////////////////////////
 
 /**
- * Update and return house tags
+ * Update and return house comments
  */
 
-function get_house_tags($house_id){
+
+// Return house comments
+function get_house_comments($house_id){
   global $mysqli;
 
   $results = [];
 
-  // Get all tags, set as not selected
-  $sql = 'SELECT `id`, `tag` FROM `tags`';
+  // Get all users
+  $sql = 'SELECT `id`, `name` FROM `users`';
   if ($result = $mysqli->query($sql)) {
     while ($row = $result->fetch_assoc()) {
       $results[$row['id']] = array(
-        'label' => $row['tag'],
-        'selected' => false
+        'user_id' => $row['id'],
+        'user_name' => $row['name'],
+        'comment' => ''
       );
     }
     $result->free_result();
   }
 
-  // Get selected tags for this house
-  $sql = 'SELECT `tag_id` FROM `house_tags` WHERE `house_id` = "'.$mysqli->real_escape_string($house_id).'"';
+  // Get comments for this house
+  $sql = 'SELECT `user_id`, `comment` FROM `house_comments` WHERE `house_id` = "'.$mysqli->real_escape_string($house_id).'"';
   if ($result = $mysqli->query($sql)) {
-    while ($row = $result->fetch_row()) {
-      $results[$row[0]]['selected'] = true;
+    while ($row = $result->fetch_assoc()) {
+      $results[$row['user_id']]['comment'] = $row['comment'];
     }
     $result->free_result();
   }
   return $results;
 }
 
-// Save tag
-function save_house_tag($house_id, $tag_id, $selected){
+// Save comment
+function save_house_comment($house_id, $user_id, $comment){
   global $mysqli;
 
-  // Delete existing house tag if it existed
+  // Delete existing comment if it existed
   $sql = '
-    DELETE FROM `house_tags`
+    DELETE FROM `house_comments`
     WHERE `house_id` = "'.$mysqli->real_escape_string($house_id).'"
-    AND `tag_id` = "'.$mysqli->real_escape_string($tag_id).'"';
+    AND `user_id` = "'.$mysqli->real_escape_string($user_id).'"';
   $mysqli->query($sql);
 
-  // Insert tag if selected
-  if($selected){
-    $sql = '
-      INSERT INTO `house_tags`
-      SET `house_id` = "'.$mysqli->real_escape_string($house_id).'",
-          `tag_id` = "'.$mysqli->real_escape_string($tag_id).'"
-    ';
-    $mysqli->query($sql);
-  }
+  // Insert supplied data
+  $sql = '
+    INSERT INTO `house_comments`
+    SET `house_id` = "'.$mysqli->real_escape_string($house_id).'",
+        `user_id` = "'.$mysqli->real_escape_string($user_id).'",
+        `comment` = "'.$mysqli->real_escape_string($comment).'"
+  ';
+  $mysqli->query($sql);
+  return [$sql];
 }
 
 
@@ -82,16 +85,14 @@ if ( basename(__FILE__) == basename($_SERVER["SCRIPT_FILENAME"]) ) {
   // AngularJS POST data looks weird
   $postdata = json_decode(file_get_contents("php://input"), true);
 
-  // Return ratings results
+  // Return comments for a house
   if(isset($_GET['house_id']) && strlen($_GET['house_id']) > 0){
-    echo json_encode(get_house_tags($_GET['house_id']), JSON_PRETTY_PRINT);
+    echo json_encode(get_house_comments($_GET['house_id']), JSON_PRETTY_PRINT);
   }
-  // Save ratings results
-  else if(is_array($postdata) && isset($postdata['house_id']) && isset($postdata['tag_id']) && isset($postdata['selected'])){
-    echo json_encode( save_house_tag($postdata['house_id'],$postdata['tag_id'],$postdata['selected']), JSON_PRETTY_PRINT);
-  }
-  // No action - give error status
-  else {
+  // Save comment
+  else if(is_array($postdata) && isset($postdata['house_id']) && isset($postdata['user_id']) && isset($postdata['comment'])){
+    echo json_encode( save_house_comment($postdata['house_id'], $postdata['user_id'], $postdata['comment']), JSON_PRETTY_PRINT);
+  } else {
     echo json_encode(array("status"=>"error", "msg" => "Error: No input supplied", "post_data" => $postdata), JSON_PRETTY_PRINT);
   }
 

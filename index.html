@@ -99,6 +99,17 @@
         });
       }
 
+      // Comment updated
+      $scope.save_comment = function(r_user_id){
+        // Build post data and send to API
+        var post_data = {
+          'house_id': $scope.active_id,
+          'user_id': r_user_id,
+          'comment': $scope.active_house.comments[r_user_id].comment
+        };
+        $http.post("api/comments.php", JSON.stringify(post_data));
+      }
+
       // Tag button clicked
       $scope.save_tag = function(tag_id){
         var selected = ! $scope.active_house.tags[tag_id].selected;
@@ -194,7 +205,7 @@
               <button ng-click="save_rating(user_id, 'maybe')" ng-class="{'active': active_house.ratings[user_id].rating == 'maybe'}"  class="btn w-100 btn-outline-info"><i class="fa fa-question"></i></button>
               <button ng-click="save_rating(user_id, 'no')" ng-class="{'active': active_house.ratings[user_id].rating == 'no'}"  class="btn w-100 btn-outline-danger"><i class="fa fa-thumbs-down"></i></button>
             </div>
-            <textarea class="form-control form-control-sm my-2" placeholder="Comment">COMMENTS DON'T WORK YET</textarea>
+            <textarea ng-model="active_house.comments[user_id].comment" ng-change="save_comment(user_id)" ng-model-options="{ updateOn: 'default blur', debounce: {'default': 500, 'blur': 0} }" class="form-control form-control-sm my-2" placeholder="Comment"></textarea>
           </div>
           <div class="col-12">
             <h6>Tags</h6>
