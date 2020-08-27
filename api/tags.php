@@ -11,29 +11,28 @@
 
 
 // Return ratings results
-function get_house_ratings($house_id){
+function get_house_tags($house_id){
   global $mysqli;
 
   $results = [];
 
-  // Get all users
-  $sql = 'SELECT `id`, `name` FROM `users`';
+  // Get all tags, set as not selected
+  $sql = 'SELECT `id`, `tag` FROM `tags`';
   if ($result = $mysqli->query($sql)) {
     while ($row = $result->fetch_assoc()) {
       $results[$row['id']] = array(
-        'user_id' => $row['id'],
-        'user_name' => $row['name'],
-        'rating' => 'not_set'
+        'label' => $row['tag'],
+        'selected' => false
       );
     }
     $result->free_result();
   }
 
-  // Get ratings for this house
-  $sql = 'SELECT `user_id`, `rating` FROM `house_ratings` WHERE `house_id` = "'.$mysqli->real_escape_string($house_id).'"';
+  // Get selected tags for this house
+  $sql = 'SELECT `tag_id` FROM `house_tags` WHERE `house_id` = "'.$mysqli->real_escape_string($house_id).'"';
   if ($result = $mysqli->query($sql)) {
-    while ($row = $result->fetch_assoc()) {
-      $results[$row['user_id']]['rating'] = $row['rating'];
+    while ($row = $result->fetch_row()) {
+      $results[$row[0]]['selected'] = true;
     }
     $result->free_result();
   }
@@ -41,24 +40,25 @@ function get_house_ratings($house_id){
 }
 
 // Save ratings results
-function save_house_rating($house_id, $user_id, $rating){
+function save_house_tag($house_id, $tag_id, $selected){
   global $mysqli;
 
-  // Delete existing rating if it existed
+  // Delete existing house tag if it existed
   $sql = '
-    DELETE FROM `house_ratings`
+    DELETE FROM `house_tags`
     WHERE `house_id` = "'.$mysqli->real_escape_string($house_id).'"
-    AND `user_id` = "'.$mysqli->real_escape_string($user_id).'"';
+    AND `tag_id` = "'.$mysqli->real_escape_string($tag_id).'"';
   $mysqli->query($sql);
 
-  // Insert supplied data
-  $sql = '
-    INSERT INTO `house_ratings`
-    SET `house_id` = "'.$mysqli->real_escape_string($house_id).'",
-        `user_id` = "'.$mysqli->real_escape_string($user_id).'",
-        `rating` = "'.$mysqli->real_escape_string($rating).'"
-  ';
-  $mysqli->query($sql);
+  // Insert tag if selected
+  if($selected){
+    $sql = '
+      INSERT INTO `house_tags`
+      SET `house_id` = "'.$mysqli->real_escape_string($house_id).'",
+          `tag_id` = "'.$mysqli->real_escape_string($tag_id).'"
+    ';
+    $mysqli->query($sql);
+  }
 }
 
 
@@ -86,12 +86,14 @@ if ( basename(__FILE__) == basename($_SERVER["SCRIPT_FILENAME"]) ) {
 
   // Return ratings results
   if(isset($_GET['house_id']) && strlen($_GET['house_id']) > 0){
-    echo json_encode(get_house_ratings($_GET['house_id']), JSON_PRETTY_PRINT);
+    echo json_encode(get_house_tags($_GET['house_id']), JSON_PRETTY_PRINT);
   }
   // Save ratings results
-  else if(is_array($postdata) && isset($postdata['house_id']) && isset($postdata['user_id']) && isset($postdata['rating'])){
-    echo json_encode( save_house_rating($postdata['house_id'], $postdata['user_id'], $postdata['rating']), JSON_PRETTY_PRINT);
-  } else {
+  else if(is_array($postdata) && isset($postdata['house_id']) && isset($postdata['tag_id']) && isset($postdata['selected'])){
+    echo json_encode( save_house_tag($postdata['house_id'],$postdata['tag_id'],$postdata['selected']), JSON_PRETTY_PRINT);
+  }
+  // No action - give error status
+  else {
     echo json_encode(array("status"=>"error", "msg" => "Error: No input supplied", "post_data" => $postdata), JSON_PRETTY_PRINT);
   }
 

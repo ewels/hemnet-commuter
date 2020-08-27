@@ -45,4 +45,10 @@ foreach($results as $house_id => $house){
   $results[$house_id]['ratings'] = get_house_ratings($house_id);
 }
 
-echo json_encode(array("status"=>"success", "results"=>$results));
+// Get tags
+require_once('tags.php');
+foreach($results as $house_id => $house){
+  $results[$house_id]['tags'] = get_house_tags($house_id);
+}
+
+echo json_encode(array("status"=>"success", "results"=>$results), JSON_PRETTY_PRINT);

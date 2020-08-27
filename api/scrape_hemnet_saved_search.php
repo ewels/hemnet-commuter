@@ -93,7 +93,7 @@ if ( basename(__FILE__) == basename($_SERVER["SCRIPT_FILENAME"]) ) {
     $house_urls = scrape_hemnet_search($_REQUEST['s_page_id']);
 
     // Return success message
-    echo json_encode(array("status"=>"success", "msg" => "Found ".count($house_urls)." houses", "num_houses_found" => count($house_urls)));
+    echo json_encode(array("status"=>"success", "msg" => "Found ".count($house_urls)." houses", "num_houses_found" => count($house_urls)), JSON_PRETTY_PRINT);
 
 
   } else {

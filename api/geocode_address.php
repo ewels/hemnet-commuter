@@ -147,7 +147,7 @@ if ( basename(__FILE__) == basename($_SERVER["SCRIPT_FILENAME"]) ) {
     $loc = geocode_house_address($_REQUEST['id']);
 
     // Return success message
-    echo json_encode(array("status"=>"success", "msg" => "Found house geocode", "lat" => $loc['lat'], "lng" => $loc['lng']));
+    echo json_encode(array("status"=>"success", "msg" => "Found house geocode", "lat" => $loc['lat'], "lng" => $loc['lng']), JSON_PRETTY_PRINT);
 
   } else if(isset($_REQUEST['address'])){
 
@@ -155,11 +155,11 @@ if ( basename(__FILE__) == basename($_SERVER["SCRIPT_FILENAME"]) ) {
     $loc = geocode_address($_REQUEST['address']);
 
     // Return success message
-    echo json_encode(array("status"=>"success", "msg" => "Found geocode", "lat" => $loc['lat'], "lng" => $loc['lng']));
+    echo json_encode(array("status"=>"success", "msg" => "Found geocode", "lat" => $loc['lat'], "lng" => $loc['lng']), JSON_PRETTY_PRINT);
 
   } else {
     header("Content-type: text/json; charset=utf-8");
-    echo json_encode(array("status"=>"error", "msg" => "Error: No input supplied"));
+    echo json_encode(array("status"=>"error", "msg" => "Error: No input supplied"), JSON_PRETTY_PRINT);
   }
 
 }
