@@ -126,6 +126,26 @@
         });
       }
 
+      // Add tag button clicked
+      $scope.add_tag = function(){
+        var tag_name = prompt('New tag:');
+        if(!tag_name || tag_name.trim().length == 0){
+          return;
+        }
+        // Build post data and send to API
+        var post_data = { 'new_tag': tag_name };
+        $http.post("api/tags.php", JSON.stringify(post_data)).then(function(response) {
+          console.log(response);
+          var new_tag_id = response.data.new_tag_id;
+          // Update the scope with the new tag status
+          $scope.active_house.tags[new_tag_id] = { "label": tag_name, "selected": false};
+          // Update all results to have this tag
+          angular.forEach($scope.results, function (house, key) {
+            house.tags[new_tag_id] = { "label": tag_name, "selected": false};
+          });
+        });
+      }
+
     }]);
   </script>
 </head>
@@ -217,7 +237,10 @@
             <textarea ng-model="active_house.comments[user_id].comment" ng-change="save_comment(user_id)" ng-model-options="{ updateOn: 'default blur', debounce: {'default': 500, 'blur': 0} }" class="form-control form-control-sm my-2" placeholder="Comment"></textarea>
           </div>
           <div class="col-12">
-            <h6>Tags</h6>
+            <h6>
+              Tags
+              <button ng-click="add_tag()" class="btn btn-sm btn-link text-muted" style="font-size: .7rem;">[add tag]</button>
+            </h6>
             <button ng-repeat="(tag_id, tag) in active_house.tags" ng-click="save_tag(tag_id)" ng-class="{'active': tag.selected}" class="btn btn-outline-secondary p-1 mr-2 mb-2" style="font-size: .7rem;">{{tag.label}}</button>
           </div>
         </div>
