@@ -70,16 +70,7 @@ foreach($results as $house_id => $house){
 
 }
 
-foreach($results as $house_id => $house){
-  $remove = false;
-  // FILTERS
-  if(isset($postdata['price_min']) && @$house['price'] < $postdata['price_min']) $remove = true;
-  if(isset($postdata['price_max']) && @$house['price'] > $postdata['price_max']) $remove = true;
-  if(isset($postdata['size_total_min']) && $house['size_total'] < $postdata['size_total_min']) $remove = true;
-
-  if($remove) unset($results[$house_id]);
-}
-
+// Other database tables
 foreach($results as $house_id => $house){
 
   // Get geocode results
@@ -94,6 +85,23 @@ foreach($results as $house_id => $house){
   // Get tags
   $results[$house_id]['tags'] = get_house_tags($house_id);
 
+}
+
+// FILTERS
+foreach($results as $house_id => $house){
+  $remove = false;
+  if(isset($postdata['price_min']) && @$house['price'] < $postdata['price_min']) $remove = true;
+  if(isset($postdata['price_max']) && @$house['price'] > $postdata['price_max']) $remove = true;
+  if(isset($postdata['size_total_min']) && $house['size_total'] < $postdata['size_total_min']) $remove = true;
+  if(isset($postdata['hide_ratings'])){
+    foreach($postdata['hide_ratings'] as $user_id => $ratings){
+      foreach($ratings as $rating){
+        if($house['ratings'][$user_id] == $rating) $remove = true;
+      }
+    }
+  }
+
+  if($remove) unset($results[$house_id]);
 }
 
 echo json_encode(
