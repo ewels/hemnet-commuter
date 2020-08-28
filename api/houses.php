@@ -40,11 +40,15 @@ $postdata = array_merge($_GET, $postdata);
 ///
 
 // Get search results
-$sql = 'SELECT `id`, `url` FROM `search_result_urls`';
+$oldest_saved_search_fetch = false;
+$sql = 'SELECT `id`, `url`, `created` FROM `search_result_urls`';
 $results = [];
 if ($result = $mysqli->query($sql)) {
   while ($row = $result->fetch_row()) {
     $results[$row[0]] = array('house_id' => $row[0], 'url' => $row[1]);
+    $created = strtotime($row[2]);
+    if(!$oldest_saved_search_fetch) $oldest_saved_search_fetch = $created;
+    $oldest_saved_search_fetch = min($oldest_saved_search_fetch, $created);
   }
   $result->free_result();
 }
@@ -108,6 +112,7 @@ echo json_encode(
   array(
     "status" => "success",
     "num_results" => count($results),
+    "oldest_search_result" => $oldest_saved_search_fetch,
     "tags" => get_all_tags(),
     "users" => get_all_users(),
     "results" => $results

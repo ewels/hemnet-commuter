@@ -40,8 +40,8 @@ if ($result = $mysqli->query($sql)) {
     $created = strtotime($row[0]);
     if(!$oldest_saved_search_fetch) $oldest_saved_search_fetch = $created;
     if(!$newest_saved_search_fetch) $newest_saved_search_fetch = $created;
-    $oldest_saved_search_fetch = max($oldest_saved_search_fetch, $created);
-    $newest_saved_search_fetch = min($newest_saved_search_fetch, $created);
+    $oldest_saved_search_fetch = min($oldest_saved_search_fetch, $created);
+    $newest_saved_search_fetch = max($newest_saved_search_fetch, $created);
     $num_houses++;
   }
   $result->free_result();

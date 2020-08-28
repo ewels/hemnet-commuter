@@ -28,6 +28,7 @@
 
       // Filters
       $scope.show_filters = false;
+      $scope.show_map_settings = false;
       $scope.filters = {
         hide_ratings: {},
         price_min: 0,
@@ -47,6 +48,8 @@
       $scope.num_total_results = 0;
       $scope.all_results = [];
       $scope.num_results = 0;
+      $scope.oldest_search_result = Date.now();
+      $scope.needs_update = false;
       $scope.results = [];
       $scope.users = [];
       $scope.tags = [];
@@ -98,6 +101,8 @@
 
           // Assign results
           $scope.num_results = response.data.num_results;
+          $scope.oldest_search_result = parseFloat(response.data.oldest_search_result + "000");
+          $scope.needs_update = Date.now() - $scope.oldest_search_result > (1000*60*60*24);
           $scope.results = response.data.results;
           $scope.users = response.data.users;
           $scope.tags = response.data.tags;
@@ -250,11 +255,16 @@
         Hemnet Commuter
       </h1>
       <hr>
+      <div ng-show="needs_update">
+        <a href="update.php" class="btn btn-block btn-warning"><i class="fa fa-refresh mr-2"></i> Update </a>
+        <p class="small text-muted text-center mt-1">Last updated {{ oldest_search_result | date: 'yyyy-MM-dd HH:mm:ss' }}</p>
+      </div>
       <div class="row">
         <div class="col-6"><button ng-click="show_filters = !show_filters" class="btn btn-block btn-secondary"><i class="fa fa-filter mr-2"></i> Filters</button></div>
-        <div class="col-6"><a href="update.php" class="btn btn-block btn-info"><i class="fa fa-refresh mr-2"></i> Update</a></div>
+        <div class="col-6"><button ng-click="show_map_settings = !show_map_settings" class="btn btn-block btn-info"><i class="fa fa-map-marker mr-2"></i> Map settings</button></div>
       </div>
-      <div ng-show="show_filters" class="small pt-3">
+      <div ng-show="show_filters" class="small pt-3 mt-3 border-top">
+        <h4>Filters</h4>
         <p>Showing <span ng-bind="num_results" class="badge badge-secondary"></span> out of <span ng-bind="num_total_results" class="badge badge-secondary"></span></p>
         <h6>Ratings</h6>
         <p>Click to hide houses that are any of the following:</p>
@@ -280,25 +290,29 @@
           </tr>
         </table>
         <h6>Basic stats</h6>
-        <div ng-class="['row', {'filter-inactive': filters.price_min == stats.price[0]}]">
-          <div class="col-4"><label for="price_min">Min price</label></div>
-          <div class="col-5"><input id="price_min" ng-model="filters.price_min" type="range" class="form-control-range" min="{{stats.price[0]}}" max="{{stats.price[1]}}" ng-change="updateMarkers()"></div>
-          <div class="col-3 text-muted" ng-bind="filters.price_min"></div>
-        </div>
-        <div ng-class="['row', {'filter-inactive': filters.price_max == stats.price[1]}]">
-          <div class="col-4"><label for="price_max">Max price</label></div>
-          <div class="col-5"><input id="price_max" ng-model="filters.price_max" type="range" class="form-control-range" min="{{stats.price[0]}}" max="{{stats.price[1]}}" ng-change="updateMarkers()"></div>
-          <div class="col-3 text-muted" ng-bind="filters.price_max"></div>
-        </div>
-        <div ng-class="['row', {'filter-inactive': filters.size_total_min == stats.size_total[0]}]">
-          <div class="col-4"><label for="size_total_min">Min size <small>(Bo+Bi)</small></label></div>
-          <div class="col-5"><input id="size_total_min" ng-model="filters.size_total_min" type="range" class="form-control-range" min="{{stats.size_total[0]}}" max="{{stats.size_total[1]}}" ng-change="updateMarkers()"></div>
-          <div class="col-3 text-muted" ng-bind="filters.size_total_min"></div>
-        </div>
+        <table class="table table-sm">
+          <tr ng-class="{'filter-inactive': filters.price_min == stats.price[0]}">
+            <th><label for="price_min">Min price</label></th>
+            <td><input id="price_min" ng-model="filters.price_min" type="range" class="form-control-range" min="{{stats.price[0]}}" max="{{stats.price[1]}}" ng-change="updateMarkers()"></td>
+            <td ng-bind="filters.price_min"></td>
+          </tr>
+          <tr ng-class="{'filter-inactive': filters.price_max == stats.price[1]}">
+            <th><label for="price_max">Max price</label></th>
+            <td><input id="price_max" ng-model="filters.price_max" type="range" class="form-control-range" min="{{stats.price[0]}}" max="{{stats.price[1]}}" ng-change="updateMarkers()"></td>
+            <td ng-bind="filters.price_max"></td>
+          </tr>
+          <tr ng-class="{'filter-inactive': filters.size_total_min == stats.size_total[0]}">
+            <th><label for="size_total_min">Min size <small style="white-space: nowrap;">(Bo + Bi)</small></label></th>
+            <td><input id="size_total_min" ng-model="filters.size_total_min" type="range" class="form-control-range" min="{{stats.size_total[0]}}" max="{{stats.size_total[1]}}" ng-change="updateMarkers()"></td>
+            <td ng-bind="filters.size_total_min"></td>
+          </tr>
+        </table>
       </div>
-      <hr>
-      <p ng-show="active_id == false" class="text-muted">Click a house marker on the map to see more information here.</p>
-      <div ng-hide="active_id == false" >
+      <div ng-show="show_map_settings" class="small pt-3 mt-3 border-top">
+        <h4>Map settings</h4>
+      </div>
+      <div ng-show="active_id == false" class="text-muted pt-3 mt-3 border-top">Click a house marker on the map to see more information here.</div>
+      <div ng-hide="active_id == false" class="pt-3 mt-3 border-top">
         <h3><a ng-href="{{active_house.url}}" target="_blank"><span ng-bind="active_house.streetAddress"></span> <i class="fa fa-external-link" aria-hidden="true"></i></a></h3>
         <h3>
           <span class="badge" ng-class="{'badge-success': active_house.price < 4000000, 'badge-primary': active_house.price > 4000000 && active_house.price < 5700000, 'badge-danger': active_house.price > 5700000}"><span ng-bind="active_house.price / 1000000 | number:3"></span> MKr</span>
