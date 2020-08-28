@@ -79,3 +79,9 @@ footer a {
 .rating_stars {
     cursor: pointer;
 }
+
+
+.filter-inactive {
+  background-color: #ddd;
+  color: #999;
+}

@@ -9,31 +9,25 @@
  * Update and return house ratings
  */
 
+require_once('users.php');
 
 // Return ratings results
 function get_house_ratings($house_id){
   global $mysqli;
 
   $results = [];
+  $users = get_all_users();
 
-  // Get all users
-  $sql = 'SELECT `id`, `name` FROM `users`';
-  if ($result = $mysqli->query($sql)) {
-    while ($row = $result->fetch_assoc()) {
-      $results[$row['id']] = array(
-        'user_id' => $row['id'],
-        'user_name' => $row['name'],
-        'rating' => 'not_set'
-      );
-    }
-    $result->free_result();
+  // Get all users, set as rating not set
+  foreach($users as $user_id => $user_name){
+    $results[$user_id] = 'not_set';
   }
 
   // Get ratings for this house
   $sql = 'SELECT `user_id`, `rating` FROM `house_ratings` WHERE `house_id` = "'.$mysqli->real_escape_string($house_id).'"';
   if ($result = $mysqli->query($sql)) {
     while ($row = $result->fetch_assoc()) {
-      $results[$row['user_id']]['rating'] = $row['rating'];
+      $results[$row['user_id']] = $row['rating'];
     }
     $result->free_result();
   }

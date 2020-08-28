@@ -9,21 +9,31 @@
  * Update and return house tags
  */
 
+function get_all_tags(){
+
+  global $mysqli;
+
+  // Get all tags
+  $results = [];
+  $sql = 'SELECT `id`, `tag` FROM `tags`';
+  if ($result = $mysqli->query($sql)) {
+    while ($row = $result->fetch_assoc()) {
+      $results[$row['id']] = $row['tag'];
+    }
+    $result->free_result();
+  }
+  return $results;
+}
+
 function get_house_tags($house_id){
   global $mysqli;
 
   $results = [];
+  $tags = get_all_tags();
 
   // Get all tags, set as not selected
-  $sql = 'SELECT `id`, `tag` FROM `tags`';
-  if ($result = $mysqli->query($sql)) {
-    while ($row = $result->fetch_assoc()) {
-      $results[$row['id']] = array(
-        'label' => $row['tag'],
-        'selected' => false
-      );
-    }
-    $result->free_result();
+  foreach($tags as $tag_id => $tag_name){
+    $results[$tag_id] = false;
   }
 
   // Get selected tags for this house
@@ -32,7 +42,7 @@ function get_house_tags($house_id){
     while ($row = $result->fetch_row()) {
       // Skip old deleted tag IDs
       if(array_key_exists($row[0], $results)){
-        $results[$row[0]]['selected'] = true;
+        $results[$row[0]] = true;
       }
     }
     $result->free_result();

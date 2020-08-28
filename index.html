@@ -47,6 +47,8 @@
       $scope.all_results = [];
       $scope.num_results = 0;
       $scope.results = [];
+      $scope.users = [];
+      $scope.tags = [];
 
       // Set up the map
       angular.extend($scope, {
@@ -66,10 +68,15 @@
         $scope.call_requested = false;
 
         // Build filters POST data
-        var postdata = {
-          'price_min': $scope.filters.price_min,
-          'price_max': $scope.filters.price_max,
-          'size_total_min': $scope.filters.size_total_min,
+        var postdata = {};
+        if($scope.filters.price_min != $scope.stats.price[0]){
+          postdata.price_min = $scope.filters.price_min;
+        }
+        if($scope.filters.price_max != $scope.stats.price[1]){
+          postdata.price_max = $scope.filters.price_max;
+        }
+        if($scope.filters.size_total_min != $scope.stats.size_total[0]){
+          postdata.size_total_min = $scope.filters.size_total_min;
         }
 
         // Get the house data from the database
@@ -78,6 +85,8 @@
           // Assign results
           $scope.num_results = response.data.num_results;
           $scope.results = response.data.results;
+          $scope.users = response.data.users;
+          $scope.tags = response.data.tags;
 
           function get_min_max(key, results){
             var vals_arr = Object.values(results).map(a => parseFloat(a[key]));
@@ -143,7 +152,7 @@
       // Ratings button clicked
       $scope.save_rating = function(r_user_id, rating){
         // Deselect ratings
-        if(rating == $scope.active_house.ratings[r_user_id].rating){
+        if(rating == $scope.active_house.ratings[r_user_id]){
           rating = 'not_set';
         }
 
@@ -155,7 +164,7 @@
         };
         $http.post("api/ratings.php", JSON.stringify(post_data)).then(function(response) {
           // Update the scope with the new rating
-          $scope.active_house.ratings[r_user_id].rating = rating;
+          $scope.active_house.ratings[r_user_id] = rating;
         });
       }
 
@@ -165,14 +174,14 @@
         var post_data = {
           'house_id': $scope.active_id,
           'user_id': r_user_id,
-          'comment': $scope.active_house.comments[r_user_id].comment
+          'comment': $scope.active_house.comments[r_user_id]
         };
         $http.post("api/comments.php", JSON.stringify(post_data));
       }
 
       // Tag button clicked
       $scope.save_tag = function(tag_id){
-        var selected = ! $scope.active_house.tags[tag_id].selected;
+        var selected = ! $scope.active_house.tags[tag_id];
 
         // Build post data and send to API
         var post_data = {
@@ -182,7 +191,7 @@
         };
         $http.post("api/tags.php", JSON.stringify(post_data)).then(function(response) {
           // Update the scope with the new tag status
-          $scope.active_house.tags[tag_id].selected = selected;
+          $scope.active_house.tags[tag_id] = selected;
         });
       }
 
@@ -198,10 +207,11 @@
           console.log(response);
           var new_tag_id = response.data.new_tag_id;
           // Update the scope with the new tag status
-          $scope.active_house.tags[new_tag_id] = { "label": tag_name, "selected": false};
+          $scope.tags[new_tag_id] = tag_name;
+          $scope.active_house.tags[new_tag_id] = false;
           // Update all results to have this tag
           angular.forEach($scope.results, function (house, key) {
-            house.tags[new_tag_id] = { "label": tag_name, "selected": false};
+            house.tags[new_tag_id] = false;
           });
         });
       }
@@ -228,18 +238,19 @@
       </div>
       <div ng-show="show_filters" class="small pt-3">
         <p>Showing <span ng-bind="num_results" class="badge badge-secondary"></span> out of <span ng-bind="num_total_results" class="badge badge-secondary"></span></p>
-        <div class="row">
-          <div class="col-4"><label for="price_min">Min Price</label></div>
+        <h6>Basic stats</h6>
+        <div ng-class="['row', {'filter-inactive': filters.price_min == stats.price[0]}]">
+          <div class="col-4"><label for="price_min">Min price</label></div>
           <div class="col-5"><input id="price_min" ng-model="filters.price_min" type="range" class="form-control-range" min="{{stats.price[0]}}" max="{{stats.price[1]}}" ng-change="updateMarkers()"></div>
           <div class="col-3 text-muted" ng-bind="filters.price_min"></div>
         </div>
-        <div class="row">
-          <div class="col-4"><label for="price_max">Max Price</label></div>
+        <div ng-class="['row', {'filter-inactive': filters.price_max == stats.price[1]}]">
+          <div class="col-4"><label for="price_max">Max price</label></div>
           <div class="col-5"><input id="price_max" ng-model="filters.price_max" type="range" class="form-control-range" min="{{stats.price[0]}}" max="{{stats.price[1]}}" ng-change="updateMarkers()"></div>
           <div class="col-3 text-muted" ng-bind="filters.price_max"></div>
         </div>
-        <div class="row">
-          <div class="col-4"><label for="size_total_min">Min (Bo + Bi)</label></div>
+        <div ng-class="['row', {'filter-inactive': filters.size_total_min == stats.size_total[0]}]">
+          <div class="col-4"><label for="size_total_min">Min size <small>(Bo+Bi)</small></label></div>
           <div class="col-5"><input id="size_total_min" ng-model="filters.size_total_min" type="range" class="form-control-range" min="{{stats.size_total[0]}}" max="{{stats.size_total[1]}}" ng-change="updateMarkers()"></div>
           <div class="col-3 text-muted" ng-bind="filters.size_total_min"></div>
         </div>
@@ -305,21 +316,21 @@
         </table>
 
         <div class="row my-5 house_ratings">
-          <div ng-repeat="(user_id, rating) in active_house.ratings" class="col-6">
-            <h5>{{ rating.user_name }}</h5>
+          <div ng-repeat="(user_id, user_name) in users" class="col-6">
+            <h5>{{ user_name }}</h5>
             <div class="btn-group d-flex" role="group">
-              <button ng-click="save_rating(user_id, 'yes')" ng-class="{'active': active_house.ratings[user_id].rating == 'yes'}"  class="btn w-100 btn-outline-success"><i class="fa fa-thumbs-up"></i></button>
-              <button ng-click="save_rating(user_id, 'maybe')" ng-class="{'active': active_house.ratings[user_id].rating == 'maybe'}"  class="btn w-100 btn-outline-info"><i class="fa fa-question"></i></button>
-              <button ng-click="save_rating(user_id, 'no')" ng-class="{'active': active_house.ratings[user_id].rating == 'no'}"  class="btn w-100 btn-outline-danger"><i class="fa fa-thumbs-down"></i></button>
+              <button ng-click="save_rating(user_id, 'yes')" ng-class="{'active': active_house.ratings[user_id] == 'yes'}"  class="btn w-100 btn-outline-success"><i class="fa fa-thumbs-up"></i></button>
+              <button ng-click="save_rating(user_id, 'maybe')" ng-class="{'active': active_house.ratings[user_id] == 'maybe'}"  class="btn w-100 btn-outline-info"><i class="fa fa-question"></i></button>
+              <button ng-click="save_rating(user_id, 'no')" ng-class="{'active': active_house.ratings[user_id] == 'no'}"  class="btn w-100 btn-outline-danger"><i class="fa fa-thumbs-down"></i></button>
             </div>
-            <textarea ng-model="active_house.comments[user_id].comment" ng-change="save_comment(user_id)" ng-model-options="{ updateOn: 'default blur', debounce: {'default': 500, 'blur': 0} }" class="form-control form-control-sm my-2" placeholder="Comment"></textarea>
+            <textarea ng-model="active_house.comments[user_id]" ng-change="save_comment(user_id)" ng-model-options="{ updateOn: 'default blur', debounce: {'default': 500, 'blur': 0} }" class="form-control form-control-sm my-2" placeholder="Comment"></textarea>
           </div>
           <div class="col-12">
             <h6>
               Tags
               <button ng-click="add_tag()" class="btn btn-sm btn-link text-muted" style="font-size: .7rem;">[add tag]</button>
             </h6>
-            <button ng-repeat="(tag_id, tag) in active_house.tags" ng-click="save_tag(tag_id)" ng-class="{'active': tag.selected}" class="btn btn-outline-secondary p-1 mr-2 mb-2" style="font-size: .7rem;">{{tag.label}}</button>
+            <button ng-repeat="(tag_id, selected) in active_house.tags" ng-click="save_tag(tag_id)" ng-class="{'active': selected}" class="btn btn-outline-secondary p-1 mr-2 mb-2" style="font-size: .7rem;">{{tags[tag_id]}}</button>
           </div>
         </div>
         <p class="p-3 mb-2 bg-success text-white" style="display:none;" id="saving_ratings_notification">Saving ratings..</p>

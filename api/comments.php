@@ -9,31 +9,25 @@
  * Update and return house comments
  */
 
+require_once('users.php');
 
 // Return house comments
 function get_house_comments($house_id){
   global $mysqli;
 
   $results = [];
+  $users = get_all_users();
 
-  // Get all users
-  $sql = 'SELECT `id`, `name` FROM `users`';
-  if ($result = $mysqli->query($sql)) {
-    while ($row = $result->fetch_assoc()) {
-      $results[$row['id']] = array(
-        'user_id' => $row['id'],
-        'user_name' => $row['name'],
-        'comment' => ''
-      );
-    }
-    $result->free_result();
+  // Get all users, set as empty comment
+  foreach($users as $user_id => $user_name){
+    $results[$user_id] = '';
   }
 
   // Get comments for this house
   $sql = 'SELECT `user_id`, `comment` FROM `house_comments` WHERE `house_id` = "'.$mysqli->real_escape_string($house_id).'"';
   if ($result = $mysqli->query($sql)) {
     while ($row = $result->fetch_assoc()) {
-      $results[$row['user_id']]['comment'] = $row['comment'];
+      $results[$row['user_id']] = $row['comment'];
     }
     $result->free_result();
   }

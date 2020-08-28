@@ -28,6 +28,7 @@ require_once('geocode_address.php');
 require_once('ratings.php');
 require_once('comments.php');
 require_once('tags.php');
+require_once('users.php');
 
 // AngularJS POST data looks weird
 $postdata = json_decode(file_get_contents("php://input"), true);
@@ -95,4 +96,11 @@ foreach($results as $house_id => $house){
 
 }
 
-echo json_encode(array("status"=>"success", "num_results"=>count($results), "results"=>$results), JSON_PRETTY_PRINT);
+echo json_encode(
+  array(
+    "status" => "success",
+    "num_results" => count($results),
+    "tags" => get_all_tags(),
+    "users" => get_all_users(),
+    "results" => $results
+  ), JSON_PRETTY_PRINT);
