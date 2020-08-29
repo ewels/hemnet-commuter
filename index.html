@@ -54,7 +54,9 @@
       }
       $scope.base_marker_icon = 'fa-circle';
       $scope.set_marker_icon = {
-        'none': ['None', function(house){ return $scope.base_marker_icon; }]
+        'none': ['None', function(house){ return [$scope.base_marker_icon]; }],
+        'price': ['Price', function(house){ return ['fa-number', (house.price / 1000000).toFixed(1)] }],
+        'rooms': ['Rooms', function(house){ return ['fa-number', house.rooms] }],
       }
 
       // House results
@@ -150,10 +152,10 @@
                 return $scope.base_marker_colour;
               }];
               $scope.set_marker_icon['rating_'+user_id] = ['Rating: '+$scope.users[user_id], function(house){
-                if(house.ratings[user_id] == 'yes'){ return 'fa-thumbs-up'; }
-                if(house.ratings[user_id] == 'no'){ return 'fa-thumbs-down'; }
-                if(house.ratings[user_id] == 'maybe'){ return 'fa-question'; }
-                return $scope.base_marker_icon;
+                if(house.ratings[user_id] == 'yes'){ return ['fa-thumbs-up']; }
+                if(house.ratings[user_id] == 'no'){ return ['fa-thumbs-down']; }
+                if(house.ratings[user_id] == 'maybe'){ return ['fa-question']; }
+                return [$scope.base_marker_icon];
               }];
             }
           }
@@ -202,7 +204,8 @@
             icon: {
               type: 'extraMarker',
               markerColor: m_colour,
-              icon: m_icon,
+              icon: m_icon[0],
+              number: m_icon[1],
               prefix: 'fa',
               shape: 'circle',
               svg: true
