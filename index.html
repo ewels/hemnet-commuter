@@ -45,11 +45,16 @@
 
       // Settings
       $scope.map_settings = {
-        marker_colour: 'none'
+        marker_colour: 'none',
+        marker_icon: 'none'
       }
       $scope.base_marker_colour = '#aab2b9';
       $scope.set_marker_colour = {
         'none': ['None', function(house){ return $scope.base_marker_colour; }]
+      }
+      $scope.base_marker_icon = 'fa-circle';
+      $scope.set_marker_icon = {
+        'none': ['None', function(house){ return $scope.base_marker_icon; }]
       }
 
       // House results
@@ -144,6 +149,12 @@
                 if(house.ratings[user_id] == 'maybe'){ return '#17a2b8'; }
                 return $scope.base_marker_colour;
               }];
+              $scope.set_marker_icon['rating_'+user_id] = ['Rating: '+$scope.users[user_id], function(house){
+                if(house.ratings[user_id] == 'yes'){ return 'fa-thumbs-up'; }
+                if(house.ratings[user_id] == 'no'){ return 'fa-thumbs-down'; }
+                if(house.ratings[user_id] == 'maybe'){ return 'fa-question'; }
+                return $scope.base_marker_icon;
+              }];
             }
           }
 
@@ -179,8 +190,9 @@
         var markers = {};
         angular.forEach($scope.results, function (house, key) {
 
-          // Get marker colour
+          // Get marker colour / icon
           var m_colour = $scope.set_marker_colour[$scope.map_settings.marker_colour][1](house, 1);
+          var m_icon = $scope.set_marker_icon[$scope.map_settings.marker_icon][1](house, 1);
 
           markers[house.house_id] = {
             house_id: house.house_id,
@@ -189,8 +201,8 @@
             message: '<h6><a href="'+house.url+'" target="_blank">'+house.streetAddress+'</a></h6><p><img src="'+house.front_image+'" style="width:100%"></p>',
             icon: {
               type: 'extraMarker',
-              icon: 'fa-circle',
               markerColor: m_colour,
+              icon: m_icon,
               prefix: 'fa',
               shape: 'circle',
               svg: true
@@ -355,13 +367,23 @@
       </div>
       <div ng-show="show_map_settings" class="pt-3 mt-3 border-top">
         <h4>Map settings</h4>
-        <div class="form-row">
+        <div class="form-row py-2">
           <div class="col">
             <label for="map_settings_marker_colour">Marker colour:</label>
           </div>
           <div class="col">
             <select id="map_settings_marker_colour" ng-model="map_settings.marker_colour" ng-change="update_markers()" class="custom-select custom-select-sm">
-              <option ng-repeat="(key, m_colour_func) in set_marker_colour" value="{{ key }}">{{ m_colour_func[0] }}</option>
+              <option ng-repeat="(key, m_func) in set_marker_colour" value="{{ key }}">{{ m_func[0] }}</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-row py-2 border-top">
+          <div class="col">
+            <label for="map_settings_marker_icon">Marker icon:</label>
+          </div>
+          <div class="col">
+            <select id="map_settings_marker_icon" ng-model="map_settings.marker_icon" ng-change="update_markers()" class="custom-select custom-select-sm">
+              <option ng-repeat="(key, m_func) in set_marker_icon" value="{{ key }}">{{ m_func[0] }}</option>
             </select>
           </div>
         </div>
