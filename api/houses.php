@@ -10,9 +10,10 @@
  */
 
 require_once('_common_api.php');
+require_once('comments.php');
+require_once('commute_locations.php');
 require_once('geocode_address.php');
 require_once('ratings.php');
-require_once('comments.php');
 require_once('tags.php');
 require_once('users.php');
 
@@ -101,5 +102,6 @@ echo json_encode(
     "oldest_search_result" => $oldest_saved_search_fetch,
     "tags" => get_all_tags(),
     "users" => get_all_users(),
+    "commute_locations" => get_commute_locations(),
     "results" => $results
   ), JSON_PRETTY_PRINT);

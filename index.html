@@ -97,8 +97,9 @@
       $scope.oldest_search_result = Date.now();
       $scope.needs_update = false;
       $scope.results = [];
-      $scope.users = [];
-      $scope.tags = [];
+      $scope.users = {};
+      $scope.tags = {};
+      $scope.commute_locations = {};
 
       // Set up the map
       angular.extend($scope, {
@@ -159,6 +160,10 @@
           $scope.results = response.data.results;
           $scope.users = response.data.users;
           $scope.tags = response.data.tags;
+          $scope.commute_locations = response.data.commute_locations;
+          for(let id in $scope.commute_locations){
+            $scope.commute_locations[id].max_time = new Date($scope.commute_locations[id].max_time);
+          }
 
           function get_min_max(key, results){
             var vals_arr = Object.values(results).map(a => parseFloat(a[key]));
@@ -343,6 +348,53 @@
         });
       }
 
+      // Update commute address or time
+      $scope.update_commute_address = function(commute_id){
+        var max_time = ($scope.commute_locations[commute_id].max_time.getTime() - new Date('0').getTime()) / 1000;
+        console.log(max_time, $scope.commute_locations[commute_id].max_time.getTime(), new Date('1').getTime());
+        return;
+        // Build post data and send to API
+        var post_data = {
+          'id': commute_id,
+          'update_address': $scope.commute_locations[commute_id].address.trim(),
+          'max_time': max_time
+        };
+        $http.post("api/commute_locations.php", JSON.stringify(post_data)).then(function(response) {
+          $scope.commute_locations = response.data;
+          console.log(post_data, response.data);
+          for(let id in $scope.commute_locations){
+            $scope.commute_locations[id].max_time = new Date($scope.commute_locations[id].max_time);
+          }
+        });
+      };
+
+      // Add commute location button clicked
+      $scope.add_commute_location = function(){
+        var address = prompt('Address:');
+        if(!address || address.trim().length == 0){
+          return;
+        }
+        // Build post data and send to API
+        var post_data = { 'add_address': address.trim(), 'max_time': 3600 };
+        $http.post("api/commute_locations.php", JSON.stringify(post_data)).then(function(response) {
+          $scope.commute_locations = response.data;
+          for(let id in $scope.commute_locations){
+            $scope.commute_locations[id].max_time = new Date($scope.commute_locations[id].max_time);
+          }
+        });
+      }
+
+      // Delete commute location button clicked
+      $scope.delete_commute_location = function(){
+        for(let id in $scope.commute_locations){
+          if(confirm('Delete '+$scope.commute_locations[id].address+'?')){
+            $http.post("api/commute_locations.php", JSON.stringify({'delete': id})).then(function(response) {
+              delete $scope.commute_locations[id];
+            });
+          }
+        }
+      }
+
     }]);
   </script>
 </head>
@@ -434,6 +486,22 @@
       </div>
       <div ng-show="show_map_settings" class="pt-3 mt-3 border-top">
         <h4>Map settings</h4>
+
+        <h6>
+          Commute locations
+          <button ng-click="add_commute_location()" class="btn btn-sm btn-link text-muted" style="font-size: .7rem;">[add place]</button>
+          <button ng-click="delete_commute_location()" class="btn btn-sm btn-link text-muted" style="font-size: .7rem;">[delete place]</button>
+        </h6>
+        <div class="form-row mb-2" ng-repeat="(commute_id, commute) in commute_locations">
+          <div class="col-8">
+            <input type="text" class="form-control form-control-sm" ng-model="commute.address" ng-change="update_commute_address(commute_id)">
+          </div>
+          <div class="col-4">
+            <input type="time" class="form-control form-control-sm" ng-model="commute.max_time" placeholder="hh:mm" ng-change="update_commute_address(commute_id)">
+          </div>
+        </div>
+
+        <h6 class="mt-4">Map Markers</h6>
         <div class="form-row py-2">
           <div class="col">
             <label for="map_settings_marker_colour">Marker colour:</label>
