@@ -95,6 +95,10 @@ foreach($results as $house_id => $house){
 foreach($results as $house_id => $house){
   $remove = false;
   if(isset($postdata['house_id']) && $house['house_id'] != $postdata['house_id']) $remove = true;
+  if(isset($postdata['kommande']) && $postdata['kommande'] == '1' && @$house['status'] != 'upcoming') $remove = true;
+  if(isset($postdata['kommande']) && $postdata['kommande'] == '-1' && @$house['status'] == 'upcoming') $remove = true;
+  if(isset($postdata['bidding']) && $postdata['bidding'] == '1' && @$house['bidding'] != '1') $remove = true;
+  if(isset($postdata['bidding']) && $postdata['bidding'] == '-1' && @$house['bidding'] == '1') $remove = true;
   if(isset($postdata['price_min']) && @$house['price'] < $postdata['price_min']) $remove = true;
   if(isset($postdata['price_max']) && @$house['price'] > $postdata['price_max']) $remove = true;
   if(isset($postdata['size_total_min']) && $house['size_total'] < $postdata['size_total_min']) $remove = true;

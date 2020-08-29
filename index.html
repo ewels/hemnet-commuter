@@ -34,6 +34,8 @@
       $scope.show_map_settings = false;
       $scope.filters = {
         hide_ratings: {},
+        kommande: "0",
+        bidding: "0",
         price_min: 0,
         price_max: 10000000,
         size_total_min: 0,
@@ -107,6 +109,12 @@
 
         // Build filters POST data
         var postdata = {};
+        if($scope.filters.kommande != "0"){
+          postdata.kommande = $scope.filters.kommande;
+        }
+        if($scope.filters.bidding != "0"){
+          postdata.bidding = $scope.filters.bidding;
+        }
         if($scope.filters.price_min != $scope.stats.price[0]){
           postdata.price_min = $scope.filters.price_min;
         }
@@ -129,6 +137,7 @@
             postdata.hide_ratings[user_id] = ratings;
           }
         }
+        console.log(postdata);
 
         // Get the house data from the database
         $http.post("api/houses.php", postdata).then(function(response) {
@@ -376,6 +385,26 @@
         </table>
         <h6>Basic stats</h6>
         <table class="table table-sm">
+          <tr ng-class="{'filter-inactive': filters.kommande == 0}">
+            <th><label for="filters_kommande">Kommande</label></th>
+            <td colspan="2">
+              <select id="filters_kommande" ng-model="filters.kommande" ng-change="update_results()" class="custom-select custom-select-sm">
+                <option value="0">--</option>
+                <option value="1">Show only Kommande</option>
+                <option value="-1">Hide Kommande</option>
+              </select>
+            </td>
+          </tr>
+          <tr ng-class="{'filter-inactive': filters.bidding == 0}">
+            <th><label for="filters_bidding">Bidding</label></th>
+            <td colspan="2">
+              <select id="filters_bidding" ng-model="filters.bidding" ng-change="update_results()" class="custom-select custom-select-sm">
+                <option value="0">--</option>
+                <option value="1">Show only Bidding</option>
+                <option value="-1">Hide Bidding</option>
+              </select>
+            </td>
+          </tr>
           <tr ng-class="{'filter-inactive': filters.price_min == stats.price[0]}">
             <th><label for="price_min">Min price</label></th>
             <td><input id="price_min" ng-model="filters.price_min" type="range" class="form-control-range" min="{{stats.price[0]}}" max="{{stats.price[1]}}" ng-change="update_results()"></td>
