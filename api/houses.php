@@ -78,7 +78,7 @@ foreach($results as $house_id => $house){
 foreach($results as $house_id => $house){
 
   // Get geocode results
-  $results[$house_id] = array_merge($results[$house_id], geocode_address(null, $house_id));
+  $results[$house_id] = array_merge($results[$house_id], geocode_house_address($house_id));
 
   // Get ratings
   $results[$house_id]['ratings'] = get_house_ratings($house_id);
@@ -94,6 +94,7 @@ foreach($results as $house_id => $house){
 // FILTERS
 foreach($results as $house_id => $house){
   $remove = false;
+  if(isset($postdata['house_id']) && $house['house_id'] != $postdata['house_id']) $remove = true;
   if(isset($postdata['price_min']) && @$house['price'] < $postdata['price_min']) $remove = true;
   if(isset($postdata['price_max']) && @$house['price'] > $postdata['price_max']) $remove = true;
   if(isset($postdata['size_total_min']) && $house['size_total'] < $postdata['size_total_min']) $remove = true;

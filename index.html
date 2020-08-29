@@ -57,6 +57,7 @@
         'none': ['None', function(house){ return [$scope.base_marker_icon]; }],
         'price': ['Price', function(house){ return ['fa-number', (house.price / 1000000).toFixed(1)] }],
         'rooms': ['Rooms', function(house){ return ['fa-number', house.rooms] }],
+        'days_on_hemnet': ['Days on Hemnet', function(house){ return ['fa-number', house.days_on_hemnet] }],
       }
 
       // House results
@@ -192,24 +193,33 @@
         var markers = {};
         angular.forEach($scope.results, function (house, key) {
 
-          // Get marker colour / icon
-          var m_colour = $scope.set_marker_colour[$scope.map_settings.marker_colour][1](house, 1);
-          var m_icon = $scope.set_marker_icon[$scope.map_settings.marker_icon][1](house, 1);
+          // Lat / Lng
+          var lat = parseFloat(house.lat);
+          var lng = parseFloat(house.lng);
+          if(isNaN(lat) || isNaN(lng)){
+            console.error("NaN for lat/lng!", lat, lng, house);
+          } else {
 
-          markers[house.house_id] = {
-            house_id: house.house_id,
-            lat: parseFloat(house.lat),
-            lng: parseFloat(house.lng),
-            message: '<h6><a href="'+house.url+'" target="_blank">'+house.streetAddress+'</a></h6><p><img src="'+house.front_image+'" style="width:100%"></p>',
-            icon: {
-              type: 'extraMarker',
-              markerColor: m_colour,
-              icon: m_icon[0],
-              number: m_icon[1],
-              prefix: 'fa',
-              shape: 'circle',
-              svg: true
+            // Get marker colour / icon
+            var m_colour = $scope.set_marker_colour[$scope.map_settings.marker_colour][1](house, 1);
+            var m_icon = $scope.set_marker_icon[$scope.map_settings.marker_icon][1](house, 1);
+
+            markers[house.house_id] = {
+              house_id: house.house_id,
+              lat: lat,
+              lng: lng,
+              message: '<h6><a href="'+house.url+'" target="_blank">'+house.streetAddress+'</a></h6><p><img src="'+house.front_image+'" style="width:100%"></p>',
+              icon: {
+                type: 'extraMarker',
+                markerColor: m_colour,
+                icon: m_icon[0],
+                number: m_icon[1],
+                prefix: 'fa',
+                shape: 'circle',
+                svg: true
+              }
             }
+
           }
         });
 
@@ -447,6 +457,10 @@
           <tr>
             <th>Tenure:</th>
             <td><span ng-bind="active_house.tenure"></span></td>
+          </tr>
+          <tr ng-show="active_house.days_on_hemnet">
+            <th>Days on Hemnet:</th>
+            <td><span ng-bind="active_house.days_on_hemnet"></span></td>
           </tr>
         </table>
 

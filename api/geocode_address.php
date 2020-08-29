@@ -34,11 +34,6 @@ function geocode_house_address($house_id){
     $result->free_result();
   }
 
-
-  if(!$address_str){
-    return array("status"=>"error", "msg" => 'Error: Could not build address string for house <a href="https://www.hemnet.se/bostad/'.$house_id.'" target="_blank">'.$house_id.'</a>');
-  }
-
   return geocode_address($address_str, $house_id);
 }
 
@@ -62,35 +57,37 @@ function geocode_address($address, $house_id=false){
     }
   }
 
-  $google_url = 'https://maps.googleapis.com/maps/api/geocode/json?key='.$ini_array['gmap_api_key'].'&address='.urlencode($address);
-  $results = json_decode(file_get_contents($google_url));
-  if(isset($results->results)){
-    $err_address = '<code>'.$address.'</code>';
-    if($house_id){
-      $err_address = '<a href="https://www.hemnet.se/bostad/'.$house_id.'" target="_blank">"'.$address.'"</a>';
-    }
-    if(count($results->results) == 0){
-      return array("status"=>"error", "msg" => 'Error: Empty result for search '.$err_address.'<!-- '.$google_url."\n".print_r($results, true).' -->');
+  if($address){
+    $google_url = 'https://maps.googleapis.com/maps/api/geocode/json?key='.$ini_array['gmap_api_key'].'&address='.urlencode($address);
+    $results = @json_decode(@file_get_contents($google_url));
+    if(isset($results->results)){
+      $err_address = '<code>'.$address.'</code>';
+      if($house_id){
+        $err_address = '<a href="https://www.hemnet.se/bostad/'.$house_id.'" target="_blank">"'.$address.'"</a>';
+      }
+      if(count($results->results) == 0){
+        return array("status"=>"error", "msg" => 'Error: Empty result for search '.$err_address.'<!-- '.$google_url."\n".print_r($results, true).' -->');
+      }
+
+      $loc['lat'] = $results->results[0]->geometry->location->lat;
+      $loc['lng'] = $results->results[0]->geometry->location->lng;
+      $loc['location_type'] = $results->results[0]->geometry->location_type;
     }
 
-    $loc['lat'] = $results->results[0]->geometry->location->lat;
-    $loc['lng'] = $results->results[0]->geometry->location->lng;
-    $loc['location_type'] = $results->results[0]->geometry->location_type;
-  }
-
-  // Save to the database
-  if($loc['lat'] && $loc['lng']){
-    $sql = '
-      INSERT INTO `geocoding_results` SET
-        `address` = "'.$mysqli->real_escape_string($address).'",
-        `lat` = "'.$mysqli->real_escape_string($loc['lat']).'",
-        `lng` = "'.$mysqli->real_escape_string($loc['lng']).'",
-        `location_type` = "'.$mysqli->real_escape_string($loc['location_type']).'"
-    ';
-    if($house_id){
-      $sql .= ', `house_id` = "'.$mysqli->real_escape_string($house_id).'"';
+    // Save to the database
+    if($loc['lat'] && $loc['lng']){
+      $sql = '
+        INSERT INTO `geocoding_results` SET
+          `address` = "'.$mysqli->real_escape_string($address).'",
+          `lat` = "'.$mysqli->real_escape_string($loc['lat']).'",
+          `lng` = "'.$mysqli->real_escape_string($loc['lng']).'",
+          `location_type` = "'.$mysqli->real_escape_string($loc['location_type']).'"
+      ';
+      if($house_id){
+        $sql .= ', `house_id` = "'.$mysqli->real_escape_string($house_id).'"';
+      }
+      $mysqli->query($sql);
     }
-    $mysqli->query($sql);
   }
 
   return $loc;

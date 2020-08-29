@@ -15,6 +15,7 @@ function scrape_hemnet_house($house_id){
   $address = false;
   $data_layer = false;
   $front_image = false;
+  $days_on_hemnet = false;
 
   // Get house URL
   $hn_url = false;
@@ -59,11 +60,25 @@ function scrape_hemnet_house($house_id){
     $front_image = $matches[1];
   }
 
+  // Get days on hemnet
+  preg_match_all('/<div class="property-visits-counter__row-label">(.+?<\/div>.+?)<\/div>/s', $html_page, $matches);
+  if($matches){
+    foreach($matches as $match){
+      if(isset($match[1]) && strpos($match[1], 'Dagar på Hemnet')){
+        preg_match('/<div class="property-visits-counter__row-value">(.+?)<\/div>/s', $match[1], $nested_matches);
+        if($nested_matches){
+          $days_on_hemnet = trim($nested_matches[1]);
+        }
+      }
+    }
+  }
+
   // Build the SQL insert statements
   $sql_fields = [];
   if($address) $sql_fields['address'] = json_encode($address);
   if($data_layer) $sql_fields['data_layer'] = json_encode($data_layer);
   if($front_image) $sql_fields['front_image'] = $front_image;
+  if($days_on_hemnet) $sql_fields['days_on_hemnet'] = $days_on_hemnet;
 
   if(isset($address->streetAddress)) $sql_fields['streetAddress'] = $address->streetAddress;
   if(isset($address->addressLocality)) $sql_fields['addressLocality'] = $address->addressLocality;
@@ -107,7 +122,12 @@ function scrape_hemnet_house($house_id){
   }
   $mysqli->query($sql);
 
-  return true;
+  return array(
+    'front_image' => $front_image,
+    'days_on_hemnet' => $days_on_hemnet,
+    'address' => $address,
+    'data_layer' => $data_layer,
+  );
 }
 
 /////////
@@ -130,11 +150,11 @@ if ( basename(__FILE__) == basename($_SERVER["SCRIPT_FILENAME"]) ) {
     }
 
     // Call the function
-    scrape_hemnet_house($_REQUEST['id']);
+    $results = scrape_hemnet_house($_REQUEST['id']);
 
     // Return success message
     header("Content-type: text/json; charset=utf-8");
-    echo json_encode(array("status"=>"success", "msg" => "Found house details"));
+    echo json_encode(array("status"=>"success", "msg" => "Found house details", "results" => $results), JSON_PRETTY_PRINT);
 
 
   } else {
