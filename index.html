@@ -53,6 +53,11 @@
       $scope.base_marker_colour = '#aab2b9';
       $scope.set_marker_colour = {
         'none': ['None', function(house){ return $scope.base_marker_colour; }],
+        'status': ['Status', function(house){
+          if(house.status == 'upcoming'){ return '#28a745'; }
+          if(house.bidding == '1'){ return '#67458c'; }
+          return $scope.base_marker_colour;
+        }],
         'rating_combined': ['Rating: Combined', function(house){
           var score = null;
           for(let user_id in $scope.users){
@@ -71,6 +76,11 @@
       $scope.base_marker_icon = 'fa-circle';
       $scope.set_marker_icon = {
         'none': ['None', function(house){ return [$scope.base_marker_icon]; }],
+        'status': ['Status', function(house){
+          if(house.status == 'upcoming'){ return ['fa-bolt']; }
+          if(house.bidding == '1'){ return ['fa-gavel']; }
+          return [$scope.base_marker_icon];
+        }],
         'price': ['Price', function(house){ return ['fa-number', (house.price / 1000000).toFixed(1)] }],
         'rooms': ['Rooms', function(house){ return ['fa-number', house.rooms] }],
         'days_on_hemnet': ['Days on Hemnet', function(house){ return ['fa-number', house.days_on_hemnet] }],
@@ -451,8 +461,8 @@
         <h3>
           <span class="badge" ng-class="{'badge-success': active_house.price < 4000000, 'badge-primary': active_house.price > 4000000 && active_house.price < 5700000, 'badge-danger': active_house.price > 5700000}"><span ng-bind="active_house.price / 1000000 | number:3"></span> MKr</span>
           <span class="float-right small mt-2">
-            <span ng-show="active_house.status == 'upcoming'" class="badge badge-success">Kommande</span>
-            <span ng-show="active_house.bidding == 1" class="badge badge-warning"><i class="fa fa-certificate" aria-hidden="true"></i> Budgivning pågår</span>
+            <span ng-show="active_house.status == 'upcoming'" class="badge badge-success"><i class="fa fa-bolt mr-2" aria-hidden="true"></i>Kommande</span>
+            <span ng-show="active_house.bidding == 1" class="badge badge-info" style="background-color: #67458c;"><i class="fa fa-gavel mr-2" aria-hidden="true"></i> Budgivning pågår</span>
           </span>
         </h3>
         <img ng-src="{{active_house.front_image}}" class="w-100 my-2">
