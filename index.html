@@ -10,6 +10,9 @@
   <!-- Leaflet -->
   <script src="https://unpkg.com/leaflet@1.6.0/dist/leaflet.js"></script>
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.6.0/dist/leaflet.css" />
+  <!-- Leaflet Extra Markers -->
+  <script src="https://cdn.jsdelivr.net/npm/leaflet-extra-markers@1.2.1/dist/js/leaflet.extra-markers.min.js"></script>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet-extra-markers@1.2.1/dist/css/leaflet.extra-markers.min.css">
   <!-- Angular Simple Logger -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/angular-simple-logger/0.1.7/angular-simple-logger.min.js"></script>
   <!-- Angular UI for Leaflet -->
@@ -40,6 +43,15 @@
         size_total: [0, 10000],
       }
 
+      // Settings
+      $scope.map_settings = {
+        marker_colour: 'none'
+      }
+      $scope.base_marker_colour = '#aab2b9';
+      $scope.set_marker_colour = {
+        'none': ['None', function(house){ return $scope.base_marker_colour; }]
+      }
+
       // House results
       $scope.call_active = false;
       $scope.call_requested = false;
@@ -61,7 +73,7 @@
       });
 
       // Get the map markers
-      $scope.updateMarkers = function(init_call) {
+      $scope.update_results = function(init_call) {
 
         // Don't fire too frequently
         if($scope.call_active){
@@ -124,18 +136,19 @@
             for(user_id in $scope.users){
               $scope.filters.hide_ratings[user_id] = { 'yes': false, 'maybe': false, 'no':false, 'not_set': false};
             };
+            // Add extra map settings
+            for(let user_id in $scope.users){
+              $scope.set_marker_colour['rating_'+user_id] = ['Rating: '+$scope.users[user_id], function(house){
+                if(house.ratings[user_id] == 'yes'){ return '#28a745'; }
+                if(house.ratings[user_id] == 'no'){ return '#dc3545'; }
+                if(house.ratings[user_id] == 'maybe'){ return '#17a2b8'; }
+                return $scope.base_marker_colour;
+              }];
+            }
           }
 
-          // Make nice object of map markers
-          var markers = {};
-          angular.forEach($scope.results, function (house, key) {
-            markers[house.house_id] = {
-              house_id: house.house_id,
-              lat: parseFloat(house.lat),
-              lng: parseFloat(house.lng),
-              message: '<h6><a href="'+house.url+'" target="_blank">'+house.streetAddress+'</a></h6><p><img src="'+house.front_image+'" style="width:100%"></p>'
-            }
-          });
+          // Plot markers
+          var markers = $scope.plot_markers();
 
           // Get new map bounds
           var l_bounds = L.latLngBounds(Object.values(markers));
@@ -154,15 +167,47 @@
           $timeout(function () {
             $scope.call_active = false;
             if($scope.call_requested){
-              $scope.updateMarkers();
+              $scope.update_results();
             }
           }, 1000);
 
         });
       };
 
+      $scope.plot_markers = function(){
+        // Make nice object of map markers
+        var markers = {};
+        angular.forEach($scope.results, function (house, key) {
+
+          // Get marker colour
+          var m_colour = $scope.set_marker_colour[$scope.map_settings.marker_colour][1](house, 1);
+
+          markers[house.house_id] = {
+            house_id: house.house_id,
+            lat: parseFloat(house.lat),
+            lng: parseFloat(house.lng),
+            message: '<h6><a href="'+house.url+'" target="_blank">'+house.streetAddress+'</a></h6><p><img src="'+house.front_image+'" style="width:100%"></p>',
+            icon: {
+              type: 'extraMarker',
+              icon: 'fa-circle',
+              markerColor: m_colour,
+              prefix: 'fa',
+              shape: 'circle',
+              svg: true
+            }
+          }
+        });
+
+        return markers;
+      }
+
+      // Replot the map markers
+      $scope.update_markers = function(){
+        angular.extend($scope, { markers: $scope.plot_markers() });
+      }
+
       // Initialise the map with markers on load
-      $scope.updateMarkers(true);
+      $scope.update_results(true);
 
       // Leaflet marker clicked
       $scope.$on('leafletDirectiveMarker.click', function(event, args){
@@ -260,31 +305,31 @@
         <p class="small text-muted text-center mt-1">Last updated {{ oldest_search_result | date: 'yyyy-MM-dd HH:mm:ss' }}</p>
       </div>
       <div class="row">
-        <div class="col-6"><button ng-click="show_filters = !show_filters" class="btn btn-block btn-secondary"><i class="fa fa-filter mr-2"></i> Filters</button></div>
-        <div class="col-6"><button ng-click="show_map_settings = !show_map_settings" class="btn btn-block btn-info"><i class="fa fa-map-marker mr-2"></i> Map settings</button></div>
+        <div class="col-6"><button ng-click="show_filters = !show_filters; show_map_settings = false;" class="btn btn-block btn-secondary"><i class="fa fa-filter mr-2"></i> Filters</button></div>
+        <div class="col-6"><button ng-click="show_map_settings = !show_map_settings; show_filters = false;" class="btn btn-block btn-info"><i class="fa fa-map-marker mr-2"></i> Map settings</button></div>
       </div>
-      <div ng-show="show_filters" class="small pt-3 mt-3 border-top">
+      <div ng-show="show_filters" class="pt-3 mt-3 border-top">
         <h4>Filters</h4>
-        <p>Showing <span ng-bind="num_results" class="badge badge-secondary"></span> out of <span ng-bind="num_total_results" class="badge badge-secondary"></span></p>
+        <p>Showing <span ng-bind="num_results" class="badge badge-secondary"></span> out of <span ng-bind="num_total_results" class="badge badge-secondary"></span> houses.</p>
         <h6>Ratings</h6>
         <p>Click to hide houses that are any of the following:</p>
         <table class="table table-sm">
           <tr ng-repeat="(user_id, user_name) in users" ng-class="{'filter-inactive': !filters.hide_ratings[user_id]['yes'] && !filters.hide_ratings[user_id]['maybe'] && !filters.hide_ratings[user_id]['no'] && !filters.hide_ratings[user_id]['not_set'] }">
             <th>{{ user_name }}</th>
             <td class="px-2">
-                <input class="form-check-input" type="checkbox" id="rating_yes_{{user_id}}" ng-model="filters.hide_ratings[user_id].yes" ng-change="updateMarkers()">
+                <input class="form-check-input" type="checkbox" id="rating_yes_{{user_id}}" ng-model="filters.hide_ratings[user_id].yes" ng-change="update_results()">
                 <label class="form-check-label" for="rating_yes_{{user_id}}">Yes</label>
             </td>
             <td class="px-2">
-                <input class="form-check-input" type="checkbox" id="rating_maybe_{{user_id}}" ng-model="filters.hide_ratings[user_id].maybe" ng-change="updateMarkers()">
+                <input class="form-check-input" type="checkbox" id="rating_maybe_{{user_id}}" ng-model="filters.hide_ratings[user_id].maybe" ng-change="update_results()">
                 <label class="form-check-label" for="rating_maybe_{{user_id}}">Maybe</label>
             </td>
             <td class="px-2">
-                <input class="form-check-input" type="checkbox" id="rating_no_{{user_id}}" ng-model="filters.hide_ratings[user_id].no" ng-change="updateMarkers()">
+                <input class="form-check-input" type="checkbox" id="rating_no_{{user_id}}" ng-model="filters.hide_ratings[user_id].no" ng-change="update_results()">
                 <label class="form-check-label" for="rating_no_{{user_id}}">No</label>
             </td>
             <td class="px-2">
-                <input class="form-check-input" type="checkbox" id="rating_not_set_{{user_id}}" ng-model="filters.hide_ratings[user_id].not_set" ng-change="updateMarkers()">
+                <input class="form-check-input" type="checkbox" id="rating_not_set_{{user_id}}" ng-model="filters.hide_ratings[user_id].not_set" ng-change="update_results()">
                 <label class="form-check-label" for="rating_not_set_{{user_id}}">Not set</label>
             </td>
           </tr>
@@ -293,23 +338,33 @@
         <table class="table table-sm">
           <tr ng-class="{'filter-inactive': filters.price_min == stats.price[0]}">
             <th><label for="price_min">Min price</label></th>
-            <td><input id="price_min" ng-model="filters.price_min" type="range" class="form-control-range" min="{{stats.price[0]}}" max="{{stats.price[1]}}" ng-change="updateMarkers()"></td>
+            <td><input id="price_min" ng-model="filters.price_min" type="range" class="form-control-range" min="{{stats.price[0]}}" max="{{stats.price[1]}}" ng-change="update_results()"></td>
             <td ng-bind="filters.price_min"></td>
           </tr>
           <tr ng-class="{'filter-inactive': filters.price_max == stats.price[1]}">
             <th><label for="price_max">Max price</label></th>
-            <td><input id="price_max" ng-model="filters.price_max" type="range" class="form-control-range" min="{{stats.price[0]}}" max="{{stats.price[1]}}" ng-change="updateMarkers()"></td>
+            <td><input id="price_max" ng-model="filters.price_max" type="range" class="form-control-range" min="{{stats.price[0]}}" max="{{stats.price[1]}}" ng-change="update_results()"></td>
             <td ng-bind="filters.price_max"></td>
           </tr>
           <tr ng-class="{'filter-inactive': filters.size_total_min == stats.size_total[0]}">
             <th><label for="size_total_min">Min size <small style="white-space: nowrap;">(Bo + Bi)</small></label></th>
-            <td><input id="size_total_min" ng-model="filters.size_total_min" type="range" class="form-control-range" min="{{stats.size_total[0]}}" max="{{stats.size_total[1]}}" ng-change="updateMarkers()"></td>
+            <td><input id="size_total_min" ng-model="filters.size_total_min" type="range" class="form-control-range" min="{{stats.size_total[0]}}" max="{{stats.size_total[1]}}" ng-change="update_results()"></td>
             <td ng-bind="filters.size_total_min"></td>
           </tr>
         </table>
       </div>
-      <div ng-show="show_map_settings" class="small pt-3 mt-3 border-top">
+      <div ng-show="show_map_settings" class="pt-3 mt-3 border-top">
         <h4>Map settings</h4>
+        <div class="form-row">
+          <div class="col">
+            <label for="map_settings_marker_colour">Marker colour:</label>
+          </div>
+          <div class="col">
+            <select id="map_settings_marker_colour" ng-model="map_settings.marker_colour" ng-change="update_markers()" class="custom-select custom-select-sm">
+              <option ng-repeat="(key, m_colour_func) in set_marker_colour" value="{{ key }}">{{ m_colour_func[0] }}</option>
+            </select>
+          </div>
+        </div>
       </div>
       <div ng-show="active_id == false" class="text-muted pt-3 mt-3 border-top">Click a house marker on the map to see more information here.</div>
       <div ng-hide="active_id == false" class="pt-3 mt-3 border-top">
