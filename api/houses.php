@@ -9,31 +9,12 @@
  * Return the houses from the database
  */
 
-// Prepare for JSON output
-header("Content-type: text/json; charset=utf-8");
-
-// Connect to the database
-ini_set('display_errors', 1);
-ini_set('display_startup_errors', 1);
-error_reporting(E_ALL);
-
-$ini_array = parse_ini_file("../hemnet_commuter_config.ini");
-
-$mysqli = new mysqli("localhost", $ini_array['db_user'], $ini_array['db_password'], $ini_array['db_name']);
-if ($mysqli->connect_errno) {
-   die("Failed to connect to MySQL: " . $mysqli->connect_error);
-}
-
+require_once('_common_api.php');
 require_once('geocode_address.php');
 require_once('ratings.php');
 require_once('comments.php');
 require_once('tags.php');
 require_once('users.php');
-
-// AngularJS POST data looks weird
-$postdata = json_decode(file_get_contents("php://input"), true);
-if(is_null($postdata)) $postdata = [];
-$postdata = array_merge($_GET, $postdata);
 
 ///
 /// NB: I should do all of this in joins but it's late and I'm a bad person.

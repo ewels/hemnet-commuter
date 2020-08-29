@@ -137,28 +137,16 @@ if ( basename(__FILE__) == basename($_SERVER["SCRIPT_FILENAME"]) ) {
 
   if(isset($_REQUEST['id'])){
 
-    // Connect to the database
-    ini_set('display_errors', 1);
-    ini_set('display_startup_errors', 1);
-    error_reporting(E_ALL);
-
-    $ini_array = parse_ini_file("../hemnet_commuter_config.ini");
-
-    $mysqli = new mysqli("localhost", $ini_array['db_user'], $ini_array['db_password'], $ini_array['db_name']);
-    if ($mysqli->connect_errno) {
-      die("Failed to connect to MySQL: " . $mysqli->connect_error);
-    }
+    require_once('_common_api.php');
 
     // Call the function
     $results = scrape_hemnet_house($_REQUEST['id']);
 
     // Return success message
-    header("Content-type: text/json; charset=utf-8");
     echo json_encode(array("status"=>"success", "msg" => "Found house details", "results" => $results), JSON_PRETTY_PRINT);
 
 
   } else {
-    header("Content-type: text/json; charset=utf-8");
     echo json_encode(array("status"=>"error", "msg" => "Error: No input supplied"));
   }
 

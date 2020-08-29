@@ -120,42 +120,31 @@ function fix_geocode_result($house_id, $lat, $lng){
 /////////
 if ( basename(__FILE__) == basename($_SERVER["SCRIPT_FILENAME"]) ) {
 
-  // Connect to the database
-  ini_set('display_errors', 1);
-  ini_set('display_startup_errors', 1);
-  error_reporting(E_ALL);
-
-  $ini_array = parse_ini_file("../hemnet_commuter_config.ini");
-
-  $mysqli = new mysqli("localhost", $ini_array['db_user'], $ini_array['db_password'], $ini_array['db_name']);
-  if ($mysqli->connect_errno) {
-    die("Failed to connect to MySQL: " . $mysqli->connect_error);
-  }
+  require_once('_common_api.php');
 
   // Geocode a house - get address from database and save results to DB
-  if(isset($_REQUEST['id'])){
+  if(isset($postdata['id'])){
 
-    if(isset($_REQUEST['fix_lat']) && isset($_REQUEST['fix_lng'])){
-      fix_geocode_result($_REQUEST['id'], $_REQUEST['fix_lat'], $_REQUEST['fix_lng']);
+    if(isset($postdata['fix_lat']) && isset($postdata['fix_lng'])){
+      fix_geocode_result($postdata['id'], $postdata['fix_lat'], $postdata['fix_lng']);
       die(json_encode(array("status"=>"success", "msg" => "Fixed geocode")));
     }
 
     // Call the function
-    $loc = geocode_house_address($_REQUEST['id']);
+    $loc = geocode_house_address($postdata['id']);
 
     // Return success message
     echo json_encode(array("status"=>"success", "msg" => "Found house geocode", "lat" => $loc['lat'], "lng" => $loc['lng']), JSON_PRETTY_PRINT);
 
-  } else if(isset($_REQUEST['address'])){
+  } else if(isset($postdata['address'])){
 
     // Call the function
-    $loc = geocode_address($_REQUEST['address']);
+    $loc = geocode_address($postdata['address']);
 
     // Return success message
     echo json_encode(array("status"=>"success", "msg" => "Found geocode", "lat" => $loc['lat'], "lng" => $loc['lng']), JSON_PRETTY_PRINT);
 
   } else {
-    header("Content-type: text/json; charset=utf-8");
     echo json_encode(array("status"=>"error", "msg" => "Error: No input supplied"), JSON_PRETTY_PRINT);
   }
 
