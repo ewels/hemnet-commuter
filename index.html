@@ -50,7 +50,21 @@
       }
       $scope.base_marker_colour = '#aab2b9';
       $scope.set_marker_colour = {
-        'none': ['None', function(house){ return $scope.base_marker_colour; }]
+        'none': ['None', function(house){ return $scope.base_marker_colour; }],
+        'rating_combined': ['Rating: Combined', function(house){
+          var score = null;
+          for(let user_id in $scope.users){
+            if(house.ratings[user_id] == 'yes'){ score += 1; }
+            if(house.ratings[user_id] == 'maybe'){ score += 0; }
+            if(house.ratings[user_id] == 'no'){ score += -1; }
+          }
+          if(score >= 2){ return '#28a745'; }
+          if(score == 1){ return '#c3e6cb'; }
+          if(score == 0){ return '#17a2b8'; }
+          if(score == -1){ return '#f5c6cb'; }
+          if(score <= -2){ return '#dc3545'; }
+          return $scope.base_marker_colour;
+        }],
       }
       $scope.base_marker_icon = 'fa-circle';
       $scope.set_marker_icon = {
@@ -148,14 +162,14 @@
             for(let user_id in $scope.users){
               $scope.set_marker_colour['rating_'+user_id] = ['Rating: '+$scope.users[user_id], function(house){
                 if(house.ratings[user_id] == 'yes'){ return '#28a745'; }
-                if(house.ratings[user_id] == 'no'){ return '#dc3545'; }
                 if(house.ratings[user_id] == 'maybe'){ return '#17a2b8'; }
+                if(house.ratings[user_id] == 'no'){ return '#dc3545'; }
                 return $scope.base_marker_colour;
               }];
               $scope.set_marker_icon['rating_'+user_id] = ['Rating: '+$scope.users[user_id], function(house){
                 if(house.ratings[user_id] == 'yes'){ return ['fa-thumbs-up']; }
-                if(house.ratings[user_id] == 'no'){ return ['fa-thumbs-down']; }
                 if(house.ratings[user_id] == 'maybe'){ return ['fa-question']; }
+                if(house.ratings[user_id] == 'no'){ return ['fa-thumbs-down']; }
                 return [$scope.base_marker_icon];
               }];
             }
@@ -258,6 +272,7 @@
         $http.post("api/ratings.php", JSON.stringify(post_data)).then(function(response) {
           // Update the scope with the new rating
           $scope.active_house.ratings[r_user_id] = rating;
+          $scope.update_markers();
         });
       }
 
