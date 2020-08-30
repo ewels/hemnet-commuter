@@ -162,7 +162,10 @@
           $scope.tags = response.data.tags;
           $scope.commute_locations = response.data.commute_locations;
           for(let id in $scope.commute_locations){
-            $scope.commute_locations[id].max_time = new Date($scope.commute_locations[id].max_time);
+            var dateobj = new Date();
+            dateobj.setHours(0,0,0,0);
+            dateobj.setSeconds(parseFloat($scope.commute_locations[id].max_time));
+            $scope.commute_locations[id].max_time = dateobj;
           }
 
           function get_min_max(key, results){
@@ -350,22 +353,16 @@
 
       // Update commute address or time
       $scope.update_commute_address = function(commute_id){
-        var max_time = ($scope.commute_locations[commute_id].max_time.getTime() - new Date('0').getTime()) / 1000;
-        console.log(max_time, $scope.commute_locations[commute_id].max_time.getTime(), new Date('1').getTime());
-        return;
+        var dateobj = new Date();
+        dateobj.setHours(0,0,0,0);
+        var max_time = ($scope.commute_locations[commute_id].max_time - dateobj) / 1000;
         // Build post data and send to API
         var post_data = {
           'id': commute_id,
           'update_address': $scope.commute_locations[commute_id].address.trim(),
           'max_time': max_time
         };
-        $http.post("api/commute_locations.php", JSON.stringify(post_data)).then(function(response) {
-          $scope.commute_locations = response.data;
-          console.log(post_data, response.data);
-          for(let id in $scope.commute_locations){
-            $scope.commute_locations[id].max_time = new Date($scope.commute_locations[id].max_time);
-          }
-        });
+        $http.post("api/commute_locations.php", JSON.stringify(post_data));
       };
 
       // Add commute location button clicked
