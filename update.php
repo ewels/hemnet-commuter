@@ -197,6 +197,28 @@ if(isset($_POST['house_geocode_fetch_missing'])){
   }
 }
 
+
+
+
+
+
+///////////////////////////
+// COMMUTE TIMES
+///////////////////////////
+require_once('api/commute_times.php');
+
+// POST - update commute times fetches
+if(isset($_POST['commute_times_fetch_missing'])){
+  $result = update_commute_times();
+  if(isset($result['status']) && $result['status'] == 'error'){
+    $msgs[] = ['danger', $result['msg']];
+  } else {
+    $msgs[] = ['success', $result['msg']];
+  }
+}
+
+$commute_times = update_commute_times(false, false, true);
+
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -288,6 +310,17 @@ if(!file_exists("hemnet_commuter_config.ini")){
     }
     ?>
   </ul>
+
+  <h3 class="mt-5">Commute times</h3>
+  <p>To work with commute times, we use the Google Maps API <em>Distance Matrix</em> API. We fetch the fastest public transport time going at 9am "next Friday" (whenever that is).</p>
+  <p>
+    Number of commute locations combinations in current search results: <span class="badge badge-info"><?php echo $commute_times['num_db']; ?></span>
+    (missing: <span class="badge badge-danger"><?php echo $commute_times['num_missing']; ?></span>)
+  </p>
+  <form action="" method="post">
+    <button type="submit" name="commute_times_fetch_missing" class="btn btn-primary">Fetch missing commute times</button>
+    <small class="form-text text-muted">Warning: Fetching a lot of commute timess can take a while...</small>
+  </form>
 
 
 </div>

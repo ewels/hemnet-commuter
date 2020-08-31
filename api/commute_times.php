@@ -9,7 +9,7 @@
  * Calculate commute times using the Google Maps API
  */
 
-function update_commute_times($only_house_id=false, $only_commute_id=false){
+function update_commute_times($only_house_id=false, $only_commute_id=false, $db_only=false){
 
   // Pull required info from the DB
   require_once('houses.php');
@@ -20,6 +20,7 @@ function update_commute_times($only_house_id=false, $only_commute_id=false){
   $destinations = [];
   $num_fetched = 0;
   $num_db = 0;
+  $num_missing = 0;
   $result = [];
   foreach($houses['results'] as $house_id => $house){
     if($only_house_id && $only_house_id != $house_id){
@@ -31,6 +32,10 @@ function update_commute_times($only_house_id=false, $only_commute_id=false){
       if(array_key_exists($commute_id, $house['commute_times'])){
         $num_db += 1;
       } else {
+        if($db_only){
+          $num_missing += 1;
+          continue;
+        }
         $origins[$commute_id] = $commute_loc['lat'].','.$commute_loc['lng'];
         $destinations[$house['house_id']] = $house['lat'].','.$house['lng'];
       }
@@ -65,6 +70,7 @@ function update_commute_times($only_house_id=false, $only_commute_id=false){
     "msg" => "$num_fetched commute results fetched, $num_db found in the database",
     "num_fetched" => $num_fetched,
     "num_db" => $num_db,
+    "num_missing" => $num_missing,
     "only_house_id" => $only_house_id,
     "only_commute_id" => $only_commute_id,
   );
