@@ -431,7 +431,9 @@
           'update_address': $scope.commute_locations[commute_id].address.trim(),
           'max_time': max_time
         };
-        $http.post("api/commute_locations.php", JSON.stringify(post_data));
+        $http.post("api/commute_locations.php", JSON.stringify(post_data)).then(function(response) {
+          $scope.update_results();
+        });
       };
 
       // Add commute location button clicked
@@ -446,6 +448,7 @@
           $scope.commute_locations = response.data;
           for(let id in $scope.commute_locations){
             $scope.commute_locations[id].max_time = new Date($scope.commute_locations[id].max_time);
+            $scope.update_results();
           }
         });
       }
@@ -456,6 +459,7 @@
           if(confirm('Delete '+$scope.commute_locations[id].address+'?')){
             $http.post("api/commute_locations.php", JSON.stringify({'delete': id})).then(function(response) {
               delete $scope.commute_locations[id];
+              $scope.update_results();
             });
           }
         }
