@@ -97,9 +97,17 @@ function geocode_address($address, $house_id=false){
 function fix_geocode_result($house_id, $lat, $lng){
   global $mysqli;
 
-  // Delete any existing entries that we have in the database
+  // Delete any existing geocode entries that we have in the database
   $sql = 'DELETE FROM `geocoding_results` WHERE `house_id` = "'.$mysqli->real_escape_string($house_id).'"';
-  $mysqli->query($sql);
+  if(!$mysqli->query($sql)){
+    return array("status"=>"error", "msg" => "SQL error - ".$mysqli->error);
+  }
+
+  // Delete any existing commute entries that we have in the database
+  $sql = 'DELETE FROM `commute_times` WHERE `house_id` = "'.$mysqli->real_escape_string($house_id).'"';
+  if(!$mysqli->query($sql)){
+    return array("status"=>"error", "msg" => "SQL error - ".$mysqli->error);
+  }
 
   // Insert manually fixed lat/lng
   $sql = '
@@ -110,7 +118,15 @@ function fix_geocode_result($house_id, $lat, $lng){
       `location_type` = "MANUAL",
       `house_id` = "'.$mysqli->real_escape_string($house_id).'"
   ';
-  $mysqli->query($sql);
+  if(!$mysqli->query($sql)){
+    return array("status"=>"error", "msg" => "SQL error - ".$mysqli->error);
+  }
+
+  // Update the commute locations for this house
+  require_once('commute_times.php');
+  update_commute_times($house_id);
+
+  return array("status"=>"success", "msg" => "Fixed geocode");
 }
 
 
@@ -126,8 +142,9 @@ if ( basename(__FILE__) == basename($_SERVER["SCRIPT_FILENAME"]) ) {
   if(isset($postdata['id'])){
 
     if(isset($postdata['fix_lat']) && isset($postdata['fix_lng'])){
-      fix_geocode_result($postdata['id'], $postdata['fix_lat'], $postdata['fix_lng']);
-      die(json_encode(array("status"=>"success", "msg" => "Fixed geocode")));
+      $result = fix_geocode_result($postdata['id'], $postdata['fix_lat'], $postdata['fix_lng']);
+      echo json_encode($result, JSON_PRETTY_PRINT);
+      die();
     }
 
     // Call the function

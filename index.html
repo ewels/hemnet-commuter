@@ -465,6 +465,47 @@
         }
       }
 
+      // Fix a geolocation address
+      $scope.fix_location = function(){
+
+        // Prompt to get the new lat and lng
+        var lat = false;
+        var lng = false;
+        var gmaps_link = prompt("Google maps link (leave blank for manual lat / lng)");
+        if(gmaps_link != null){
+          var matches = gmaps_link.match(/https?:\/\/www\.google\.com\/maps\/\@(\d+\.\d+),(\d+\.\d+)/);
+          if(matches != null){
+            lat = matches[1];
+            lng = matches[2];
+            if(!confirm("Got lat "+lat+" and lng "+lng+" from Google maps URL")){
+              return;
+            };
+          }
+        }
+        if(!lat || !lng){
+          lat = prompt("Latitute");
+          if (lat == null) { return; }
+          lng = prompt("Longitude");
+          if (lng == null) { return; }
+        }
+        if(!parseFloat(lat) > 0 || !parseFloat(lat) > 0){
+          alert("Lat and lng should be numeric. Got "+lat+" and "+lng);
+          return;
+        }
+
+        // Build post data and send to API
+        var post_data = {
+          'id': $scope.active_id,
+          'fix_lat': lat,
+          'fix_lng': lng
+        };
+        $http.post("api/geocode_address.php", JSON.stringify(post_data)).then(function(response) {
+          $scope.active_house.lat = lat;
+          $scope.active_house.lng = lng;
+          $scope.update_results();
+        });
+      }
+
     }]);
   </script>
 </head>
@@ -666,14 +707,20 @@
           </tr>
           <tr>
             <th>Location</th>
-            <td><a ng-href="https://www.google.com/maps?q={{active_house.lat}},{{active_house.lng}}" target="_blank" class="badge badge-info"><i class="fa fa-map-marker" aria-hidden="true"></i> Google maps &nbsp; <i class="fa fa-external-link" aria-hidden="true"></i></a></td>
+            <td>
+              <a ng-href="https://www.google.com/maps?q={{active_house.lat}},{{active_house.lng}}" target="_blank" class="badge badge-info">
+                <i class="fa fa-map-marker" aria-hidden="true"></i> Google maps &nbsp; <i class="fa fa-external-link" aria-hidden="true"></i>
+              </a>
+              &nbsp; <a href="" ng-click="fix_location()" class="text-muted small">[ fix ]</a>
+            </td>
           </tr>
           <tr ng-repeat="(commute_id, commute) in commute_locations">
             <th ng-bind="commute.address"></th>
             <td>
               <a ng-href="https://www.google.se/maps/preview?daddr={{active_house.lat}},{{active_house.lng}}&saddr={{commute.lat}},{{commute.lng}}&dirflg=r" target="_blank" ng-class="['badge', {'badge-success': active_house.commute_times[commute_id].pass_threshold, 'badge-danger': !active_house.commute_times[commute_id].pass_threshold}]">
-                <span nf-if="active_house.commute_times[commute_id].status == 'OK'">{{active_house.commute_times[commute_id].duration_text}}</span>
-                <span nf-if="active_house.commute_times[commute_id].status != 'OK'">{{active_house.commute_times[commute_id].status}}</span>
+                <span ng-if="active_house.commute_times[commute_id].status == 'OK'">{{active_house.commute_times[commute_id].duration_text}}</span>
+                <span ng-if="active_house.commute_times[commute_id].status != 'OK'">{{active_house.commute_times[commute_id].status}}</span>
+                &nbsp; <i class="fa fa-external-link" aria-hidden="true"></i>
               </a>
             </td>
           </tr>
