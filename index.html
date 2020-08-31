@@ -41,6 +41,7 @@
         price_min: 0,
         price_max: 10000000,
         size_total_min: 0,
+        hide_failed_commutes: [],
       }
       $scope.stats = {
         price: [0, 10000000],
@@ -197,6 +198,14 @@
             postdata.hide_ratings[user_id] = ratings;
           }
         }
+        for(let commute_id in $scope.commute_locations){
+          if($scope.filters.hide_failed_commutes[commute_id] != "0"){
+            if(!postdata.hasOwnProperty('hide_failed_commutes')){
+              postdata.hide_failed_commutes = [];
+            }
+            postdata.hide_failed_commutes.push(commute_id);
+          }
+        }
         console.log("Filters:", postdata);
 
         // Get the house data from the database
@@ -239,9 +248,13 @@
             $scope.stats.price = get_min_max('price', response.data.results);
             $scope.stats.size_total = get_min_max('size_total', response.data.results);
             // Build user-filters
-            for(user_id in $scope.users){
+            for(let user_id in $scope.users){
               $scope.filters.hide_ratings[user_id] = { 'yes': false, 'maybe': false, 'no':false, 'not_set': false};
             };
+            // Build commute-filters
+            for(let commute_id in $scope.commute_locations){
+              $scope.filters.hide_failed_commutes[commute_id] = "0";
+            }
             // Add extra map settings
             for(let user_id in $scope.users){
               $scope.set_marker_colour['rating_'+user_id] = ['Rating: '+$scope.users[user_id], function(house){
@@ -626,6 +639,15 @@
             <th><label for="size_total_min">Min size <small style="white-space: nowrap;">(Bo + Bi)</small></label></th>
             <td><input id="size_total_min" ng-model="filters.size_total_min" type="range" class="form-control-range" min="{{stats.size_total[0]}}" max="{{stats.size_total[1]}}" ng-change="update_results()"></td>
             <td ng-bind="filters.size_total_min"></td>
+          </tr>
+          <tr ng-repeat="(commute_id, commute) in commute_locations" ng-class="{'filter-inactive': filters.hide_failed_commutes[commute_id] == '0' }">
+            <td class="small">{{ commute.address }}</td>
+            <td colspan="2">
+              <div class="custom-control custom-switch">
+                <input type="checkbox" class="custom-control-input" id="hide_failed_commute_{{commute_id}}" ng-model="filters.hide_failed_commutes[commute_id]" ng-change="update_results()">
+                <label class="custom-control-label" for="hide_failed_commute_{{commute_id}}">Hide failing</label>
+              </div>
+            </td>
           </tr>
         </table>
       </div>
