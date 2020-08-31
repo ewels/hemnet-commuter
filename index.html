@@ -21,6 +21,8 @@
   <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" integrity="sha384-JcKb8q3iqJ61gNV9KGb8thSsNjpSL0n8PARn9HuZOnIxN0hoP+VmmDGMN5t9UJ0Z" crossorigin="anonymous">
   <!-- FontAwesome -->
   <link href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet" integrity="sha384-wvfXpqpZZVQGK6TAh5PVlGOfQNHSoD2xbE+QkPxCAFlNEevoEH3Sl0sibVcOQVnN" crossorigin="anonymous">
+  <!-- Chroma-JS -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/chroma-js/2.1.0/chroma.min.js" integrity="sha512-yocoLferfPbcwpCMr8v/B0AB4SWpJlouBwgE0D3ZHaiP1nuu5djZclFEIj9znuqghaZ3tdCMRrreLoM8km+jIQ==" crossorigin="anonymous"></script>
 
   <!-- Hemnet Commuter -->
   <link rel="stylesheet" href="styles.css">
@@ -51,6 +53,7 @@
         marker_icon: 'none'
       }
       $scope.base_marker_colour = '#aab2b9';
+      $scope.marker_colour_scale = chroma.scale('RdYlGn');
       $scope.set_marker_colour = {
         'none': ['None', function(house){ return $scope.base_marker_colour; }],
         'status': ['Kommande/Bidding', function(house){
@@ -82,6 +85,21 @@
           }
           if(passes_threshold == true){ return '#28a745'; }
           else if (passes_threshold == false){ return '#dc3545'; }
+          return $scope.base_marker_colour;
+        }],
+        'commute_combined': ['Commute: Combined', function(house){
+          var num_commutes = 0;
+          var total_time = 0;
+          for(let commute_id in $scope.commute_locations){
+            // Skip if no commute time found
+            if(house.commute_times[commute_id].status != 'OK'){ continue; }
+            total_time += parseFloat(house.commute_times[commute_id].duration_value);
+            num_commutes++;
+          }
+          if(num_commutes > 0){
+            var avg_commute = total_time / num_commutes;
+            return $scope.marker_colour_scale(avg_commute).hex();
+          }
           return $scope.base_marker_colour;
         }],
       }
@@ -188,6 +206,10 @@
           $scope.users = response.data.users;
           $scope.tags = response.data.tags;
           $scope.commute_locations = response.data.commute_locations;
+          $scope.commute_time_max = response.data.commute_time_max;
+          $scope.commute_time_min = response.data.commute_time_min;
+          $scope.commute_time_avg = response.data.commute_time_avg;
+          $scope.marker_colour_scale = chroma.scale('RdYlGn').domain([$scope.commute_time_max, $scope.commute_time_min]);
           for(let id in $scope.commute_locations){
             var dateobj = new Date();
             dateobj.setHours(0,0,0,0);
@@ -237,6 +259,15 @@
                 if(house.commute_times[commute_id].pass_threshold == true){ return ['fa-check']; }
                 else if (house.commute_times[commute_id].pass_threshold == false){ return ['fa-times']; }
                 return ['fa-question'];
+              }];
+            }
+            for(let commute_id in $scope.commute_locations){
+              $scope.set_marker_colour['commute_'+commute_id] = ['Commute: '+$scope.commute_locations[commute_id].address, function(house){
+                if(house.commute_times[commute_id].status == 'OK'){
+                  var duration = parseFloat(house.commute_times[commute_id].duration_value);
+                  return $scope.marker_colour_scale(duration).hex();
+                }
+                return $scope.base_marker_colour;
               }];
             }
           }
@@ -543,24 +574,25 @@
           <div class="col">
             <a href="" ng-click="map_settings.marker_colour = 'status'; map_settings.marker_icon = 'status'; update_markers();" class="text-muted">Status</a> /
             <a href="" ng-click="map_settings.marker_colour = 'rating_combined'; map_settings.marker_icon = 'rating_combined'; update_markers();" class="text-muted">Rating</a> /
-            <a href="" ng-click="map_settings.marker_colour = 'commute_threshold_combined'; map_settings.marker_icon = 'commute_threshold_combined'; update_markers();" class="text-muted">Commute</a>.
+            <a href="" ng-click="map_settings.marker_colour = 'commute_threshold_combined'; map_settings.marker_icon = 'commute_threshold_combined'; update_markers();" class="text-muted">Commute</a> /
+            <a href="" ng-click="map_settings.marker_colour = 'commute_combined'; map_settings.marker_icon = 'commute_threshold_combined'; update_markers();" class="text-muted">Commute 2</a>.
           </div>
         </div>
-        <div class="form-row py-2">
-          <div class="col">
-            <label for="map_settings_marker_colour">Marker colour:</label>
+        <div class="form-row py-2 small">
+          <div class="col-2 my-1">
+            <label for="map_settings_marker_colour">Colour:</label>
           </div>
-          <div class="col">
+          <div class="col-10">
             <select id="map_settings_marker_colour" ng-model="map_settings.marker_colour" ng-change="update_markers()" class="custom-select custom-select-sm">
               <option ng-repeat="(key, m_func) in set_marker_colour" value="{{ key }}">{{ m_func[0] }}</option>
             </select>
           </div>
         </div>
-        <div class="form-row py-2 border-top">
-          <div class="col">
-            <label for="map_settings_marker_icon">Marker icon:</label>
+        <div class="form-row py-2 border-top small">
+          <div class="col-2 my-1">
+            <label for="map_settings_marker_icon">Icon:</label>
           </div>
-          <div class="col">
+          <div class="col-10">
             <select id="map_settings_marker_icon" ng-model="map_settings.marker_icon" ng-change="update_markers()" class="custom-select custom-select-sm">
               <option ng-repeat="(key, m_func) in set_marker_icon" value="{{ key }}">{{ m_func[0] }}</option>
             </select>

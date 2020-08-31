@@ -127,6 +127,30 @@ function get_houses($postdata){
     if($remove) unset($house_results[$house_id]);
   }
 
+  // Commute time stats
+  $results['commute_time_max'] = 0;
+  $results['commute_time_min'] = 1000000;
+  $results['commute_time_avg'] = null;
+  $num_commutes = 0;
+  $total_commute = 0;
+  foreach($house_results as $house_id => $house){
+    foreach($house['commute_times'] as $commute_id => $commute){
+      if($commute['status'] != 'OK') continue;
+      $results['commute_time_max'] = max(intval($commute['duration_value']), $results['commute_time_max']);
+      $results['commute_time_min'] = min(intval($commute['duration_value']), $results['commute_time_min']);
+      $total_commute += intval($commute['duration_value']);
+      $num_commutes++;
+    }
+  }
+  if($num_commutes > 0){
+    $results['commute_time_avg'] = $total_commute / $num_commutes;
+  }
+
+  // Sanity-limit commute range to 30 mins - 2 hours
+  // TODO - don't hard-code this
+  $results['commute_time_max'] = min((60*60*2), $results['commute_time_max']);
+  $results['commute_time_min'] = max((60*30), $results['commute_time_min']);
+
   $results['oldest_search_result'] = $oldest_saved_search_fetch;
   $results['num_results'] = count($house_results);
   $results['results'] = $house_results;
