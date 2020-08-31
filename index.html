@@ -491,12 +491,13 @@
         </h6>
         <div class="form-row mb-2" ng-repeat="(commute_id, commute) in commute_locations">
           <div class="col-8">
-            <input type="text" class="form-control form-control-sm" ng-model="commute.address" ng-change="update_commute_address(commute_id)">
+            <p ng-bind="commute.address" class="small my-1"></p>
           </div>
           <div class="col-4">
             <input type="time" class="form-control form-control-sm" ng-model="commute.max_time" placeholder="hh:mm" ng-change="update_commute_address(commute_id)">
           </div>
         </div>
+        <p class="small text-muted my-0">Time is max commute time, hh:mm</p>
 
         <h6 class="mt-4">Map Markers</h6>
         <div class="form-row py-2">
