@@ -9,7 +9,7 @@
  * Calculate commute times using the Google Maps API
  */
 
-function update_commute_times(){
+function update_commute_times($only_house_id=false, $only_commute_id=false){
 
   // Pull required info from the DB
   require_once('houses.php');
@@ -18,12 +18,19 @@ function update_commute_times(){
   // Get origins and destinations
   $origins = [];
   $destinations = [];
-  $num_results = 0;
+  $num_fetched = 0;
+  $num_db = 0;
   $result = [];
-  foreach($houses['results'] as $id => $house){
+  foreach($houses['results'] as $house_id => $house){
+    if($only_house_id && $only_house_id != $house_id){
+      continue;
+    }
     foreach($houses['commute_locations'] as $commute_id => $commute_loc){
+      if($only_commute_id && $only_commute_id != $commute_id) continue;
       // Only look up if we don't already have this commute location
-      if(!array_key_exists($commute_id, $house['commute_times'])){
+      if(array_key_exists($commute_id, $house['commute_times'])){
+        $num_db += 1;
+      } else {
         $origins[$commute_id] = $commute_loc['lat'].','.$commute_loc['lng'];
         $destinations[$house['house_id']] = $house['lat'].','.$house['lng'];
       }
@@ -31,18 +38,36 @@ function update_commute_times(){
       if(count($origins) >= 25 || count($destinations) >= 25 || count($origins) * count($destinations) >= 100){
         $result = fetch_distance_matrix_results($origins, $destinations);
         if($result['status'] == 'success'){
-          $num_results += $result['num_results'];
+          $num_fetched += $result['num_results'];
           $origins = [];
           $destinations = [];
         } else {
-          $result['num_results'] = $num_results;
+          $result['num_results'] = $num_fetched;
           return $result;
         }
       }
     }
   }
 
-  return array("status"=>"success", "msg" => "$num_results commute results found", "num_results" => $num_results);
+  // Final batch
+  if(count($origins) > 0 && count($destinations) > 0){
+    $result = fetch_distance_matrix_results($origins, $destinations);
+    if($result['status'] == 'success'){
+      $num_fetched += $result['num_results'];
+    } else {
+      $result['num_results'] = $num_fetched;
+      return $result;
+    }
+  }
+
+  return array(
+    "status"=>"success",
+    "msg" => "$num_fetched commute results fetched, $num_db found in the database",
+    "num_fetched" => $num_fetched,
+    "num_db" => $num_db,
+    "only_house_id" => $only_house_id,
+    "only_commute_id" => $only_commute_id,
+  );
 
 }
 
@@ -125,6 +150,9 @@ if ( basename(__FILE__) == basename($_SERVER["SCRIPT_FILENAME"]) ) {
 
   require_once('_common_api.php');
 
-  echo json_encode(update_commute_times(), JSON_PRETTY_PRINT);
+  $only_house_id = isset($_GET['house_id']) ? $_GET['house_id'] : false;
+  $only_commute_id = isset($_GET['commute_id']) ? $_GET['commute_id'] : false;
+
+  echo json_encode(update_commute_times($only_house_id, $only_commute_id), JSON_PRETTY_PRINT);
 
 }

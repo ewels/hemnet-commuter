@@ -53,7 +53,7 @@
       $scope.base_marker_colour = '#aab2b9';
       $scope.set_marker_colour = {
         'none': ['None', function(house){ return $scope.base_marker_colour; }],
-        'status': ['Status', function(house){
+        'status': ['Kommande/Bidding', function(house){
           if(house.status == 'upcoming'){ return '#28a745'; }
           if(house.bidding == '1'){ return '#67458c'; }
           return $scope.base_marker_colour;
@@ -72,11 +72,23 @@
           if(score <= -2){ return '#dc3545'; }
           return $scope.base_marker_colour;
         }],
+        'commute_threshold_combined': ['Commute threshold: Combined', function(house){
+          var passes_threshold = null;
+          for(let commute_id in $scope.commute_locations){
+            // Already failed another location
+            if(passes_threshold == false){ continue; }
+            if(house.commute_times[commute_id].pass_threshold == true){ passes_threshold = true; }
+            if(house.commute_times[commute_id].pass_threshold == false){ passes_threshold = false; }
+          }
+          if(passes_threshold == true){ return '#28a745'; }
+          else if (passes_threshold == false){ return '#dc3545'; }
+          return $scope.base_marker_colour;
+        }],
       }
       $scope.base_marker_icon = 'fa-circle';
       $scope.set_marker_icon = {
         'none': ['None', function(house){ return [$scope.base_marker_icon]; }],
-        'status': ['Status', function(house){
+        'status': ['Kommande/Bidding', function(house){
           if(house.status == 'upcoming'){ return ['fa-bolt']; }
           if(house.bidding == '1'){ return ['fa-gavel']; }
           return [$scope.base_marker_icon];
@@ -198,6 +210,13 @@
                 if(house.ratings[user_id] == 'maybe'){ return ['fa-question']; }
                 if(house.ratings[user_id] == 'no'){ return ['fa-thumbs-down']; }
                 return [$scope.base_marker_icon];
+              }];
+            }
+            for(let commute_id in $scope.commute_locations){
+              $scope.set_marker_colour['commute_threshold_'+commute_id] = ['Commute threshold: '+$scope.commute_locations[commute_id].address, function(house){
+                if(house.commute_times[commute_id].pass_threshold == true){ return '#28a745'; }
+                else if (house.commute_times[commute_id].pass_threshold == false){ return '#dc3545'; }
+                return $scope.base_marker_colour;
               }];
             }
           }
@@ -581,6 +600,14 @@
           <tr ng-show="active_house.days_on_hemnet">
             <th>Days on Hemnet:</th>
             <td><span ng-bind="active_house.days_on_hemnet"></span></td>
+          </tr>
+          <tr>
+            <th>Location</th>
+            <td><a ng-href="https://www.google.com/maps?q={{active_house.lat}},{{active_house.lng}}" target="_blank" class="badge badge-info"><i class="fa fa-map-marker" aria-hidden="true"></i> Google maps &nbsp; <i class="fa fa-external-link" aria-hidden="true"></i></a></td>
+          </tr>
+          <tr ng-repeat="(commute_id, commute) in commute_locations">
+            <th ng-bind="commute.address"></th>
+            <td><a ng-href="https://www.google.se/maps/preview?daddr={{active_house.lat}},{{active_house.lng}}&saddr={{commute.lat}},{{commute.lng}}&dirflg=r" target="_blank" ng-class="['badge', {'badge-success': active_house.commute_times[commute_id].pass_threshold, 'badge-danger': !active_house.commute_times[commute_id].pass_threshold}]">{{active_house.commute_times[commute_id].duration_text}}</a></td>
           </tr>
         </table>
 

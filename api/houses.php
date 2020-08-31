@@ -20,6 +20,13 @@ function get_houses($postdata){
   require_once('tags.php');
   require_once('users.php');
 
+  $results = array(
+    "status" => "success",
+    "tags" => get_all_tags(),
+    "users" => get_all_users(),
+    "commute_locations" => get_commute_locations(),
+  );
+
   ///
   /// NB: I should do all of this in joins but it's late and I'm a bad person.
   ///
@@ -27,10 +34,10 @@ function get_houses($postdata){
   // Get search results
   $oldest_saved_search_fetch = false;
   $sql = 'SELECT `id`, `url`, `created` FROM `search_result_urls`';
-  $results = [];
+  $house_results = [];
   if ($result = $mysqli->query($sql)) {
     while ($row = $result->fetch_row()) {
-      $results[$row[0]] = array('house_id' => $row[0], 'url' => $row[1]);
+      $house_results[$row[0]] = array('house_id' => $row[0], 'url' => $row[1]);
       $created = strtotime($row[2]);
       if(!$oldest_saved_search_fetch) $oldest_saved_search_fetch = $created;
       $oldest_saved_search_fetch = min($oldest_saved_search_fetch, $created);
@@ -39,61 +46,67 @@ function get_houses($postdata){
   }
 
   // Go over each house
-  foreach($results as $house_id => $house){
+  foreach($house_results as $house_id => $house){
 
     // Get house details
     $sql = 'SELECT * FROM house_details WHERE `id` = "'.$mysqli->real_escape_string($house_id).'"';
     if ($result = $mysqli->query($sql)) {
       while ($row = $result->fetch_assoc()) {
-        $results[$house_id] = array_merge($results[$house_id], $row);
+        $house_results[$house_id] = array_merge($house_results[$house_id], $row);
       }
       $result->free_result();
     }
 
     // Get commute times
-    $results[$house_id]['commute_times'] = [];
+    $house_results[$house_id]['commute_times'] = [];
     $sql = 'SELECT * FROM `commute_times` WHERE `house_id` = "'.$mysqli->real_escape_string($house_id).'"';
     if ($result = $mysqli->query($sql)) {
       while ($row = $result->fetch_assoc()) {
-        $results[$house_id]['commute_times'][ $row['commute_id'] ] = array(
+        if($row['duration_value'] == null){
+          $passes_threshold = null;
+        } else {
+          $passes_threshold = $row['duration_value'] < $results['commute_locations'][ $row['commute_id'] ]['max_time'];
+        }
+        $house_results[$house_id]['commute_times'][ $row['commute_id'] ] = array(
           'status' => $row['status'],
           'distance_text' => $row['distance_text'],
           'distance_value' => $row['distance_value'],
           'duration_text' => $row['duration_text'],
-          'duration_value' => $row['duration_value']
+          'duration_value' => $row['duration_value'],
+          'pass_threshold' => $passes_threshold
         );
       }
       $result->free_result();
     }
 
     // Unencode JSON strings
-    $results[$house_id]['address'] = @json_decode($results[$house_id]['address']);
-    $results[$house_id]['data_layer'] = @json_decode($results[$house_id]['data_layer']);
+    $house_results[$house_id]['address'] = @json_decode($house_results[$house_id]['address']);
+    $house_results[$house_id]['data_layer'] = @json_decode($house_results[$house_id]['data_layer']);
 
     // Total living area
-    $results[$house_id]['size_total'] = @$results[$house_id]['living_area'] + @$results[$house_id]['supplemental_area'];
+    $house_results[$house_id]['size_total'] = @$house_results[$house_id]['living_area'] + @$house_results[$house_id]['supplemental_area'];
 
   }
 
   // Other database tables
-  foreach($results as $house_id => $house){
+  foreach($house_results as $house_id => $house){
 
     // Get geocode results
-    $results[$house_id] = array_merge($results[$house_id], geocode_house_address($house_id));
+    $house_results[$house_id] = array_merge($house_results[$house_id], geocode_house_address($house_id));
 
     // Get ratings
-    $results[$house_id]['ratings'] = get_house_ratings($house_id);
+    $house_results[$house_id]['ratings'] = get_house_ratings($house_id);
 
     // Get comments
-    $results[$house_id]['comments'] = get_house_comments($house_id);
+    $house_results[$house_id]['comments'] = get_house_comments($house_id);
 
     // Get tags
-    $results[$house_id]['tags'] = get_house_tags($house_id);
+    $house_results[$house_id]['tags'] = get_house_tags($house_id);
 
   }
 
   // FILTERS
-  foreach($results as $house_id => $house){
+  foreach($house_results as $house_id => $house){
     $remove = false;
     if(isset($postdata['house_id']) && $house['house_id'] != $postdata['house_id']) $remove = true;
     if(isset($postdata['kommande']) && $postdata['kommande'] == '1' && @$house['status'] != 'upcoming') $remove = true;
@@ -111,18 +124,14 @@ function get_houses($postdata){
       }
     }
 
-    if($remove) unset($results[$house_id]);
+    if($remove) unset($house_results[$house_id]);
   }
 
-  return array(
-      "status" => "success",
-      "num_results" => count($results),
-      "oldest_search_result" => $oldest_saved_search_fetch,
-      "tags" => get_all_tags(),
-      "users" => get_all_users(),
-      "commute_locations" => get_commute_locations(),
-      "results" => $results
-    );
+  $results['oldest_search_result'] = $oldest_saved_search_fetch;
+  $results['num_results'] = count($house_results);
+  $results['results'] = $house_results;
+
+  return $results;
 
 }
 
