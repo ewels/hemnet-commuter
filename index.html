@@ -577,9 +577,9 @@
         <div class="col-6"><button ng-click="show_filters = !show_filters; show_map_settings = false;" class="btn btn-block btn-secondary"><i class="fa fa-filter mr-2"></i> Filters</button></div>
         <div class="col-6"><button ng-click="show_map_settings = !show_map_settings; show_filters = false;" class="btn btn-block btn-info"><i class="fa fa-map-marker mr-2"></i> Map settings</button></div>
       </div>
+      <p class="small text-muted mt-2">Showing <span ng-bind="num_results" class="badge badge-secondary"></span> out of <span ng-bind="num_total_results" class="badge badge-secondary"></span> houses.</p>
       <div ng-show="show_filters" class="pt-3 mt-3 border-top">
         <h4>Filters</h4>
-        <p>Showing <span ng-bind="num_results" class="badge badge-secondary"></span> out of <span ng-bind="num_total_results" class="badge badge-secondary"></span> houses.</p>
         <h6>Ratings</h6>
         <p>Click to hide houses that are any of the following:</p>
         <table class="table table-sm">
