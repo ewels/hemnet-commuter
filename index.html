@@ -95,7 +95,6 @@
         }],
         'rating_combined': ['Rating: Combined', function(house){
           var col = $scope.set_marker_colour['rating_combined'][1](house);
-          console.log(col);
           if(col == '#28a745'){ return ['fa-star']; }
           if(col == '#c3e6cb'){ return ['fa-thumbs-up']; }
           if(col == '#17a2b8'){ return ['fa-question']; }
@@ -176,7 +175,7 @@
             postdata.hide_ratings[user_id] = ratings;
           }
         }
-        console.log(postdata);
+        console.log("Filters:", postdata);
 
         // Get the house data from the database
         $http.post("api/houses.php", postdata).then(function(response) {
@@ -320,7 +319,7 @@
         // Get house details
         $scope.active_id = args.model.house_id;
         $scope.active_house = $scope.results[$scope.active_id];
-        console.log($scope.active_house);
+        console.log("House clicked:", $scope.active_house);
       });
 
       // Ratings button clicked
@@ -379,7 +378,6 @@
         // Build post data and send to API
         var post_data = { 'new_tag': tag_name };
         $http.post("api/tags.php", JSON.stringify(post_data)).then(function(response) {
-          console.log(response);
           var new_tag_id = response.data.new_tag_id;
           // Update the scope with the new tag status
           $scope.tags[new_tag_id] = tag_name;
@@ -540,6 +538,14 @@
         <p class="small text-muted my-0">Time is max commute time, hh:mm</p>
 
         <h6 class="mt-4">Map Markers</h6>
+        <div class="form-row py-2 small">
+          <div class="col-auto">Quick links:</div>
+          <div class="col">
+            <a href="" ng-click="map_settings.marker_colour = 'status'; map_settings.marker_icon = 'status'; update_markers();" class="text-muted">Status</a> /
+            <a href="" ng-click="map_settings.marker_colour = 'rating_combined'; map_settings.marker_icon = 'rating_combined'; update_markers();" class="text-muted">Rating</a> /
+            <a href="" ng-click="map_settings.marker_colour = 'commute_threshold_combined'; map_settings.marker_icon = 'commute_threshold_combined'; update_markers();" class="text-muted">Commute</a>.
+          </div>
+        </div>
         <div class="form-row py-2">
           <div class="col">
             <label for="map_settings_marker_colour">Marker colour:</label>
