@@ -20,6 +20,32 @@ if ($mysqli->connect_errno) {
 ///////////////////////////
 require_once('api/scrape_hemnet_saved_search.php');
 
+// POST - update search results
+if(isset($_POST['saved_search_ids'])){
+  // Truncate the search ID table
+  $sql = 'TRUNCATE TABLE `saved_searches`';
+  $mysqli->query($sql);
+
+  // Update the search IDs themselves
+  $search_ids = explode(",", $_POST['saved_search_ids']);
+  foreach($search_ids as $search_id){
+    if(is_numeric(trim($search_id)) && trim($search_id) > 0){
+      $sql = 'INSERT INTO `saved_searches` SET `search_id` = "'.$mysqli->real_escape_string($search_id).'"';
+      $mysqli->query($sql);
+    }
+  }
+  $msgs[] = ['success', 'Updated saved search IDs'];
+
+  // Truncate existing search results
+  scrape_hemnet_search_table();
+
+  // Update results for each saved search
+  foreach($search_ids as $search_id){
+    $house_urls = scrape_hemnet_search($search_id);
+    $msgs[] = ['success', "Found ".count($house_urls)." houses"];
+  }
+}
+
 // Get current search IDs
 $search_ids = [];
 $sql = 'SELECT `search_id` FROM `saved_searches`';
@@ -45,32 +71,6 @@ if ($result = $mysqli->query($sql)) {
     $num_houses++;
   }
   $result->free_result();
-}
-
-// POST - update search results
-if(isset($_POST['saved_search_ids'])){
-  // Truncate the search ID table
-  $sql = 'TRUNCATE TABLE `saved_searches`';
-  $mysqli->query($sql);
-
-  // Update the search IDs themselves
-  $search_ids = explode(",", $_POST['saved_search_ids']);
-  foreach($search_ids as $search_id){
-    if(is_numeric(trim($search_id)) && trim($search_id) > 0){
-      $sql = 'INSERT INTO `saved_searches` SET `search_id` = "'.$mysqli->real_escape_string($search_id).'"';
-      $mysqli->query($sql);
-    }
-  }
-  $msgs[] = ['success', 'Updated saved search IDs'];
-
-  // Truncate existing search results
-  scrape_hemnet_search_table();
-
-  // Update results for each saved search
-  foreach($search_ids as $search_id){
-    $house_urls = scrape_hemnet_search($search_id);
-    $msgs[] = ['success', "Found ".count($house_urls)." houses"];
-  }
 }
 
 
