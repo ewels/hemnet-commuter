@@ -334,6 +334,30 @@
           }
         });
 
+        // Markers for commute locations
+        angular.forEach($scope.commute_locations, function (commute, commute_id) {
+          // Lat / Lng
+          var lat = parseFloat(commute.lat);
+          var lng = parseFloat(commute.lng);
+          if(isNaN(lat) || isNaN(lng)){
+            console.error("NaN for lat/lng!", lat, lng, house);
+          } else {
+            markers['commute_'+commute_id] = {
+              lat: lat,
+              lng: lng,
+              message: '<h6>Commute location</h6><p class="my-0">'+commute.address+'</p>',
+              icon: {
+                type: 'extraMarker',
+                markerColor: 'blue-dark',
+                icon: 'fa-building',
+                prefix: 'fa',
+                shape: 'square',
+                svg: true
+              }
+            }
+          }
+        });
+
         return markers;
       }
 
@@ -348,9 +372,11 @@
       // Leaflet marker clicked
       $scope.$on('leafletDirectiveMarker.click', function(event, args){
         // Get house details
-        $scope.active_id = args.model.house_id;
-        $scope.active_house = $scope.results[$scope.active_id];
-        console.log("House clicked:", $scope.active_house);
+        if(args.model.house_id !== undefined){
+          $scope.active_id = args.model.house_id;
+          $scope.active_house = $scope.results[$scope.active_id];
+          console.log("House clicked:", $scope.active_house);
+        }
       });
 
       // Ratings button clicked
