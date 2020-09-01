@@ -133,7 +133,17 @@ app.controller("hemnetCommuterController", [ '$scope', '$http', '$timeout', func
   // Set up the map
   angular.extend($scope, {
     center: {},
-    markers: {}
+    markers: {},
+    layers: {
+      baselayers: {
+        osm: {
+          name: 'OpenStreetMap',
+          url: 'http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
+          type: 'xyz'
+        }
+      },
+      overlays: {}
+    }
   });
 
   // Get the map markers
@@ -366,8 +376,96 @@ app.controller("hemnetCommuterController", [ '$scope', '$http', '$timeout', func
     angular.extend($scope, { markers: $scope.plot_markers() });
   }
 
+  // Get the map markers
+  $scope.plot_commute_map = function() {
+    // Get the house data from the database
+    $http.get("api/commute_map.php").then(function(response) {
+      if(response.data.status !== 'success'){
+        console.error(response.data);
+        return;
+      }
+
+      // Wipe any existing layers
+      $scope.layers.overlays = {};
+
+      // Plot each shape separately
+      var colours = ['#7570b3', '#d95f02', '#e7298a', '#66a61e'];
+      var colour_idx = 0;
+      for(let id in response.data.results){
+        // Convert TravelTime response data to geoJSON
+        var geoJSON = $scope.toGeojson([response.data.results[id]]);
+        var layer_name = response.data.layer_names[id];
+        var is_visible = true;
+        var style = {
+          color: colours[0],
+          fillColor: colours[0],
+          weight: 1.0,
+          opacity: 0.8,
+          fillOpacity: 0.4
+        };
+        if(layer_name !== 'Intersection of commutes'){
+          is_visible = false;
+          colour_idx++;
+          style = {
+            color: colours[colour_idx],
+            fillColor: colours[colour_idx],
+            weight: 1.0,
+            opacity: 0.6,
+            fillOpacity: 0.2
+          };
+        }
+        // Add to map as new layer
+        angular.extend($scope.layers.overlays, {
+          ["commute_map_"+id]: {
+            name:  layer_name,
+            type: 'geoJSONShape',
+            data: geoJSON,
+            visible: is_visible,
+            layerOptions: {
+              style: style
+            }
+          }
+        });
+      }
+    });
+  }
+
+  // Convert TravelTime response to GeoJSON
+  // https://gist.github.com/MockusT/4059e72becc7e2465b9458ccc11577e6#file-traveltime_timemap_json_to_geojson-js
+  // https://traveltime.com/blog/how-to-create-a-geojson-isochrone
+  $scope.remapLinearRing = function(linearRing) {
+    return linearRing.map(c => [c['lng'], c['lat']]);
+  }
+  $scope.shapesToMultiPolygon = function(shapes) {
+    var allRings = shapes.map(function (shape) {
+      var shell = $scope.remapLinearRing(shape['shell']);
+      var holes = shape['holes'].map(h => $scope.remapLinearRing(h));
+      return [shell].concat(holes);
+    });
+    return {
+      'type': 'MultiPolygon',
+      'coordinates': allRings
+    };
+  }
+
+  $scope.toGeojson = function(results) {
+    var multiPolygons = results.map(r => $scope.shapesToMultiPolygon(r['shapes']));
+    var features = multiPolygons.map(mp => {
+      return {
+        geometry: mp,
+        type: "Feature",
+        properties: {}
+      }
+    });
+    return {
+      'type': 'FeatureCollection',
+      'features': features
+    };
+  }
+
   // Initialise the map with markers on load
   $scope.update_results(true);
+  $scope.plot_commute_map();
 
   // Leaflet marker clicked
   $scope.$on('leafletDirectiveMarker.click', function(event, args){
@@ -459,6 +557,7 @@ app.controller("hemnetCommuterController", [ '$scope', '$http', '$timeout', func
     };
     $http.post("api/commute_locations.php", JSON.stringify(post_data)).then(function(response) {
       $scope.update_results();
+      $scope.plot_commute_map();
     });
   };
 

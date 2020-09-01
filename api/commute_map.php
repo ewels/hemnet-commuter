@@ -56,19 +56,21 @@ function get_traveltime_maps(){
 
   // Figure out the request hash and check if we have it in the DB
   $request_str = implode('|', $request_hash_strs);
-  $sql = 'SELECT `map_id`, `commute_id`, `shapes` FROM `commute_map` WHERE `request_str` = "'.$mysqli->real_escape_string($request_str).'"';
+  $sql = 'SELECT `map_id`, `commute_id`, `layer_name`, `result` FROM `commute_map` WHERE `request_str` = "'.$mysqli->real_escape_string($request_str).'"';
   $results = [];
+  $layer_names = [];
   if ($result = $mysqli->query($sql)) {
     while ($row = $result->fetch_assoc()) {
       $id = 'not_set';
       if(is_null($row['commute_id'])) $id = $row['map_id'];
       else $id = $row['commute_id'];
-      $results[$id] = json_decode($row['shapes']);
+      $results[$id] = json_decode($row['result']);
+      $layer_names[$id] = $row['layer_name'];
     }
     $result->free_result();
   }
   if(count($results) == count($postdata['arrival_searches']) + 1){
-    return array('status'=>'success', 'method'=> 'database', 'results' => $results);
+    return array('status'=>'success', 'method'=> 'database', 'layer_names' => $layer_names,  'results' => $results);
   }
 
   // Not in DB - fetch from the TravelTime API
@@ -116,12 +118,17 @@ function get_traveltime_maps(){
 
   // Insert into the database
   $results = [];
+  $layer_names = [];
   foreach($results_json['results'] as $result){
     // Get the commute ID
     $commute_id = null;
+    $layer_name = 'Intersection of commutes';
     foreach($commute_locations as $c_id => $loc){
       if($loc['address'] == $result['search_id']){
         $commute_id = $c_id;
+        $hrs = floor($loc['max_time'] / 3600);
+        $mins = floor(($loc['max_time'] / 60) % 60);
+        $layer_name = $hrs.'hr '.$mins.' commute to "'.$loc['address'].'"';
       }
     }
     // Insert
@@ -129,7 +136,8 @@ function get_traveltime_maps(){
       INSERT INTO `commute_map`
       SET `request_str` = "'.$mysqli->real_escape_string($request_str).'",
           `map_id` = "'.$mysqli->real_escape_string($result['search_id']).'",
-          `shapes` = "'.$mysqli->real_escape_string(json_encode($result['shapes'])).'"';
+          `layer_name` = "'.$mysqli->real_escape_string($layer_name).'",
+          `result` = "'.$mysqli->real_escape_string(json_encode($result)).'"';
     if(!is_null($commute_id)){
       $sql .= ', `commute_id` = "'.$mysqli->real_escape_string($commute_id).'"';
     }
@@ -139,11 +147,12 @@ function get_traveltime_maps(){
       // Save to array so that we can return directly
       if(is_null($row['commute_id'])) $id = $result['search_id'];
       else $id = $row['commute_id'];
-      $results[$id] = $result['shapes'];
+      $results[$id] = $result;
+      $layer_names[$id] = $row['layer_name'];
     }
   }
 
-  return array('status'=>'success', 'method'=> 'api', 'results' => $results);
+  return array('status'=>'success', 'method'=> 'api', 'layer_names' => $layer_names, 'results' => $results);
 
 }
 
