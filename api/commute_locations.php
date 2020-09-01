@@ -20,7 +20,7 @@ function get_commute_locations($id=false){
     ON commute_locations.address = geocoding_results.address
   ';
   if($id !== false){
-    $sql .= ' WHERE commute_locations.id = "'.$id.'"';
+    $sql .= ' WHERE commute_locations.id = "'.$mysqli->real_escape_string($id).'"';
   }
   if ($result = $mysqli->query($sql)) {
     while ($row = $result->fetch_assoc()) {
