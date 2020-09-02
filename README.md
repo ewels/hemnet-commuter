@@ -2,14 +2,14 @@
 
 > Visualisation, annotation and powerful filtering tools for houses discovered on Hemnet.
 
-Hemnet is the largest listing website for the Swedish property market.
-Almost all available apartments, houses and summer cottages are listed there.
+Hemnet ([https://www.hemnet.se](https://www.hemnet.se/)) is the largest listing website for the Swedish property market.
+Almost all available apartments, houses and summer cottages for sale in Sweden are listed there.
 
 The success of Hemnet is not a surprise - the website and app are brilliant.
 However, there are a few features that I found myself looking for when searching for a new house.
 _Hemnet Commuter_ is a pet-project developed in my spare time to address these.
 
-Key features:
+## Key features:
 
 * Interactive map showing details in a sidebar when clicking houses (a bit like the AirBnb website)
 * Live filtering of metrics, map refreshes as you adjust limits
@@ -18,10 +18,12 @@ Key features:
 * Ability to filter on custom fields not available on Hemnet, such as:
   * Total house area (Bo + Bi)
   * Hide houses with active bidding
-  * Show only _Kommande_ (upcoming) houses
+  * Show _only_ Kommande (upcoming) houses
 * Customisable map marker display with colours and icons. For example:
   * Continuous colour scales showing graduation of price / commute times etc
-  * Map marker icons showing rating (see above), status _(Kommande / Bidding)_ etc.
+  * Map marker icons showing rating, bidding status, and many more.
+
+#### Example screenshot:
 
 ![screenshot](screenshot.png)
 
@@ -58,12 +60,18 @@ Before you start, you'll need:
 * An API key for Google Maps (costs money, but easy to get loads of free credits for a trial. You won't need loads.)
 * A [developer API key for TravelTime](https://traveltime.com/travel-time-maps?openDialog=true)
 
+### Initial setup
+
+Get your server running and create a new MySQL database using the `hemnet_commuter.sql` file.
+This can be imported into _phpMyAdmin_ / similar tools, or done on the command line and should create all of
+the necessary database tables and structure.
+
 Create a copy of `hemnet_commuter_config_example.ini` without the `_example` in the filename and save the
-database / API details there.
+database details and API keys there.
 
 ### First run
 
-Once set up, you can hopefully run the tool in your web browser. Before anything else, go to the URL `/update.php`.
+Open Hemnet Commuter in your web browser. Before anything else, go to the URL `/update.php`.
 Enter one or more comma-separated search IDs and look them up. Hopefully you'll get a message that it has found
 some houses - the number should match what you see on Hemnet.
 
@@ -72,6 +80,7 @@ and save to the database. Be aware that some scripts take a long time on the fir
 updating with new houses later they are fairly quick.
 
 Once your database is full of data, you're ready to navigate to the homepage at the root URL and start using the tool.
+Hopefully the rest of it you can figure out by exploring.
 
 ## Licence and code use
 
