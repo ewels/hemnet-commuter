@@ -26,6 +26,7 @@ app.controller("hemnetCommuterController", [ '$scope', '$http', '$timeout', func
     price: [0, 10000000],
     size_total: [0, 10000],
   }
+  $scope.initialising = false;
 
   // Settings
   $scope.map_settings = {
@@ -116,8 +117,8 @@ app.controller("hemnetCommuterController", [ '$scope', '$http', '$timeout', func
   }
 
   // House results
-  $scope.call_active = false;
-  $scope.call_requested = false;
+  $scope.update_results_call_active = false;
+  $scope.update_results_call_requested = false;
   $scope.active_id = false;
   $scope.active_house = false;
   $scope.num_total_results = 0;
@@ -126,13 +127,19 @@ app.controller("hemnetCommuterController", [ '$scope', '$http', '$timeout', func
   $scope.oldest_search_result = Date.now();
   $scope.needs_update = false;
   $scope.results = [];
+  $scope.missing_geo = [];
   $scope.users = {};
   $scope.tags = {};
   $scope.commute_locations = {};
+  $scope.commute_map_call_active = false;
 
   // Set up the map
   angular.extend($scope, {
-    center: {},
+    center: {
+      lat: 59.325199,
+      lng: 18.071480,
+      zoom: 8
+    },
     markers: {},
     layers: {
       baselayers: {
@@ -149,13 +156,18 @@ app.controller("hemnetCommuterController", [ '$scope', '$http', '$timeout', func
   // Get the map markers
   $scope.update_results = function(init_call) {
 
-    // Don't fire too frequently
-    if($scope.call_active){
-      $scope.call_requested = true;
+    if($scope.initialising){
+      console.log("Ignoring update_results - still initialising");
       return;
     }
-    $scope.call_active = true;
-    $scope.call_requested = false;
+
+    // Don't fire too frequently
+    if($scope.update_results_call_active){
+      $scope.update_results_call_requested = true;
+      return;
+    }
+    $scope.update_results_call_active = true;
+    $scope.update_results_call_requested = false;
 
     // Build filters POST data
     var postdata = {};
@@ -229,8 +241,14 @@ app.controller("hemnetCommuterController", [ '$scope', '$http', '$timeout', func
         return [ Math.min.apply(Math, vals_arr), Math.max.apply(Math, vals_arr) ];
       }
 
+      ////////////////////
       // First time we have fetched results
+      ////////////////////
       if(init_call === true){
+
+        // Don't allow more data calls whilst we're setting the filters
+        $scope.initialising = true;
+
         $scope.num_total_results = response.data.num_results;
         $scope.all_results = response.data.results;
         // Get stats
@@ -280,6 +298,14 @@ app.controller("hemnetCommuterController", [ '$scope', '$http', '$timeout', func
             return $scope.base_marker_colour;
           }];
         }
+
+        // Wait for the page to update, then allow more update calls
+        // This is to stop the page reloading again when the filters are set
+        $timeout(function () {
+          $scope.initialising = false;
+          // Fetch the commute time shape once the marker stuff is done
+          $scope.plot_commute_map();
+        }, 1000);
       }
 
       // Plot markers
@@ -300,8 +326,8 @@ app.controller("hemnetCommuterController", [ '$scope', '$http', '$timeout', func
 
       // Allow function to call again in 1 second
       $timeout(function () {
-        $scope.call_active = false;
-        if($scope.call_requested){
+        $scope.update_results_call_active = false;
+        if($scope.update_results_call_requested){
           $scope.update_results();
         }
       }, 1000);
@@ -319,6 +345,7 @@ app.controller("hemnetCommuterController", [ '$scope', '$http', '$timeout', func
       var lng = parseFloat(house.lng);
       if(isNaN(lat) || isNaN(lng)){
         console.error("NaN for lat/lng!", lat, lng, house);
+        $scope.missing_geo.push(house.house_id);
       } else {
 
         // Get marker colour / icon
@@ -378,6 +405,8 @@ app.controller("hemnetCommuterController", [ '$scope', '$http', '$timeout', func
 
   // Get the map markers
   $scope.plot_commute_map = function() {
+    $scope.commute_map_call_active = true;
+
     // Get the house data from the database
     $http.get("api/commute_map.php").then(function(response) {
       if(response.data.status !== 'success'){
@@ -427,6 +456,8 @@ app.controller("hemnetCommuterController", [ '$scope', '$http', '$timeout', func
           }
         });
       }
+
+      $scope.commute_map_call_active = false;
     });
   }
 
@@ -465,7 +496,6 @@ app.controller("hemnetCommuterController", [ '$scope', '$http', '$timeout', func
 
   // Initialise the map with markers on load
   $scope.update_results(true);
-  $scope.plot_commute_map();
 
   // Leaflet marker clicked
   $scope.$on('leafletDirectiveMarker.click', function(event, args){

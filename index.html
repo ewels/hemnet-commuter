@@ -39,9 +39,13 @@
   <div class="col-md-3 pr-0 order-1 h-100 overflow-auto">
     <div class="container pt-3">
       <h1 class="h2">
-        <img src="hemnet.svg" class="float-right" style="width: 40px; margin-top:-5px;">
+        <img ng-hide="update_results_call_active || commute_map_call_active" src="hemnet.svg" class="float-right" style="width: 40px; margin-top:-5px;">
+        <i ng-show="update_results_call_active || commute_map_call_active" class="fa fa-spinner fa-pulse fa-fw float-right text-success"></i>
         Hemnet Commuter
       </h1>
+      <p ng-show="update_results_call_active" class="small text-muted">Loading houses..</p>
+      <p ng-show="commute_map_call_active" class="small text-muted">Loading commute map..</p>
+      <p ng-show="missing_geo.length > 0" class="small text-danger">Missing location for {{missing_geo.length}} houses! Fix on the <a href="update.php">update page</a>.</p>
       <hr>
       <div ng-show="needs_update">
         <a href="update.php" class="btn btn-block btn-warning"><i class="fa fa-refresh mr-2"></i> Update </a>
