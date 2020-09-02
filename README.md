@@ -1,50 +1,92 @@
 # Hemnet Commuter
 
-> Given RSS feeds of Hemnet searches, filter properties for those that match commuting preferences.
+> Visualisation, annotation and powerful filtering tools for houses discovered on Hemnet.
 
+Hemnet is the largest listing website for the Swedish property market.
+Almost all available apartments, houses and summer cottages are listed there.
 
-### Tool available at: http://beta.tallphil.co.uk/hemnet-commuter/
+The success of Hemnet is not a surprise - the website and app are brilliant.
+However, there are a few features that I found myself looking for when searching for a new house.
+_Hemnet Commuter_ is a pet-project developed in my spare time to address these.
 
-## What does this tool do?
-Whilst looking for new houses on hemnet, it can be difficult to assess which
-properties have acceptable commute times for multiple people.
+Key features:
 
-This tool takes saved searches from hemnet and filters all of the properties
-for any combination of commute times - enter up to 25 different addresses with
-maximum times, and it will show you which houses match your criteria.
+* Interactive map showing details in a sidebar when clicking houses (a bit like the AirBnb website)
+* Live filtering of metrics, map refreshes as you adjust limits
+* Map overlay showing area covered by one or more commute times (from [TravelTime](https://traveltime.com/travel-time-maps))
+* Tools for one or more people to rate houses _(Yes / No / Maybe)_, write comments and add custom tags
+* Ability to filter on custom fields not available on Hemnet, such as:
+  * Total house area (Bo + Bi)
+  * Hide houses with active bidding
+  * Show only _Kommande_ (upcoming) houses
+* Customisable map marker display with colours and icons. For example:
+  * Continuous colour scales showing graduation of price / commute times etc
+  * Map marker icons showing rating (see above), status _(Kommande / Bidding)_ etc.
 
-## Who built it?
-This was a weekend project by [Phil Ewels](http://phil.ewels.co.uk), an
+![screenshot](screenshot.png)
+
+## How it works
+
+You use the tool by creating one or more _Saved searches_ on Hemnet. You enter this ID and Hemnet Commuter does the rest:
+
+* Fetches house IDs and URLs from the saved search(es)
+* Scrapes the main Hemnet web page for each house, fetching more detailed information
+* Uses the Google Maps API to _geocode_ the location (find the latitude / longitude from the address)
+  * The Hemnet knows the exact lat/lng but I haven't figured out how to scrape this. Geocoding is the next-best thing. Please help if you can!
+
+If one or more workplace addresses are saved, Hemnet Commuter does extra commute-time things:
+
+* Uses the Google Maps API to calculate commute times for each house to each workplace
+* Fetches a commute time _isochrone_ (map of maximum commute time) from [TravelTime](https://traveltime.com/travel-time-maps) for each place, including the intersection
+
+This back-end data retrieval is done with PHP scripts, which save results to a MySQL database.
+The front-end is built using AngularJS with Leaflet maps and Bootstrap CSS.
+
+> Note that a previous version did basically the same thing, but with a lot less database and a lot more custom JQuery code
+> I haven't deleted this from the repository yet, but will soon. You may see relics from this kicking around. Please ignore / let me know.
+
+## How you can use it
+
+### Requirements
+
+Whilst it would be fairly easy to extend this so that a single installation could be used for multiple people,
+I haven't done that. So you'll have to run the web server yourself I'm afraid.
+
+Before you start, you'll need:
+
+* A method of running an Apache / PHP / MySQL web server (eg. [MAMP](https://www.mamp.info/), Docker etc)
+* An API key for Google Maps (costs money, but easy to get loads of free credits for a trial. You won't need loads.)
+* A [developer API key for TravelTime](https://traveltime.com/travel-time-maps?openDialog=true)
+
+Create a copy of `hemnet_commuter_config_example.ini` without the `_example` in the filename and save the
+database / API details there.
+
+### First run
+
+Once set up, you can hopefully run the tool in your web browser. Before anything else, go to the URL `/update.php`.
+Enter one or more comma-separated search IDs and look them up. Hopefully you'll get a message that it has found
+some houses - the number should match what you see on Hemnet.
+
+Once that's done, work your way down that _Update_ page clicking the relevant buttons to fetch all information
+and save to the database. Be aware that some scripts take a long time on the first run, but when you're just
+updating with new houses later they are fairly quick.
+
+Once your database is full of data, you're ready to navigate to the homepage at the root URL and start using the tool.
+
+## Licence and code use
+
+The code for Hemnet Commuter is released with an open-source MIT licence.
+You are free to use it, tinker, build on it or do whatever you like with it.
+
+This was a pet project for personal use by [Phil Ewels](http://phil.ewels.co.uk), an
 Englishman living in Stockholm. It's pretty fragile code and is likely to break
 as soon as Hemnet changes anything. I can't promise to maintain it, but hopefully
 it'll come in helpful for others!
 
-## How does it work?
-There are multiple steps to this tool, which roughly work as follows:
-
-1. You enter everything into the form and press submit
-2. RSS feeds are fetched from Hemnet and parsed
-    * They have to be funnelled through a PHP script, as they have annoying
-  `Access-Control-Allow-Origin` headers which prevents the browser from being able
-  to load them. Hemnet techs - if you're reading this, it'd be great if this could
-  be removed!
-3. As the RSS feeds don't contain much information, we scrape the Hemnet HTML page
-for every property.
-    * This gives us information such as location, price, size and so on.
-4. The commute locations are geocoded using the Google Maps API
-    * This gives us proper latitudes and longitudes and so on, which we can work with.
-5. Requests are sent to the [Google Maps Distance Matrix API](https://developers.google.com/maps/documentation/distance-matrix/)
-service. This works out public transport commute times for every combination of property
-and commute location.
-    * We search for travel times that arrive at work at 8:00am, next Monday.
-    * Bizarrely, this API also has `Access-Control-Allow-Origin` headers, so we
-  pipe through PHP again.
-6. Results with commute times are printed to a table in the web page
-7. A Google Map is loaded with each property, colour-coded by whether it passed
-the filters or not. Clicking reveals more information about that house.
+Please consider contributing / reporting issues via GitHub and I'll do my best to help.
 
 ---
 
-This tool is in no way endorsed by Hemnet. But it does use their nice RSS feeds. Thanks!
+This tool is in no way endorsed by Hemnet. But it does use their publicly-visible data. Thanks!
 
-<img src="http://beta.tallphil.co.uk/hemnet-commuter/hemnet.svg" width="200">
+<img src="hemnet.svg" width="200">
