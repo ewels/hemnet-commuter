@@ -28,6 +28,7 @@ if(isset($_POST['saved_search_ids'])){
 
   // Update the search IDs themselves
   $search_ids = explode(",", $_POST['saved_search_ids']);
+  $search_ids = array_map("trim",$search_ids);
   foreach($search_ids as $search_id){
     if(is_numeric(trim($search_id)) && trim($search_id) > 0){
       $sql = 'INSERT INTO `saved_searches` SET `search_id` = "'.$mysqli->real_escape_string($search_id).'"';
