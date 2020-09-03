@@ -19,8 +19,9 @@ function scrape_hemnet_search($search_id){
   $max_pages = 20;
   while($numberOfItems === false || count($house_urls) < $numberOfItems){
     $hn_url = "https://www.hemnet.se/bostader?subscription=".$search_id."&page=".$page_number;
-    $html_page = file_get_contents($hn_url);
-    preg_match_all('/<script type="application\/ld\+json">(?P<json>(.|\n)*?)<\/script>/', $html_page, $matches);
+    $html_page = @file_get_contents($hn_url);
+    if($html_page === FALSE){ break; }
+    preg_match_all('/<script type="application\/ld\+json">(?P<json>[^<]+)<\/script>/', $html_page, $matches);
     if($matches && isset($matches['json'])){
       foreach($matches['json'] as $json_str){
         $schema = json_decode($json_str);
