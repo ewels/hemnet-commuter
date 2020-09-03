@@ -45,23 +45,6 @@ h2, h3, h4, h5, h6 {
   border-color: rgba(0, 177, 0, 0.5);
 }
 
-#hemnet-logo {
-  float: right;
-  width: 100px;
-}
-
-#results_map {
-  height: 100%;
-  width: 100%;
-  background-color: #ededed;
-}
-#results_focus {
-  background-color: #ffffff;
-}
-.results_card{
-  height: 100%;
-}
-
 footer {
   margin-top: 60px;
   border-top: 1px solid #ccc;
@@ -73,11 +56,6 @@ footer {
 footer a {
   color: #999;
   text-decoration: underline;
-}
-
-
-.rating_stars {
-    cursor: pointer;
 }
 
 
