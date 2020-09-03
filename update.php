@@ -43,7 +43,7 @@ if(isset($_POST['saved_search_ids'])){
   // Update results for each saved search
   foreach($search_ids as $search_id){
     $house_urls = scrape_hemnet_search($search_id);
-    $msgs[] = ['success', "Found ".count($house_urls)." houses"];
+    $msgs[] = ['success', "Found ".count($house_urls).' houses with search <a href="https://www.hemnet.se/bostader?subscription='.$search_id.'" target="_blank">'.$search_id.'</a>.'];
   }
 }
 
@@ -264,7 +264,7 @@ if(!file_exists("hemnet_commuter_config.ini")){
     <div class="form-group">
       <label for="saved_search_ids">Saved Search ID numbers</label>
       <input type="text" class="form-control" id="saved_search_ids" name="saved_search_ids" value="<?php echo implode(", ", $search_ids); ?>">
-      <small class="form-text text-muted">Comma separated IDs from saved searches - eg. the <code>subscription</code> number at the end of URLs such as <code>https://www.hemnet.se/bostader?by=creation&order=desc&subscription=25017447</code></small>
+      <small class="form-text text-muted">Comma separated IDs from saved searches - eg. the <code>subscription</code> number at the end of URLs such as <code>https://www.hemnet.se/bostader?by=creation&order=desc&subscription=12345678</code></small>
     </div>
     <button type="submit" class="btn btn-primary">Update search results</button>
   </form>
