@@ -44,9 +44,6 @@ If one or more workplace addresses are saved, Hemnet Commuter does extra commute
 This back-end data retrieval is done with PHP scripts, which save results to a MySQL database.
 The front-end is built using AngularJS with Leaflet maps and Bootstrap CSS.
 
-> Note that a previous version did basically the same thing, but with a lot less database and a lot more custom JQuery code
-> I haven't deleted this from the repository yet, but will soon. You may see relics from this kicking around. Please ignore / let me know.
-
 ## How you can use it
 
 ### Requirements
@@ -66,7 +63,7 @@ Get your server running and create a new MySQL database using the `hemnet_commut
 This can be imported into _phpMyAdmin_ / similar tools, or done on the command line and should create all of
 the necessary database tables and structure.
 
-Create a copy of `hemnet_commuter_config_example.ini` without the `_example` in the filename and save the
+Create a copy of `config_example.ini` called `config.ini` in the filename and save the
 database details and API keys there.
 
 ### First run

@@ -18,7 +18,7 @@ ini_set('display_startup_errors', 1);
 error_reporting(E_ALL);
 
 // Get secrets from the config file
-$ini_array = parse_ini_file("../hemnet_commuter_config.ini");
+$ini_array = parse_ini_file("../config.ini");
 
 // Connect to the database
 $mysqli = new mysqli("localhost", $ini_array['db_user'], $ini_array['db_password'], $ini_array['db_name']);

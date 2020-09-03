@@ -7,7 +7,7 @@ ini_set('display_errors', 1);
 ini_set('display_startup_errors', 1);
 error_reporting(E_ALL);
 
-$ini_array = parse_ini_file("hemnet_commuter_config.ini");
+$ini_array = parse_ini_file("config.ini");
 
 $mysqli = new mysqli("localhost", $ini_array['db_user'], $ini_array['db_password'], $ini_array['db_name']);
 if ($mysqli->connect_errno) {
@@ -237,14 +237,14 @@ $commute_times = update_commute_times(false, false, true);
 <body>
 
 <?php
-if(!file_exists("hemnet_commuter_config.ini")){
-  die('<div class="m-5 alert alert-danger">Error! Configuration file <code>hemnet_commuter_config.ini</code> not found!</div></body></html>');
+if(!file_exists("config.ini")){
+  die('<div class="m-5 alert alert-danger">Error! Configuration file <code>config.ini</code> not found!</div></body></html>');
 }
 ?>
 
 <div class="container-fluid">
 
-  <img id="hemnet-logo" src="hemnet.svg">
+  <img src="hemnet.svg" class="float-right" style="width: 100px;">
   <h1 class="display-4">Hemnet Commuter</h1>
   <p class="lead text-muted mb-3">Update your search results.</p>
 
