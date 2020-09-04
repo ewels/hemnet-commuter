@@ -1,18 +1,11 @@
 <?php
 
+// Alerts to print to top of page
 $msgs = [];
 
-// Connect to the database
-ini_set('display_errors', 1);
-ini_set('display_startup_errors', 1);
-error_reporting(E_ALL);
-
-$ini_array = parse_ini_file("config.ini");
-
-$mysqli = new mysqli("localhost", $ini_array['db_user'], $ini_array['db_password'], $ini_array['db_name']);
-if ($mysqli->connect_errno) {
-  die("Failed to connect to MySQL: " . $mysqli->connect_error);
-}
+// Connect to the database etc.
+$not_json = true;
+require_once('api/_common_api.php');
 
 
 ///////////////////////////
