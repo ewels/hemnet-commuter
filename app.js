@@ -377,7 +377,7 @@ app.controller("hemnetCommuterController", [ '$scope', '$http', '$timeout', func
       var lat = parseFloat(commute.lat);
       var lng = parseFloat(commute.lng);
       if(isNaN(lat) || isNaN(lng)){
-        console.error("NaN for lat/lng!", lat, lng, house);
+        console.error("NaN for lat/lng!", lat, lng, commute);
       } else {
         markers['commute_'+commute_id] = {
           lat: lat,
