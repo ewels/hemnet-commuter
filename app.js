@@ -21,11 +21,13 @@ app.controller("hemnetCommuterController", [ '$scope', '$http', '$timeout', func
     price_min: 0,
     price_max: 10000000,
     size_total_min: 0,
+    size_tomt_min: 0,
     hide_failed_commutes: [],
   }
   $scope.stats = {
     price: [0, 10000000],
     size_total: [0, 10000],
+    size_tomt: [0, 3000],
   }
   $scope.initialising = false;
 
@@ -44,6 +46,7 @@ app.controller("hemnetCommuterController", [ '$scope', '$http', '$timeout', func
       status: 'Kommande/Bidding',
       price: 'Price',
       size_total: 'Total size',
+      size_tomt: 'Land area',
       rooms: 'Rooms',
       days_on_hemnet: 'Days on Hemnet',
     }
@@ -57,9 +60,6 @@ app.controller("hemnetCommuterController", [ '$scope', '$http', '$timeout', func
 
   // Functions to colour markers
   $scope.base_marker_colour = '#aab2b9';
-  $scope.marker_colour_scale_commute = chroma.scale('RdYlGn');
-  $scope.marker_colour_scale_price = chroma.scale('RdYlGn');
-  $scope.marker_colour_scale_size_total = chroma.scale('RdYlGn');
   $scope.set_marker_colour = {
     'none': function(house){ return $scope.base_marker_colour; },
     'rating_combined': function(house){
@@ -110,6 +110,7 @@ app.controller("hemnetCommuterController", [ '$scope', '$http', '$timeout', func
     },
     'price': function(house){ return $scope.marker_colour_scale_price(parseFloat(house.price)).hex(); },
     'size_total': function(house){ return $scope.marker_colour_scale_size_total(house.size_total).hex(); },
+    'size_tomt': function(house){ return $scope.marker_colour_scale_size_tomt(house.land_area).hex(); },
     'rooms': function(house){ return $scope.marker_colour_scale_rooms(house.rooms).hex(); },
     'days_on_hemnet': function(house){ return $scope.marker_colour_scale_age(house.age).hex(); },
   }
@@ -140,6 +141,7 @@ app.controller("hemnetCommuterController", [ '$scope', '$http', '$timeout', func
     },
     'price': function(house){ return ['fa-number', (house.price / 1000000).toFixed(1)] },
     'size_total': function(house){ return ['fa-number', house.size_total]; },
+    'size_tomt': function(house){ return ['fa-number', house.land_area]; },
     'rooms': function(house){ return ['fa-number', house.rooms] },
     'days_on_hemnet': function(house){ return ['fa-number', house.age] },
   }
@@ -216,6 +218,9 @@ app.controller("hemnetCommuterController", [ '$scope', '$http', '$timeout', func
     if($scope.filters.size_total_min != $scope.stats.size_total[0]){
       postdata.size_total_min = $scope.filters.size_total_min;
     }
+    if($scope.filters.size_tomt_min != $scope.stats.size_tomt[0]){
+      postdata.size_tomt_min = $scope.filters.size_tomt_min;
+    }
     for(var user_id in $scope.users){
       var ratings = [];
       if($scope.filters.hide_ratings[user_id]['yes']){ ratings.push('yes'); }
@@ -258,6 +263,7 @@ app.controller("hemnetCommuterController", [ '$scope', '$http', '$timeout', func
       $scope.marker_colour_scale_price = chroma.scale('RdYlGn').domain([stats_price[1], stats_price[0]]);
       var stats_size_total = get_min_max('size_total', response.data.results);
       $scope.marker_colour_scale_size_total = chroma.scale('RdYlGn').domain([stats_size_total[0], stats_size_total[1]]);
+      $scope.marker_colour_scale_size_tomt = chroma.scale('RdYlGn').domain([500, 4000]);
       $scope.marker_colour_scale_rooms = chroma.scale('RdYlGn').domain([1,8]);
       $scope.marker_colour_scale_age = chroma.scale('BuGn').domain([30, 0]);
       for(let id in $scope.commute_locations){
@@ -283,17 +289,22 @@ app.controller("hemnetCommuterController", [ '$scope', '$http', '$timeout', func
 
         $scope.num_total_results = response.data.num_results;
         $scope.all_results = response.data.results;
+
         // Get stats
         $scope.stats.price = get_min_max('price', response.data.results);
         $scope.stats.size_total = get_min_max('size_total', response.data.results);
+        $scope.stats.size_tomt = get_min_max('land_area', response.data.results);
+
         // Build user-filters
         for(let user_id in $scope.users){
           $scope.filters.hide_ratings[user_id] = { 'yes': false, 'maybe': false, 'no':false, 'not_set': false};
         };
+
         // Build commute-filters
         for(let commute_id in $scope.commute_locations){
           $scope.filters.hide_failed_commutes[commute_id] = "0";
         }
+
         // Add extra map settings
         for(let user_id in $scope.users){
           $scope.map_setting_selects.marker_colour_icon.Ratings['rating_'+user_id] = 'Rating: '+$scope.users[user_id];
