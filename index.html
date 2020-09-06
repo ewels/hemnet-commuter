@@ -125,23 +125,23 @@
           </tr>
           <tr ng-class="{'filter-inactive': filters.price_min == stats.price[0]}">
             <th><label for="price_min">Min price</label></th>
-            <td><input id="price_min" ng-model="filters.price_min" type="range" class="form-control-range" min="{{stats.price[0]}}" max="{{stats.price[1]}}" ng-change="update_results()"></td>
-            <td ng-bind="filters.price_min"></td>
+            <td><input type="range" ng-model="filters.price_min" class="form-control-range" min="{{stats.price[0]}}" max="{{stats.price[1]}}" ng-change="update_results()"></td>
+            <td><input type="text" ng-model="filters.price_min" ng-model-options="{debounce: {'default': 200}}" ng-blur="update_results()" id="price_min" class="form-control form-control-sm" style="width: 80px;"></td>
           </tr>
           <tr ng-class="{'filter-inactive': filters.price_max == stats.price[1]}">
             <th><label for="price_max">Max price</label></th>
-            <td><input id="price_max" ng-model="filters.price_max" type="range" class="form-control-range" min="{{stats.price[0]}}" max="{{stats.price[1]}}" ng-change="update_results()"></td>
-            <td ng-bind="filters.price_max"></td>
+            <td><input type="range" ng-model="filters.price_max" class="form-control-range" min="{{stats.price[0]}}" max="{{stats.price[1]}}" ng-change="update_results()"></td>
+            <td><input type="text" ng-model="filters.price_max" ng-model-options="{debounce: {'default': 200}}" ng-blur="update_results()" id="price_max" class="form-control form-control-sm" style="width: 80px;"></td>
           </tr>
           <tr ng-class="{'filter-inactive': filters.size_total_min == stats.size_total[0]}">
             <th><label for="size_total_min">Min size <small style="white-space: nowrap;">(Bo + Bi)</small></label></th>
-            <td><input id="size_total_min" ng-model="filters.size_total_min" type="range" class="form-control-range" min="{{stats.size_total[0]}}" max="{{stats.size_total[1]}}" ng-change="update_results()"></td>
-            <td ng-bind="filters.size_total_min"></td>
+            <td><input type="range" ng-model="filters.size_total_min" class="form-control-range" min="{{stats.size_total[0]}}" max="{{stats.size_total[1]}}" ng-change="update_results()"></td>
+            <td><input type="text" ng-model="filters.size_total_min" ng-model-options="{debounce: {'default': 200}}" ng-blur="update_results()" id="size_total_min" class="form-control form-control-sm" style="width: 80px;"></td>
           </tr>
           <tr ng-class="{'filter-inactive': filters.size_tomt_min == stats.size_tomt[0]}">
             <th><label for="size_tomt_min">Min tomt</label></th>
-            <td><input id="size_tomt_min" ng-model="filters.size_tomt_min" type="range" class="form-control-range" min="{{stats.size_tomt[0]}}" max="{{stats.size_tomt[1]}}" ng-change="update_results()"></td>
-            <td ng-bind="filters.size_tomt_min"></td>
+            <td><input type="range" ng-model="filters.size_tomt_min" class="form-control-range" min="{{stats.size_tomt[0]}}" max="{{stats.size_tomt[1]}}" ng-change="update_results()"></td>
+            <td><input type="text" ng-model="filters.size_tomt_min" ng-model-options="{debounce: {'default': 200}}" ng-blur="update_results()" id="size_tomt_min" class="form-control form-control-sm" style="width: 80px;"></td>
           </tr>
         </table>
       </div>

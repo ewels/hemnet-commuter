@@ -24,6 +24,12 @@ app.controller("hemnetCommuterController", [ '$scope', '$http', '$timeout', func
     size_tomt_min: 0,
     hide_failed_commutes: [],
   }
+  // https://stackoverflow.com/a/28246130/713980
+  $scope.$watch('filters.price_min', function() { $scope.filters.price_min = parseFloat($scope.filters.price_min); });
+  $scope.$watch('filters.price_max', function() { $scope.filters.price_max = parseFloat($scope.filters.price_max); });
+  $scope.$watch('filters.size_total_min', function() { $scope.filters.size_total_min = parseFloat($scope.filters.size_total_min); });
+  $scope.$watch('filters.size_tomt_min', function() { $scope.filters.size_tomt_min = parseFloat($scope.filters.size_tomt_min); });
+
   $scope.stats = {
     price: [0, 10000000],
     size_total: [0, 10000],
