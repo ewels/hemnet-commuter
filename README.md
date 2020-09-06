@@ -29,14 +29,12 @@ _Hemnet Commuter_ is a pet-project developed in my spare time to address these.
 
 ## How it works
 
-You use the tool by creating one or more _Saved searches_ on Hemnet. You enter this ID and Hemnet Commuter does the rest:
+You use the tool by creating one or more _Saved searches_ on Hemnet.
+You enter these IDs into the `saved_searches` DB table and Hemnet Commuter pulls information about each house from the Hemnet API.
 
-* Fetches house IDs and URLs from the saved search(es)
-* Scrapes the main Hemnet web page for each house, fetching more detailed information
-* Uses the Google Maps API to _geocode_ the location (find the latitude / longitude from the address)
-  * The Hemnet knows the exact lat/lng but I haven't figured out how to scrape this. Geocoding is the next-best thing. Please help if you can!
+> This is the API that the main Hemnet website uses, and is not publicly documented. So if they change anything without warning, this could break.
 
-If one or more workplace addresses are saved, Hemnet Commuter does extra commute-time things:
+If one or more workplace addresses are added, Hemnet Commuter does extra commute-time things:
 
 * Uses the Google Maps API to calculate commute times for each house to each workplace
 * Fetches a commute time _isochrone_ (map of maximum commute time) from [TravelTime](https://traveltime.com/travel-time-maps) for each place, including the intersection
@@ -68,16 +66,12 @@ database details and API keys there.
 
 ### First run
 
-Open Hemnet Commuter in your web browser. Before anything else, go to the URL `/update.php`.
-Enter one or more comma-separated search IDs and look them up. Hopefully you'll get a message that it has found
-some houses - the number should match what you see on Hemnet.
+In the database, add one or more rows in the `saved_searches` DB table with the numeric IDs for your saved searches.
 
-Once that's done, work your way down that _Update_ page clicking the relevant buttons to fetch all information
-and save to the database. Be aware that some scripts take a long time on the first run, but when you're just
-updating with new houses later they are fairly quick.
+> `#TODO`: Add a front-end method to do manage these.
 
-Once your database is full of data, you're ready to navigate to the homepage at the root URL and start using the tool.
-Hopefully the rest of it you can figure out by exploring.
+Open Hemnet Commuter in your web browser. Hopefully it should load with a big yellow _"Update"_ button
+which you can press to fetch all data.
 
 ## Licence and code use
 

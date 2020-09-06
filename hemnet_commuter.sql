@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: localhost:23002
--- Generation Time: Sep 02, 2020 at 08:28 PM
+-- Generation Time: Sep 06, 2020 at 08:37 PM
 -- Server version: 5.7.26
 -- PHP Version: 7.3.8
 
@@ -29,7 +29,9 @@ SET time_zone = "+00:00";
 CREATE TABLE `commute_locations` (
   `id` int(12) NOT NULL,
   `address` varchar(255) NOT NULL,
-  `max_time` int(12) NOT NULL
+  `max_time` int(12) NOT NULL,
+  `lat` double NOT NULL,
+  `lng` double NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 -- --------------------------------------------------------
@@ -67,16 +69,35 @@ CREATE TABLE `commute_times` (
 -- --------------------------------------------------------
 
 --
--- Table structure for table `geocoding_results`
+-- Table structure for table `houses`
 --
 
-CREATE TABLE `geocoding_results` (
-  `id` int(12) NOT NULL,
-  `house_id` int(12) DEFAULT NULL,
-  `address` text,
-  `lat` double NOT NULL,
-  `lng` double NOT NULL,
-  `location_type` varchar(255) NOT NULL
+CREATE TABLE `houses` (
+  `id` int(20) NOT NULL,
+  `address` varchar(255) NOT NULL,
+  `location_name` varchar(255) NOT NULL,
+  `typeSummary` varchar(255) NOT NULL,
+  `project` int(1) NOT NULL DEFAULT '0',
+  `new_construction` int(1) NOT NULL DEFAULT '0',
+  `ongoing_bidding` int(1) NOT NULL DEFAULT '0',
+  `foreclosure` int(1) NOT NULL DEFAULT '0',
+  `upcoming` int(1) NOT NULL DEFAULT '0',
+  `has_price_change` int(1) NOT NULL DEFAULT '0',
+  `rooms` varchar(10) NOT NULL,
+  `age` int(5) NOT NULL,
+  `deactivated_before_open_house` int(1) NOT NULL DEFAULT '0',
+  `image_url` varchar(255) NOT NULL,
+  `url` varchar(255) NOT NULL,
+  `locations_string` varchar(255) NOT NULL,
+  `should_display_showings` int(1) NOT NULL DEFAULT '0',
+  `lat` varchar(30) NOT NULL,
+  `lng` varchar(30) NOT NULL,
+  `price` int(30) NOT NULL,
+  `land_area` int(30) NOT NULL,
+  `living_area` int(30) NOT NULL,
+  `supplemental_area` int(30) NOT NULL,
+  `size_total` int(30) NOT NULL,
+  `created` int(18) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 -- --------------------------------------------------------
@@ -90,42 +111,6 @@ CREATE TABLE `house_comments` (
   `house_id` int(11) NOT NULL,
   `user_id` int(11) NOT NULL,
   `comment` text NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
-
--- --------------------------------------------------------
-
---
--- Table structure for table `house_details`
---
-
-CREATE TABLE `house_details` (
-  `id` int(12) NOT NULL,
-  `created` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  `address` text,
-  `data_layer` text,
-  `front_image` text,
-  `streetAddress` varchar(255) DEFAULT NULL,
-  `addressLocality` varchar(255) DEFAULT NULL,
-  `postalCode` varchar(10) DEFAULT NULL,
-  `new_production` text,
-  `offers_selling_price` text,
-  `status` text,
-  `housing_form` text,
-  `tenure` text,
-  `rooms` text,
-  `living_area` text,
-  `supplemental_area` text,
-  `land_area` text,
-  `driftkostnad` text,
-  `price` text,
-  `has_price_change` text,
-  `upcoming_open_houses` text,
-  `bidding` text,
-  `publication_date` text,
-  `construction_year` text,
-  `listing_package_type` text,
-  `water_distance` text,
-  `days_on_hemnet` int(12) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 -- --------------------------------------------------------
@@ -162,18 +147,6 @@ CREATE TABLE `house_tags` (
 CREATE TABLE `saved_searches` (
   `id` int(12) NOT NULL,
   `search_id` int(12) NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
-
--- --------------------------------------------------------
-
---
--- Table structure for table `search_result_urls`
---
-
-CREATE TABLE `search_result_urls` (
-  `id` int(12) NOT NULL,
-  `url` varchar(255) NOT NULL,
-  `created` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 -- --------------------------------------------------------
@@ -221,22 +194,15 @@ ALTER TABLE `commute_times`
   ADD PRIMARY KEY (`id`);
 
 --
--- Indexes for table `geocoding_results`
+-- Indexes for table `houses`
 --
-ALTER TABLE `geocoding_results`
-  ADD PRIMARY KEY (`id`),
-  ADD UNIQUE KEY `house_id` (`house_id`);
+ALTER TABLE `houses`
+  ADD PRIMARY KEY (`id`);
 
 --
 -- Indexes for table `house_comments`
 --
 ALTER TABLE `house_comments`
-  ADD PRIMARY KEY (`id`);
-
---
--- Indexes for table `house_details`
---
-ALTER TABLE `house_details`
   ADD PRIMARY KEY (`id`);
 
 --
@@ -257,12 +223,6 @@ ALTER TABLE `house_tags`
 ALTER TABLE `saved_searches`
   ADD PRIMARY KEY (`id`),
   ADD UNIQUE KEY `search_id` (`search_id`);
-
---
--- Indexes for table `search_result_urls`
---
-ALTER TABLE `search_result_urls`
-  ADD PRIMARY KEY (`id`);
 
 --
 -- Indexes for table `tags`
@@ -297,12 +257,6 @@ ALTER TABLE `commute_map`
 --
 ALTER TABLE `commute_times`
   MODIFY `id` int(20) NOT NULL AUTO_INCREMENT;
-
---
--- AUTO_INCREMENT for table `geocoding_results`
---
-ALTER TABLE `geocoding_results`
-  MODIFY `id` int(12) NOT NULL AUTO_INCREMENT;
 
 --
 -- AUTO_INCREMENT for table `house_comments`
