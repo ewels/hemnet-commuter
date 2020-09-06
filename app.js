@@ -35,18 +35,34 @@ app.controller("hemnetCommuterController", [ '$scope', '$http', '$timeout', func
     marker_colour: 'none',
     marker_icon: 'none'
   }
+  // Build the dropdowns
+  var base_setting_select = {
+    "None": {none: "None"},
+    "Ratings": {rating_combined: 'Rating: Combined'},
+    "Commutes": {commute_threshold_combined: 'Commute threshold: Combined'},
+    "Stats": {
+      status: 'Kommande/Bidding',
+      price: 'Price',
+      size_total: 'Total size',
+      rooms: 'Rooms',
+      days_on_hemnet: 'Days on Hemnet',
+    }
+  };
+  $scope.map_setting_selects = {
+    marker_colour_icon: JSON.parse(JSON.stringify(base_setting_select)),
+    marker_colour: JSON.parse(JSON.stringify(base_setting_select)),
+    marker_icon: JSON.parse(JSON.stringify(base_setting_select))
+  }
+  $scope.map_setting_selects.marker_colour.Commutes.commute_combined = 'Commute time: Combined';
+
+  // Functions to colour markers
   $scope.base_marker_colour = '#aab2b9';
   $scope.marker_colour_scale_commute = chroma.scale('RdYlGn');
   $scope.marker_colour_scale_price = chroma.scale('RdYlGn');
   $scope.marker_colour_scale_size_total = chroma.scale('RdYlGn');
   $scope.set_marker_colour = {
-    'none': ['None', function(house){ return $scope.base_marker_colour; }],
-    'status': ['Kommande/Bidding', function(house){
-      if(house.upcoming == '1'){ return '#28a745'; }
-      if(house.ongoing_bidding == '1'){ return '#67458c'; }
-      return $scope.base_marker_colour;
-    }],
-    'rating_combined': ['Rating: Combined', function(house){
+    'none': function(house){ return $scope.base_marker_colour; },
+    'rating_combined': function(house){
       var score = null;
       for(let user_id in $scope.users){
         if(house.ratings[user_id] == 'yes'){ score += 1; }
@@ -59,8 +75,8 @@ app.controller("hemnetCommuterController", [ '$scope', '$http', '$timeout', func
       if(score == -1){ return '#f5c6cb'; }
       if(score <= -2){ return '#dc3545'; }
       return $scope.base_marker_colour;
-    }],
-    'commute_threshold_combined': ['Commute threshold: Combined', function(house){
+    },
+    'commute_threshold_combined': function(house){
       var passes_threshold = null;
       for(let commute_id in $scope.commute_locations){
         // Already failed another location
@@ -71,8 +87,8 @@ app.controller("hemnetCommuterController", [ '$scope', '$http', '$timeout', func
       if(passes_threshold == true){ return '#28a745'; }
       else if (passes_threshold == false){ return '#dc3545'; }
       return $scope.base_marker_colour;
-    }],
-    'commute_combined': ['Commute: Combined', function(house){
+    },
+    'commute_combined': function(house){
       var num_commutes = 0;
       var total_time = 0;
       for(let commute_id in $scope.commute_locations){
@@ -86,39 +102,46 @@ app.controller("hemnetCommuterController", [ '$scope', '$http', '$timeout', func
         return $scope.marker_colour_scale_commute(avg_commute).hex();
       }
       return $scope.base_marker_colour;
-    }],
-    'price': ['Price', function(house){ return $scope.marker_colour_scale_price(parseFloat(house.price)).hex(); }],
-    'size_total': ['Total size', function(house){ return $scope.marker_colour_scale_size_total(house.size_total).hex(); }],
-    'rooms': ['Rooms', function(house){ return $scope.marker_colour_scale_rooms(house.rooms).hex(); }],
-    'days_on_hemnet': ['Days on Hemnet', function(house){ return $scope.marker_colour_scale_age(house.age).hex(); }],
+    },
+    'status': function(house){
+      if(house.upcoming == '1'){ return '#28a745'; }
+      if(house.ongoing_bidding == '1'){ return '#67458c'; }
+      return $scope.base_marker_colour;
+    },
+    'price': function(house){ return $scope.marker_colour_scale_price(parseFloat(house.price)).hex(); },
+    'size_total': function(house){ return $scope.marker_colour_scale_size_total(house.size_total).hex(); },
+    'rooms': function(house){ return $scope.marker_colour_scale_rooms(house.rooms).hex(); },
+    'days_on_hemnet': function(house){ return $scope.marker_colour_scale_age(house.age).hex(); },
   }
+
+  // Functions to assign icons to markers
   $scope.base_marker_icon = 'fa-circle';
   $scope.set_marker_icon = {
-    'none': ['None', function(house){ return [$scope.base_marker_icon]; }],
-    'status': ['Kommande/Bidding', function(house){
+    'none': function(house){ return [$scope.base_marker_icon]; },
+    'status': function(house){
       if(house.upcoming == '1'){ return ['fa-bolt']; }
       if(house.ongoing_bidding == '1'){ return ['fa-gavel']; }
       return [$scope.base_marker_icon];
-    }],
-    'rating_combined': ['Rating: Combined', function(house){
-      var col = $scope.set_marker_colour['rating_combined'][1](house);
+    },
+    'rating_combined': function(house){
+      var col = $scope.set_marker_colour['rating_combined'](house);
       if(col == '#28a745'){ return ['fa-star']; }
       if(col == '#c3e6cb'){ return ['fa-thumbs-up']; }
       if(col == '#17a2b8'){ return ['fa-question']; }
       if(col == '#f5c6cb'){ return ['fa-thumbs-down']; }
       if(col == '#dc3545'){ return ['fa-trash']; }
       return [$scope.base_marker_icon];
-    }],
-    'commute_threshold_combined': ['Commute threshold: Combined', function(house){
-      var col = $scope.set_marker_colour['commute_threshold_combined'][1](house);
+    },
+    'commute_threshold_combined': function(house){
+      var col = $scope.set_marker_colour['commute_threshold_combined'](house);
       if(col == '#28a745'){ return ['fa-check']; }
       else if (col == '#dc3545'){ return ['fa-times']; }
       return ['fa-question'];
-    }],
-    'price': ['Price', function(house){ return ['fa-number', (house.price / 1000000).toFixed(1)] }],
-    'size_total': ['Total size', function(house){ return ['fa-number', $scope.marker_colour_scale_size_total(house.size_total).hex()]; }],
-    'rooms': ['Rooms', function(house){ return ['fa-number', house.rooms] }],
-    'days_on_hemnet': ['Days on Hemnet', function(house){ return ['fa-number', house.age] }],
+    },
+    'price': function(house){ return ['fa-number', (house.price / 1000000).toFixed(1)] },
+    'size_total': function(house){ return ['fa-number', house.size_total]; },
+    'rooms': function(house){ return ['fa-number', house.rooms] },
+    'days_on_hemnet': function(house){ return ['fa-number', house.age] },
   }
 
   // House results
@@ -273,39 +296,45 @@ app.controller("hemnetCommuterController", [ '$scope', '$http', '$timeout', func
         }
         // Add extra map settings
         for(let user_id in $scope.users){
-          $scope.set_marker_colour['rating_'+user_id] = ['Rating: '+$scope.users[user_id], function(house){
+          $scope.map_setting_selects.marker_colour_icon.Ratings['rating_'+user_id] = 'Rating: '+$scope.users[user_id];
+          $scope.map_setting_selects.marker_colour.Ratings['rating_'+user_id] = 'Rating: '+$scope.users[user_id];
+          $scope.map_setting_selects.marker_icon.Ratings['rating_'+user_id] = 'Rating: '+$scope.users[user_id];
+          $scope.set_marker_colour['rating_'+user_id] = function(house){
             if(house.ratings[user_id] == 'yes'){ return '#28a745'; }
             if(house.ratings[user_id] == 'maybe'){ return '#17a2b8'; }
             if(house.ratings[user_id] == 'no'){ return '#dc3545'; }
             return $scope.base_marker_colour;
-          }];
-          $scope.set_marker_icon['rating_'+user_id] = ['Rating: '+$scope.users[user_id], function(house){
+          };
+          $scope.set_marker_icon['rating_'+user_id] = function(house){
             if(house.ratings[user_id] == 'yes'){ return ['fa-thumbs-up']; }
             if(house.ratings[user_id] == 'maybe'){ return ['fa-question']; }
             if(house.ratings[user_id] == 'no'){ return ['fa-thumbs-down']; }
             return [$scope.base_marker_icon];
-          }];
+          };
         }
         for(let commute_id in $scope.commute_locations){
-          $scope.set_marker_colour['commute_threshold_'+commute_id] = ['Commute threshold: '+$scope.commute_locations[commute_id].address, function(house){
+          $scope.map_setting_selects.marker_colour_icon.Commutes['commute_threshold_'+commute_id] = 'Commute threshold: '+$scope.commute_locations[commute_id].address;
+          $scope.map_setting_selects.marker_colour.Commutes['commute_threshold_'+commute_id] = 'Commute threshold: '+$scope.commute_locations[commute_id].address;
+          $scope.map_setting_selects.marker_icon.Commutes['commute_threshold_'+commute_id] = 'Commute threshold: '+$scope.commute_locations[commute_id].address;
+          $scope.set_marker_colour['commute_threshold_'+commute_id] = function(house){
             if(house.commute_times[commute_id].pass_threshold == true){ return '#28a745'; }
             else if (house.commute_times[commute_id].pass_threshold == false){ return '#dc3545'; }
             return $scope.base_marker_colour;
-          }];
-          $scope.set_marker_icon['commute_threshold_'+commute_id] = ['Commute threshold: '+$scope.commute_locations[commute_id].address, function(house){
+          };
+          $scope.set_marker_icon['commute_threshold_'+commute_id] = function(house){
             if(house.commute_times[commute_id].pass_threshold == true){ return ['fa-check']; }
             else if (house.commute_times[commute_id].pass_threshold == false){ return ['fa-times']; }
             return ['fa-question'];
-          }];
-        }
-        for(let commute_id in $scope.commute_locations){
-          $scope.set_marker_colour['commute_'+commute_id] = ['Commute: '+$scope.commute_locations[commute_id].address, function(house){
+          };
+
+          $scope.map_setting_selects.marker_colour.Commutes['commute_'+commute_id] = 'Commute time: '+$scope.commute_locations[commute_id].address;
+          $scope.set_marker_colour['commute_'+commute_id] = function(house){
             if(house.commute_times[commute_id].status == 'OK'){
               var duration = parseFloat(house.commute_times[commute_id].duration_value);
               return $scope.marker_colour_scale_commute(duration).hex();
             }
             return $scope.base_marker_colour;
-          }];
+          };
         }
 
         // Wait for the page to update, then allow more update calls
@@ -358,8 +387,8 @@ app.controller("hemnetCommuterController", [ '$scope', '$http', '$timeout', func
       } else {
 
         // Get marker colour / icon
-        var m_colour = $scope.set_marker_colour[$scope.map_settings.marker_colour][1](house, 1);
-        var m_icon = $scope.set_marker_icon[$scope.map_settings.marker_icon][1](house, 1);
+        var m_colour = $scope.set_marker_colour[$scope.map_settings.marker_colour](house, 1);
+        var m_icon = $scope.set_marker_icon[$scope.map_settings.marker_icon](house, 1);
 
         markers[house.id] = {
           id: house.id,

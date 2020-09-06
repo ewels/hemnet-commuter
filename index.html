@@ -47,18 +47,19 @@
       <p ng-show="commute_map_call_active" class="small text-muted">Loading commute map..</p>
       <p ng-show="missing_geo.length > 0" class="small text-danger">Missing location for {{missing_geo.length}} houses! Fix on the <a href="update.php">update page</a>.</p>
       <hr>
-      <div ng-show="needs_update">
-        <button ng-click="update_hemnet_results()" ng-class="{'disabled': hemnet_results_updating}" class="btn btn-block btn-warning">
-          <i class="fa fa-refresh mr-2" ng-class="{'fa-spin': hemnet_results_updating}"></i> {{ hemnet_results_update_btn_text }}
-        </button>
-        <p class="small text-muted text-center mt-1">Last updated {{ oldest_fetch | date: 'EEE d MMM HH:mm' }}</p>
-      </div>
+      <button ng-show="needs_update" ng-click="update_hemnet_results()" ng-class="{'disabled': hemnet_results_updating}" class="btn btn-block btn-warning mb-2">
+        <i class="fa fa-refresh mr-2" ng-class="{'fa-spin': hemnet_results_updating}"></i> {{ hemnet_results_update_btn_text }}
+      </button>
       <div class="form-row">
         <div class="col-4"><button ng-click="show_filters = !show_filters; show_map_commute_settings = false; show_map_marker_settings = false;" class="btn btn-block btn-secondary"><i class="fa fa-filter mr-2"></i> Filters</button></div>
         <div class="col-4"><button ng-click="show_map_commute_settings = !show_map_commute_settings; show_filters = false; show_map_marker_settings = false;" class="btn btn-block btn-success"><i class="fa fa-bus mr-2"></i> Commute</button></div>
         <div class="col-4"><button ng-click="show_map_marker_settings = !show_map_marker_settings; show_filters = false; show_map_commute_settings = false;" class="btn btn-block btn-info"><i class="fa fa-map-marker mr-2"></i> Map</button></div>
       </div>
-      <p class="small text-muted mt-2">Showing <span ng-bind="num_results" class="badge badge-secondary"></span> out of <span ng-bind="num_total_results" class="badge badge-secondary"></span> houses.</p>
+      <p class="small text-muted mt-2">
+        Showing <span ng-bind="num_results" class="badge badge-secondary"></span> out of <span ng-bind="num_total_results" class="badge badge-secondary"></span> houses.
+        &nbsp;
+        <a title="Click to toggle update button" href="#" ng-click="needs_update = !needs_update" class="text-muted">Last updated {{ oldest_fetch | date: 'EEE d MMM HH:mm' }}.</a>
+      </p>
 
       <!-- FILTERS -->
       <div ng-show="show_filters" class="pt-3 mt-3 border-top">
@@ -161,21 +162,14 @@
 
         <h6 class="mt-4">Map Markers</h6>
         <div class="form-row py-2 small">
-          <div class="col-auto">Quick links:</div>
-          <div class="col">
-            <a href="" ng-click="map_settings.marker_colour = 'status'; map_settings.marker_icon = 'status'; update_markers();" class="text-muted">Status</a> /
-            <a href="" ng-click="map_settings.marker_colour = 'rating_combined'; map_settings.marker_icon = 'rating_combined'; update_markers();" class="text-muted">Rating</a> /
-            <a href="" ng-click="map_settings.marker_colour = 'commute_threshold_combined'; map_settings.marker_icon = 'commute_threshold_combined'; update_markers();" class="text-muted">Commute</a> /
-            <a href="" ng-click="map_settings.marker_colour = 'commute_combined'; map_settings.marker_icon = 'commute_threshold_combined'; update_markers();" class="text-muted">Commute 2</a>.
-          </div>
-        </div>
-        <div class="form-row py-2 small">
           <div class="col-2 my-1">
             <label for="map_settings_marker_colour_icon">Colour + Icon:</label>
           </div>
           <div class="col-10">
             <select id="map_settings_marker_colour_icon" ng-model="map_settings.marker_colour_icon" ng-change="update_marker_col_icon()" class="custom-select custom-select-sm">
-              <option ng-repeat="(key, m_func) in set_marker_icon" value="{{ key }}">{{ m_func[0] }}</option>
+              <optgroup ng-repeat="(key,options) in map_setting_selects.marker_colour_icon" label="{{key}}">
+                <option ng-repeat="(val, txt) in options" value="{{val}}">{{txt}}</option>
+              </optgroup>
             </select>
           </div>
         </div>
@@ -185,7 +179,9 @@
           </div>
           <div class="col-10">
             <select id="map_settings_marker_colour" ng-model="map_settings.marker_colour" ng-change="update_markers()" class="custom-select custom-select-sm">
-              <option ng-repeat="(key, m_func) in set_marker_colour" value="{{ key }}">{{ m_func[0] }}</option>
+              <optgroup ng-repeat="(key,options) in map_setting_selects.marker_colour" label="{{key}}">
+                <option ng-repeat="(val, txt) in options" value="{{val}}">{{txt}}</option>
+              </optgroup>
             </select>
           </div>
         </div>
@@ -195,7 +191,9 @@
           </div>
           <div class="col-10">
             <select id="map_settings_marker_icon" ng-model="map_settings.marker_icon" ng-change="update_markers()" class="custom-select custom-select-sm">
-              <option ng-repeat="(key, m_func) in set_marker_icon" value="{{ key }}">{{ m_func[0] }}</option>
+              <optgroup ng-repeat="(key,options) in map_setting_selects.marker_icon" label="{{key}}">
+                <option ng-repeat="(val, txt) in options" value="{{val}}">{{txt}}</option>
+              </optgroup>
             </select>
           </div>
         </div>
