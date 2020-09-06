@@ -145,10 +145,10 @@ function get_traveltime_maps(){
       return array('status' => 'error', 'error_msg' => $mysqli->error, 'sql' => $sql);
     } else {
       // Save to array so that we can return directly
-      if(is_null($row['commute_id'])) $id = $result['search_id'];
-      else $id = $row['commute_id'];
+      if(is_null($commute_id)) $id = $result['search_id'];
+      else $id = $commute_id;
       $results[$id] = $result;
-      $layer_names[$id] = $row['layer_name'];
+      $layer_names[$id] = $layer_name;
     }
   }
 

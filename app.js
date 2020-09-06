@@ -617,8 +617,8 @@ app.controller("hemnetCommuterController", [ '$scope', '$http', '$timeout', func
     });
   }
 
-  // Update commute address or time
-  $scope.update_commute_address = function(commute_id){
+  // Update commute time
+  $scope.update_commute_time = function(commute_id){
     var dateobj = new Date();
     dateobj.setHours(0,0,0,0);
     var max_time = ($scope.commute_locations[commute_id].max_time - dateobj) / 1000;
