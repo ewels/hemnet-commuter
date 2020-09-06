@@ -87,14 +87,11 @@ function fetch_hemnet_houses($search_id = false){
       // More complicated ones
       $this_house['lat'] = $house['coordinate'][0];
       $this_house['lng'] = $house['coordinate'][1];
-      $this_house['price'] = preg_replace('/[^0-9]/', '', $house['price']);
-      $this_house['rooms'] = str_replace(',', '.', preg_replace('/[^0-9,]/', '', $house['rooms']));
-      if($this_house['rooms'] == '') $this_house['rooms'] = 0;
-      $this_house['land_area'] = preg_replace('/[^0-9]/', '', $house['land_area']);
-      if($this_house['land_area'] == '') $this_house['land_area'] = 0;
-      $this_house['living_area'] = preg_replace('/[^0-9]/', '', $house['living_space']['table']['living_area']);
-      $this_house['supplemental_area'] = preg_replace('/[^0-9]/', '', $house['living_space']['table']['supplemental_area']);
-      if($this_house['supplemental_area'] == '') $this_house['supplemental_area'] = 0;
+      $this_house['price'] = _clean_num($house['price']);
+      $this_house['rooms'] = _clean_num($house['rooms']);
+      $this_house['land_area'] = _clean_num($house['land_area']);
+      $this_house['living_area'] = _clean_num($house['living_space']['table']['living_area']);
+      $this_house['supplemental_area'] = _clean_num($house['living_space']['table']['supplemental_area']);
       $this_house['size_total'] = @intval($this_house['living_area']) + @intval($this_house['supplemental_area']);
       $this_house['image_url'] = str_replace('itemgallery_M', 'itemgallery_cut', $house['medium_image_url']);
       $this_house['created'] = time();
@@ -121,6 +118,11 @@ function fetch_hemnet_houses($search_id = false){
   return array("status"=>"success", "msg" => "Found ".count($houses)." houses");
 }
 
+function _clean_num($str){
+  $cleaned = str_replace(',', '.', preg_replace('/[^0-9,]/', '', $str));
+  if($cleaned == '') return 0;
+  return $cleaned;
+}
 
 
 
