@@ -88,7 +88,7 @@ function fetch_hemnet_houses($search_id = false){
       $this_house['lat'] = $house['coordinate'][0];
       $this_house['lng'] = $house['coordinate'][1];
       $this_house['price'] = preg_replace('/[^0-9]/', '', $house['price']);
-      $this_house['rooms'] = preg_replace('/[^0-9]/', '', $house['rooms']);
+      $this_house['rooms'] = str_replace(',', '.', preg_replace('/[^0-9,]/', '', $house['rooms']));
       if($this_house['rooms'] == '') $this_house['rooms'] = 0;
       $this_house['land_area'] = preg_replace('/[^0-9]/', '', $house['land_area']);
       if($this_house['land_area'] == '') $this_house['land_area'] = 0;

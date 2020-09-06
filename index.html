@@ -169,6 +169,16 @@
         </div>
         <div class="form-row py-2 small">
           <div class="col-2 my-1">
+            <label for="map_settings_marker_colour_icon">Colour + Icon:</label>
+          </div>
+          <div class="col-10">
+            <select id="map_settings_marker_colour_icon" ng-model="map_settings.marker_colour_icon" ng-change="update_marker_col_icon()" class="custom-select custom-select-sm">
+              <option ng-repeat="(key, m_func) in set_marker_icon" value="{{ key }}">{{ m_func[0] }}</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-row border-top py-2 small">
+          <div class="col-2 my-1">
             <label for="map_settings_marker_colour">Colour:</label>
           </div>
           <div class="col-10">
