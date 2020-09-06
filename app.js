@@ -594,7 +594,6 @@ app.controller("hemnetCommuterController", [ '$scope', '$http', '$timeout', func
     // Build post data and send to API
     var post_data = {
       'id': commute_id,
-      'update_address': $scope.commute_locations[commute_id].address.trim(),
       'max_time': max_time
     };
     $http.post("api/commute_locations.php", JSON.stringify(post_data)).then(function(response) {
@@ -610,13 +609,14 @@ app.controller("hemnetCommuterController", [ '$scope', '$http', '$timeout', func
       return;
     }
     // Build post data and send to API
-    var post_data = { 'add_address': address.trim(), 'max_time': 3600 };
+    var post_data = { 'add_address': address.trim() };
     $http.post("api/commute_locations.php", JSON.stringify(post_data)).then(function(response) {
-      $scope.commute_locations = response.data;
-      for(let id in $scope.commute_locations){
-        $scope.commute_locations[id].max_time = new Date($scope.commute_locations[id].max_time);
-        $scope.update_results();
+      console.log(response.data);
+      $scope.commute_locations[response.data.new_commute_id] = {
+        address: address.trim(),
+        max_time: 3600
       }
+      $scope.update_results();
     });
   }
 

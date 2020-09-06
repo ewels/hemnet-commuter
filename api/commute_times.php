@@ -37,7 +37,7 @@ function update_commute_times($only_house_id=false, $only_commute_id=false, $db_
           continue;
         }
         $origins[$commute_id] = $commute_loc['lat'].','.$commute_loc['lng'];
-        $destinations[$house['house_id']] = $house['lat'].','.$house['lng'];
+        $destinations[$house['id']] = $house['lat'].','.$house['lng'];
       }
       // API limits: https://developers.google.com/maps/documentation/distance-matrix/usage-and-billing#other-usage-limits
       if(count($origins) >= 25 || count($destinations) >= 25 || count($origins) * count($destinations) >= 100){

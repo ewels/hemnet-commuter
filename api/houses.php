@@ -50,24 +50,27 @@ function get_houses($postdata){
 
     // Get commute times
     $house_results[$house_id]['commute_times'] = [];
-    $sql = 'SELECT * FROM `commute_times` WHERE `house_id` = "'.$mysqli->real_escape_string($house_id).'"';
-    if ($result = $mysqli->query($sql)) {
-      while ($row = $result->fetch_assoc()) {
-        if($row['duration_value'] == null){
-          $passes_threshold = null;
-        } else {
-          $passes_threshold = $row['duration_value'] < $results['commute_locations'][ $row['commute_id'] ]['max_time'];
+    if(count($results['commute_locations']) > 0){
+      $sql = 'SELECT * FROM `commute_times` WHERE `house_id` = "'.$mysqli->real_escape_string($house_id).'"';
+      if ($result = $mysqli->query($sql)) {
+        while ($row = $result->fetch_assoc()) {
+          if(!array_key_exists($row['commute_id'], $results['commute_locations'])) continue;
+          if($row['duration_value'] == null){
+            $passes_threshold = null;
+          } else {
+            $passes_threshold = $row['duration_value'] < $results['commute_locations'][ $row['commute_id'] ]['max_time'];
+          }
+          $house_results[$house_id]['commute_times'][ $row['commute_id'] ] = array(
+            'status' => $row['status'],
+            'distance_text' => $row['distance_text'],
+            'distance_value' => $row['distance_value'],
+            'duration_text' => $row['duration_text'],
+            'duration_value' => $row['duration_value'],
+            'pass_threshold' => $passes_threshold
+          );
         }
-        $house_results[$house_id]['commute_times'][ $row['commute_id'] ] = array(
-          'status' => $row['status'],
-          'distance_text' => $row['distance_text'],
-          'distance_value' => $row['distance_value'],
-          'duration_text' => $row['duration_text'],
-          'duration_value' => $row['duration_value'],
-          'pass_threshold' => $passes_threshold
-        );
+        $result->free_result();
       }
-      $result->free_result();
     }
 
     // Get ratings
