@@ -48,8 +48,10 @@
       <p ng-show="missing_geo.length > 0" class="small text-danger">Missing location for {{missing_geo.length}} houses! Fix on the <a href="update.php">update page</a>.</p>
       <hr>
       <div ng-show="needs_update">
-        <a href="update.php" class="btn btn-block btn-warning"><i class="fa fa-refresh mr-2"></i> Update </a>
-        <p class="small text-muted text-center mt-1">Last updated {{ oldest_fetch | date: 'yyyy-MM-dd HH:mm:ss' }}</p>
+        <button ng-click="update_hemnet_results()" ng-class="{'disabled': hemnet_results_updating}" class="btn btn-block btn-warning">
+          <i class="fa fa-refresh mr-2" ng-class="{'fa-spin': hemnet_results_updating}"></i> {{ hemnet_results_update_btn_text }}
+        </button>
+        <p class="small text-muted text-center mt-1">Last updated {{ oldest_fetch | date: 'EEE d MMM HH:mm' }}</p>
       </div>
       <div class="form-row">
         <div class="col-4"><button ng-click="show_filters = !show_filters; show_map_commute_settings = false; show_map_marker_settings = false;" class="btn btn-block btn-secondary"><i class="fa fa-filter mr-2"></i> Filters</button></div>

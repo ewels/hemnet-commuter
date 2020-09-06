@@ -137,6 +137,8 @@ app.controller("hemnetCommuterController", [ '$scope', '$http', '$timeout', func
   $scope.tags = {};
   $scope.commute_locations = {};
   $scope.commute_map_call_active = false;
+  $scope.hemnet_results_updating = false;
+  $scope.hemnet_results_update_btn_text = 'Update';
 
   // Set up the map
   angular.extend($scope, {
@@ -220,7 +222,7 @@ app.controller("hemnetCommuterController", [ '$scope', '$http', '$timeout', func
       // Assign results
       $scope.num_results = response.data.num_results;
       $scope.oldest_fetch = parseFloat(response.data.oldest_fetch + "000");
-      $scope.needs_update = Date.now() - $scope.oldest_fetch > (1000*60*60*24);
+      $scope.needs_update = Date.now() - $scope.oldest_fetch > (1000*60*60*12);
       $scope.results = response.data.results;
       $scope.users = response.data.users;
       $scope.tags = response.data.tags;
@@ -628,6 +630,34 @@ app.controller("hemnetCommuterController", [ '$scope', '$http', '$timeout', func
         $scope.update_results();
       });
     }
+  }
+
+  // Update fetched results from Hemnet
+  $scope.update_hemnet_results = function(){
+    $scope.hemnet_results_updating = true;
+    $scope.hemnet_results_update_btn_text = 'Updating Hemnet results';
+    // Update houses
+    $http.get("api/update_houses.php").then(function(response) {
+      if(response.data.status != 'success'){
+        $scope.hemnet_results_updating = false;
+        $scope.hemnet_results_update_btn_text = 'Update failed!';
+        console.error(response.data);
+      } else {
+        // Update commute times
+        $scope.hemnet_results_update_btn_text = 'Fetching commute times';
+        $http.get("api/commute_times.php").then(function(response) {
+          $scope.hemnet_results_updating = false;
+          if(response.data.status != 'success'){
+            $scope.hemnet_results_update_btn_text = 'Update failed!';
+            console.error(response.data);
+          } else {
+            $scope.hemnet_results_update_btn_text = 'Update';
+            $scope.needs_update = false;
+            $scope.update_results();
+          }
+        });
+      }
+    });
   }
 
 }]);
