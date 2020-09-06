@@ -15,7 +15,6 @@ function get_houses($postdata){
 
   require_once('comments.php');
   require_once('commute_locations.php');
-  require_once('geocode_address.php');
   require_once('ratings.php');
   require_once('tags.php');
   require_once('users.php');
