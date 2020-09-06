@@ -31,31 +31,22 @@ function get_houses($postdata){
   /// NB: I should do all of this in joins but it's late and I'm a bad person.
   ///
 
-  // Get search results
-  $oldest_saved_search_fetch = false;
-  $sql = 'SELECT `id`, `url`, `created` FROM `search_result_urls`';
-  $house_results = [];
+  $oldest_fetch = 99999999999999;
+
+  // Get house details
+  $sql = 'SELECT * FROM `houses`';
   if ($result = $mysqli->query($sql)) {
-    while ($row = $result->fetch_row()) {
-      $house_results[$row[0]] = array('house_id' => $row[0], 'url' => $row[1]);
-      $created = strtotime($row[2]);
-      if(!$oldest_saved_search_fetch) $oldest_saved_search_fetch = $created;
-      $oldest_saved_search_fetch = min($oldest_saved_search_fetch, $created);
+    while ($row = $result->fetch_assoc()) {
+      $house_results[$row['id']] = $row;
     }
     $result->free_result();
   }
 
-  // Go over each house
+
+  // Other database tables
   foreach($house_results as $house_id => $house){
 
-    // Get house details
-    $sql = 'SELECT * FROM house_details WHERE `id` = "'.$mysqli->real_escape_string($house_id).'"';
-    if ($result = $mysqli->query($sql)) {
-      while ($row = $result->fetch_assoc()) {
-        $house_results[$house_id] = array_merge($house_results[$house_id], $row);
-      }
-      $result->free_result();
-    }
+    $oldest_fetch = min(intval($house['created']), $oldest_fetch);
 
     // Get commute times
     $house_results[$house_id]['commute_times'] = [];
@@ -78,21 +69,6 @@ function get_houses($postdata){
       }
       $result->free_result();
     }
-
-    // Unencode JSON strings
-    $house_results[$house_id]['address'] = @json_decode($house_results[$house_id]['address']);
-    $house_results[$house_id]['data_layer'] = @json_decode($house_results[$house_id]['data_layer']);
-
-    // Total living area
-    $house_results[$house_id]['size_total'] = @$house_results[$house_id]['living_area'] + @$house_results[$house_id]['supplemental_area'];
-
-  }
-
-  // Other database tables
-  foreach($house_results as $house_id => $house){
-
-    // Get geocode results
-    $house_results[$house_id] = array_merge($house_results[$house_id], geocode_house_address($house_id));
 
     // Get ratings
     $house_results[$house_id]['ratings'] = get_house_ratings($house_id);
@@ -156,7 +132,7 @@ function get_houses($postdata){
   $results['commute_time_max'] = min((60*60*2), $results['commute_time_max']);
   $results['commute_time_min'] = max((60*30), $results['commute_time_min']);
 
-  $results['oldest_search_result'] = $oldest_saved_search_fetch;
+  $results['oldest_fetch'] = $oldest_fetch;
   $results['num_results'] = count($house_results);
   $results['results'] = $house_results;
 

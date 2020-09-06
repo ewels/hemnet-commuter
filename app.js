@@ -40,8 +40,8 @@ app.controller("hemnetCommuterController", [ '$scope', '$http', '$timeout', func
   $scope.set_marker_colour = {
     'none': ['None', function(house){ return $scope.base_marker_colour; }],
     'status': ['Kommande/Bidding', function(house){
-      if(house.status == 'upcoming'){ return '#28a745'; }
-      if(house.bidding == '1'){ return '#67458c'; }
+      if(house.upcoming == '1'){ return '#28a745'; }
+      if(house.ongoing_bidding == '1'){ return '#67458c'; }
       return $scope.base_marker_colour;
     }],
     'rating_combined': ['Rating: Combined', function(house){
@@ -92,8 +92,8 @@ app.controller("hemnetCommuterController", [ '$scope', '$http', '$timeout', func
   $scope.set_marker_icon = {
     'none': ['None', function(house){ return [$scope.base_marker_icon]; }],
     'status': ['Kommande/Bidding', function(house){
-      if(house.status == 'upcoming'){ return ['fa-bolt']; }
-      if(house.bidding == '1'){ return ['fa-gavel']; }
+      if(house.upcoming == '1'){ return ['fa-bolt']; }
+      if(house.ongoing_bidding == '1'){ return ['fa-gavel']; }
       return [$scope.base_marker_icon];
     }],
     'rating_combined': ['Rating: Combined', function(house){
@@ -124,7 +124,7 @@ app.controller("hemnetCommuterController", [ '$scope', '$http', '$timeout', func
   $scope.num_total_results = 0;
   $scope.all_results = [];
   $scope.num_results = 0;
-  $scope.oldest_search_result = Date.now();
+  $scope.oldest_fetch = 0;
   $scope.needs_update = false;
   $scope.results = [];
   $scope.missing_geo = [];
@@ -214,8 +214,8 @@ app.controller("hemnetCommuterController", [ '$scope', '$http', '$timeout', func
 
       // Assign results
       $scope.num_results = response.data.num_results;
-      $scope.oldest_search_result = parseFloat(response.data.oldest_search_result + "000");
-      $scope.needs_update = Date.now() - $scope.oldest_search_result > (1000*60*60*24);
+      $scope.oldest_fetch = parseFloat(response.data.oldest_fetch + "000");
+      $scope.needs_update = Date.now() - $scope.oldest_fetch > (1000*60*60*24);
       $scope.results = response.data.results;
       $scope.users = response.data.users;
       $scope.tags = response.data.tags;
@@ -345,15 +345,15 @@ app.controller("hemnetCommuterController", [ '$scope', '$http', '$timeout', func
       var lng = parseFloat(house.lng);
       if(isNaN(lat) || isNaN(lng)){
         console.error("NaN for lat/lng!", lat, lng, house);
-        $scope.missing_geo.push(house.house_id);
+        $scope.missing_geo.push(house.id);
       } else {
 
         // Get marker colour / icon
         var m_colour = $scope.set_marker_colour[$scope.map_settings.marker_colour][1](house, 1);
         var m_icon = $scope.set_marker_icon[$scope.map_settings.marker_icon][1](house, 1);
 
-        markers[house.house_id] = {
-          house_id: house.house_id,
+        markers[house.id] = {
+          id: house.id,
           lat: lat,
           lng: lng,
           message: '<h6><a href="'+house.url+'" target="_blank">'+house.streetAddress+'</a></h6><p><img src="'+house.front_image+'" style="width:100%"></p>',
@@ -500,8 +500,8 @@ app.controller("hemnetCommuterController", [ '$scope', '$http', '$timeout', func
   // Leaflet marker clicked
   $scope.$on('leafletDirectiveMarker.click', function(event, args){
     // Get house details
-    if(args.model.house_id !== undefined){
-      $scope.active_id = args.model.house_id;
+    if(args.model.id !== undefined){
+      $scope.active_id = args.model.id;
       $scope.active_house = $scope.results[$scope.active_id];
       console.log("House clicked:", $scope.active_house);
     }
@@ -618,47 +618,6 @@ app.controller("hemnetCommuterController", [ '$scope', '$http', '$timeout', func
         });
       }
     }
-  }
-
-  // Fix a geolocation address
-  $scope.fix_location = function(){
-
-    // Prompt to get the new lat and lng
-    var lat = false;
-    var lng = false;
-    var gmaps_link = prompt("Google maps link (leave blank for manual lat / lng)");
-    if(gmaps_link != null){
-      var matches = gmaps_link.match(/https?:\/\/www\.google\.com\/maps\/\@(\d+\.\d+),(\d+\.\d+)/);
-      if(matches != null){
-        lat = matches[1];
-        lng = matches[2];
-        if(!confirm("Got lat "+lat+" and lng "+lng+" from Google maps URL")){
-          return;
-        };
-      }
-    }
-    if(!lat || !lng){
-      lat = prompt("Latitute");
-      if (lat == null) { return; }
-      lng = prompt("Longitude");
-      if (lng == null) { return; }
-    }
-    if(!parseFloat(lat) > 0 || !parseFloat(lat) > 0){
-      alert("Lat and lng should be numeric. Got "+lat+" and "+lng);
-      return;
-    }
-
-    // Build post data and send to API
-    var post_data = {
-      'id': $scope.active_id,
-      'fix_lat': lat,
-      'fix_lng': lng
-    };
-    $http.post("api/geocode_address.php", JSON.stringify(post_data)).then(function(response) {
-      $scope.active_house.lat = lat;
-      $scope.active_house.lng = lng;
-      $scope.update_results();
-    });
   }
 
 }]);
