@@ -12,7 +12,8 @@ app.controller("hemnetCommuterController", [ '$scope', '$http', '$timeout', func
 
   // Filters
   $scope.show_filters = false;
-  $scope.show_map_settings = false;
+  $scope.show_map_commute_settings = false;
+  $scope.show_map_marker_settings = false;
   $scope.filters = {
     hide_ratings: {},
     kommande: "0",
@@ -356,7 +357,7 @@ app.controller("hemnetCommuterController", [ '$scope', '$http', '$timeout', func
           id: house.id,
           lat: lat,
           lng: lng,
-          message: '<h6><a href="'+house.url+'" target="_blank">'+house.streetAddress+'</a></h6><p><img src="'+house.front_image+'" style="width:100%"></p>',
+          message: '<h6><a href="'+house.url+'" target="_blank">'+house.address+'</a></h6><p><img src="'+house.image_url+'" style="width:100%"></p>',
           icon: {
             type: 'extraMarker',
             markerColor: m_colour,
@@ -609,14 +610,12 @@ app.controller("hemnetCommuterController", [ '$scope', '$http', '$timeout', func
   }
 
   // Delete commute location button clicked
-  $scope.delete_commute_location = function(){
-    for(let id in $scope.commute_locations){
-      if(confirm('Delete '+$scope.commute_locations[id].address+'?')){
-        $http.post("api/commute_locations.php", JSON.stringify({'delete': id})).then(function(response) {
-          delete $scope.commute_locations[id];
-          $scope.update_results();
-        });
-      }
+  $scope.delete_commute_address = function(commute_id){
+    if(confirm('Delete '+$scope.commute_locations[commute_id].address+'?')){
+      $http.post("api/commute_locations.php", JSON.stringify({'delete': commute_id})).then(function(response) {
+        delete $scope.commute_locations[commute_id];
+        $scope.update_results();
+      });
     }
   }
 

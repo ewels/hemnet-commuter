@@ -63,7 +63,6 @@ function fetch_hemnet_houses($search_id = false){
       'location_name',
       'typeSummary',
       'age',
-      'medium_image_url',
       'url',
       'locations_string'
     ];
@@ -97,6 +96,7 @@ function fetch_hemnet_houses($search_id = false){
       $this_house['supplemental_area'] = preg_replace('/[^0-9]/', '', $house['living_space']['table']['supplemental_area']);
       if($this_house['supplemental_area'] == '') $this_house['supplemental_area'] = 0;
       $this_house['size_total'] = @intval($this_house['living_area']) + @intval($this_house['supplemental_area']);
+      $this_house['image_url'] = str_replace('itemgallery_M', 'itemgallery_cut', $house['medium_image_url']);
       $this_house['created'] = time();
 
       // Assoc ID with key as house ID in case a house comes up more than once, prevents duplication
