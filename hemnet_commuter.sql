@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: localhost:23002
--- Generation Time: Sep 06, 2020 at 08:37 PM
+-- Generation Time: Sep 07, 2020 at 06:10 PM
 -- Server version: 5.7.26
 -- PHP Version: 7.3.8
 
@@ -123,7 +123,8 @@ CREATE TABLE `house_ratings` (
   `id` int(11) NOT NULL,
   `house_id` int(11) NOT NULL,
   `user_id` int(11) NOT NULL,
-  `rating` varchar(20) NOT NULL
+  `rating` varchar(20) NOT NULL,
+  `created` int(20) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 -- --------------------------------------------------------
