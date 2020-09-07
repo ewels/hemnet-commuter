@@ -86,7 +86,7 @@ function get_houses($postdata){
   // FILTERS
   foreach($house_results as $house_id => $house){
     $remove = false;
-    if(isset($postdata['house_id']) && $house['house_id'] != $postdata['house_id']) $remove = true;
+    if(isset($postdata['house_id']) && $house['id'] != $postdata['house_id']) $remove = true;
     if(isset($postdata['kommande']) && $postdata['kommande'] == '1' && @$house['status'] != 'upcoming') $remove = true;
     if(isset($postdata['kommande']) && $postdata['kommande'] == '-1' && @$house['status'] == 'upcoming') $remove = true;
     if(isset($postdata['bidding']) && $postdata['bidding'] == '1' && @$house['bidding'] != '1') $remove = true;

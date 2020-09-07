@@ -14,6 +14,7 @@ app.controller("hemnetCommuterController", [ '$scope', '$http', '$timeout', func
   $scope.show_filters = false;
   $scope.show_map_commute_settings = false;
   $scope.show_map_marker_settings = false;
+  $scope.show_recent_ratings = false;
   $scope.filters = {
     hide_ratings: {},
     kommande: "0",
@@ -163,6 +164,9 @@ app.controller("hemnetCommuterController", [ '$scope', '$http', '$timeout', func
   $scope.oldest_fetch = 0;
   $scope.needs_update = false;
   $scope.results = [];
+  $scope.recent_ratings = [];
+  $scope.recent_ratings_filter_user = '';
+  $scope.recent_ratings_filter_type = '';
   $scope.missing_geo = [];
   $scope.users = {};
   $scope.tags = {};
@@ -699,10 +703,32 @@ app.controller("hemnetCommuterController", [ '$scope', '$http', '$timeout', func
           } else {
             $scope.hemnet_results_update_btn_text = 'Update';
             $scope.needs_update = false;
-            $scope.update_results();
+            $scope.update_results(true);
           }
         });
       }
+    });
+  }
+
+  // Show recent ratings
+  $scope.show_recent_ratings_btn = function(){
+    // Already open - close and return
+    if($scope.show_recent_ratings){
+      $scope.show_recent_ratings = false;
+      return;
+    }
+    $scope.update_recent_ratings();
+  }
+  $scope.update_recent_ratings = function(){
+    // Fetch latest and display
+    var post_data = {};
+    if($scope.recent_ratings_filter_user != ''){ post_data.user_id = $scope.recent_ratings_filter_user; }
+    if($scope.recent_ratings_filter_type != ''){ post_data.rating_type = $scope.recent_ratings_filter_type; }
+    console.log("Getting ratings", post_data);
+    $http.post("/api/ratings.php?recent", JSON.stringify(post_data)).then(function(response) {
+      console.log(response.data);
+      $scope.recent_ratings = response.data.results;
+      $scope.show_recent_ratings = true;
     });
   }
 

@@ -55,11 +55,56 @@
         <div class="col-4"><button ng-click="show_map_commute_settings = !show_map_commute_settings; show_filters = false; show_map_marker_settings = false;" class="btn btn-block btn-success"><i class="fa fa-bus mr-2"></i> Commute</button></div>
         <div class="col-4"><button ng-click="show_map_marker_settings = !show_map_marker_settings; show_filters = false; show_map_commute_settings = false;" class="btn btn-block btn-info"><i class="fa fa-map-marker mr-2"></i> Map</button></div>
       </div>
-      <p class="small text-muted mt-2">
+      <p class="small text-muted my-2">
         Showing <span ng-bind="num_results" class="badge badge-secondary"></span> out of <span ng-bind="num_total_results" class="badge badge-secondary"></span> houses.
         &nbsp;
         <a title="Click to toggle update button" href="#" ng-click="needs_update = !needs_update" class="text-muted">Last updated {{ oldest_fetch | date: 'EEE d MMM HH:mm' }}.</a>
       </p>
+      <button class="btn btn-sm" ng-class="{'btn-info': show_recent_ratings, 'btn-outline-info': !show_recent_ratings}" ng-click="show_recent_ratings_btn()"><i class="fa fa-clock-o mr-1"></i> View recently rated</button>
+
+      <!-- RECENT RATINGS -->
+      <div ng-show="show_recent_ratings" class="pt-3 mt-3 border-top">
+        <div class="row border-bottom pb-2 mb-2">
+          <div class="col-6">
+            <select class="custom-select" ng-model="recent_ratings_filter_user" ng-change="update_recent_ratings()">
+              <option value="">Everyone</option>
+              <option ng-repeat="(user_id, user_name) in users" value="{{ user_id }}" >{{ user_name }}</option>
+            </select>
+          </div>
+          <div class="col-6">
+            <select class="custom-select" ng-model="recent_ratings_filter_type" ng-change="update_recent_ratings()">
+              <option value="">All rating types</option>
+              <option value="yes">Yes</option>
+              <option value="maybe">Maybe</option>
+              <option value="no">No</option>
+            </select>
+          </div>
+        </div>
+        <div ng-repeat="rating in recent_ratings" class="border-bottom mb-2">
+          <div class="row">
+            <div class="col-2 text-center">
+              <span class="rounded-circle d-block py-2 bg-success" ng-show="rating.rating == 'yes'" style="width: 4rem; height: 4rem;"><i class="fa fa-thumbs-up fa-3x fa-fw text-white"></i></span>
+              <span class="rounded-circle d-block py-2 bg-info" ng-show="rating.rating == 'maybe'" style="width: 4rem; height: 4rem;"><i class="fa fa-question fa-3x fa-fw text-white"></i></span>
+              <span class="rounded-circle d-block py-2 bg-danger" ng-show="rating.rating == 'no'" style="width: 4rem; height: 4rem;"><i class="fa fa-thumbs-down fa-3x fa-fw text-white"></i></span>
+              <h5 class="my-2"><span class="badge badge-secondary">{{ users[rating.user_id] }}</span></h5>
+            </div>
+            <div class="col-10">
+              <span class="small text-muted float-right">{{ results[rating.house_id].created * 1000 | date:'EEE d MMM HH:mm' }}</span>
+              <h6>{{ results[rating.house_id].address }}</h6>
+              <div class="row">
+                <div class="col-4">
+                  <img src="{{ results[rating.house_id].image_url }}" class="w-100 mb-2">
+                </div>
+                <div class="col-8">
+                  <p class="small mb-0" ng-show="results[rating.house_id].comments[rating.user_id].length">{{ results[rating.house_id].comments[rating.user_id] }}</p>
+                  <p class="small"><span class="badge badge-light font-weight-normal border mr-1" ng-repeat="(tag_id, is_selected) in results[rating.house_id].tags" ng-show="is_selected">{{ tags[tag_id] }}</span></p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
 
       <!-- FILTERS -->
       <div ng-show="show_filters" class="pt-3 mt-3 border-top">
