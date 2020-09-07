@@ -60,7 +60,12 @@
         &nbsp;
         <a title="Click to toggle update button" href="#" ng-click="needs_update = !needs_update" class="text-muted">Last updated {{ oldest_fetch | date: 'EEE d MMM HH:mm' }}.</a>
       </p>
-      <button class="btn btn-sm" ng-class="{'btn-info': show_recent_ratings, 'btn-outline-info': !show_recent_ratings}" ng-click="show_recent_ratings_btn()"><i class="fa fa-clock-o mr-1"></i> View recently rated</button>
+      <button class="btn btn-sm" ng-class="{'btn-info': show_recent_ratings, 'btn-outline-info': !show_recent_ratings}" ng-click="show_recent_ratings_btn()">
+        <i class="fa fa-clock-o mr-1"></i>
+        <span ng-hide="show_recent_ratings">View</span>
+        <span ng-show="show_recent_ratings">Hide</span>
+        recently rated
+      </button>
 
       <!-- RECENT RATINGS -->
       <div ng-show="show_recent_ratings" class="pt-3 mt-3 border-top">
@@ -80,7 +85,7 @@
             </select>
           </div>
         </div>
-        <div ng-repeat="rating in recent_ratings" class="border-bottom mb-2">
+        <div ng-repeat="rating in recent_ratings" class="border-bottom mb-2" ng-click="recent_ratings_click(rating.house_id)">
           <div class="row">
             <div class="col-2 text-center">
               <span class="rounded-circle d-block py-2 bg-success" ng-show="rating.rating == 'yes'" style="width: 4rem; height: 4rem;"><i class="fa fa-thumbs-up fa-3x fa-fw text-white"></i></span>

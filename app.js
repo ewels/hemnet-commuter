@@ -731,5 +731,10 @@ app.controller("hemnetCommuterController", [ '$scope', '$http', '$timeout', func
       $scope.show_recent_ratings = true;
     });
   }
+  $scope.recent_ratings_click = function(house_id){
+    $scope.active_id = house_id;
+    $scope.active_house = $scope.results[house_id];
+    $scope.markers[house_id].focus = true;
+  }
 
 }]);
