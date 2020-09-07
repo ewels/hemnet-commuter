@@ -725,7 +725,7 @@ app.controller("hemnetCommuterController", [ '$scope', '$http', '$timeout', func
     if($scope.recent_ratings_filter_user != ''){ post_data.user_id = $scope.recent_ratings_filter_user; }
     if($scope.recent_ratings_filter_type != ''){ post_data.rating_type = $scope.recent_ratings_filter_type; }
     console.log("Getting ratings", post_data);
-    $http.post("/api/ratings.php?recent", JSON.stringify(post_data)).then(function(response) {
+    $http.post("api/ratings.php?recent", JSON.stringify(post_data)).then(function(response) {
       console.log(response.data);
       $scope.recent_ratings = response.data.results;
       $scope.show_recent_ratings = true;
