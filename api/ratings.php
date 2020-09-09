@@ -64,10 +64,13 @@ function get_recent_ratings($user_id=false, $rating_type=false, $num_items=10){
 
   $results = [];
   $sql = 'SELECT `house_id`, `user_id`, `rating`, `created` FROM `house_ratings`';
-  $where = [];
+  $where = [
+    '`house_id` IN  (SELECT `id` FROM `houses`)',
+    '`rating` != "not_set"'
+  ];
   if($user_id) $where[] = '`user_id` = "'.$mysqli->real_escape_string($user_id).'"';
   if($rating_type) $where[] = '`rating` = "'.$mysqli->real_escape_string($rating_type).'"';
-  if(count($where) > 0) $sql .= ' WHERE '.implode(' AND ', $where);
+  $sql .= ' WHERE '.implode(' AND ', $where);
   $sql .= ' ORDER BY `created` DESC LIMIT '.$mysqli->real_escape_string($num_items);
   if ($result = $mysqli->query($sql)) {
     while ($row = $result->fetch_assoc()) {
