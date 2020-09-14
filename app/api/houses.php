@@ -33,12 +33,16 @@ function get_houses($postdata){
   $oldest_fetch = 99999999999999;
 
   // Get house details
+  $house_results = [];
   $sql = 'SELECT * FROM `houses`';
   if ($result = $mysqli->query($sql)) {
     while ($row = $result->fetch_assoc()) {
       $house_results[$row['id']] = $row;
     }
     $result->free_result();
+  }
+  if(count($house_results) == 0){
+    $oldest_fetch = 0;
   }
 
 

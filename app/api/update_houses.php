@@ -29,7 +29,7 @@ function fetch_hemnet_houses($search_id = false){
       $result->free_result();
     }
   }
-  if(count($search_ids) == 0) return array("status"=>"error", "msg" => "No saved search IDs found");
+  if(count($search_ids) == 0) return array("status"=>"no_saved_searches", "msg" => "No saved search IDs found! Please add some in the 'Map' panel.");
 
   $houses = [];
   foreach($search_ids as $search_id){

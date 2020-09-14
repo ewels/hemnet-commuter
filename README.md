@@ -55,14 +55,58 @@ Before you start, you'll need:
 * An API key for Google Maps (costs money, but easy to get loads of free credits for a trial. You won't need loads.)
 * A [developer API key for TravelTime](https://traveltime.com/travel-time-maps?openDialog=true)
 
-### Initial setup
+### Using Docker
 
-Get your server running and create a new MySQL database using the `hemnet_commuter.sql` file.
-This can be imported into _phpMyAdmin_ / similar tools, or done on the command line and should create all of
-the necessary database tables and structure.
+#### Initial setup
 
-Create a copy of `config_example.ini` called `config.ini` in the filename and save the
-database details and API keys there.
+First, clone this repository and move to the local repository root directory.
+
+Now create a new Docker container using the `mattrayner/lamp` image. This comes with a full _LAMP_ stack
+(Linux, Apache, MySQL, PHP).
+
+```bash
+docker create --name hemnet_commuter -t -p "80:80" -v ${PWD}/app:/app -v ${PWD}/mysql:/var/lib/mysql mattrayner/lamp:latest
+docker start hemnet_commuter
+```
+
+This container will now start up in the background and create a new MySQL database for you in a new `mysql` directory.
+
+If you want to use phpMyAdmin at a later date to view or manage the database, you'll need this to log in
+with the username `admin` and password that is auto-generated on this first run. You can find this info (and note it down)
+by running the `docker logs hemnet_commuter` command. Look for the log that says something like:
+_=> Creating MySQL admin user with random password_ followed by _You can now connect to this MySQL Server with XXXXXXX_.
+
+Next, create a new database and fill it with the required table structures in the supplied SQL file:
+
+```bash
+docker exec -i hemnet_commuter mysql -uroot -e "CREATE DATABASE hemnet_commuter"
+docker exec -i hemnet_commuter mysql -uroot hemnet_commuter < hemnet_commuter.sql
+```
+
+#### Continued use
+
+Once the Docker container is set up, use the commands `docker start hemnet_commuter`
+and `docker stop hemnet_commuter` to start and stop the server.
+
+You can check the status of any running Docker containers with the `docker ps` command.
+
+To use Hemnet Commuter, go to `http://localhost` in your browser.
+You can manage the database using phpMyAdmin at `http://localhost/phpmyadmin`
+
+### Database credentials
+
+The default database credentials are public on GitHub, so anyone will be able to log in to your database if it's on the web.
+They are used in the Dockerfile to create an empty skeleton database and user.
+
+If you are running Hemnet Commuter anywhere where another (potentially malicious) user could get to it, you should change
+the database credentials.
+
+### Google Maps & TravelTime
+
+Hemnet Commuter uses the Google Maps API to fetch travel times between houses and your commute locations.
+It uses TravelTime to fetch a map of all potential commute locations within your criteria.
+
+For these features to work, you will need to get API keys for the two services. Save them in `app/config.ini`.
 
 ### First run
 
