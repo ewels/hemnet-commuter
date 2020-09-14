@@ -62,31 +62,36 @@ Before you start, you'll need:
 First, clone this repository and move to the local repository root directory.
 
 Now create a new Docker container using the `mattrayner/lamp` image. This comes with a full _LAMP_ stack
-(Linux, Apache, MySQL, PHP).
+(Linux, Apache, MySQL, PHP). See [https://github.com/mattrayner/docker-lamp](https://github.com/mattrayner/docker-lamp) for more details.
 
-```bash
-docker create --name hemnet_commuter -t -p "80:80" -v ${PWD}/app:/app -v ${PWD}/mysql:/var/lib/mysql mattrayner/lamp:latest
-docker start hemnet_commuter
+```console
+$ docker create --name hemnet_commuter -t -p "80:80" -v ${PWD}/app:/app -v ${PWD}/mysql:/var/lib/mysql mattrayner/lamp:latest
+$ docker start hemnet_commuter
 ```
 
 This container will now start up in the background and create a new MySQL database for you in a new `mysql` directory.
 
 If you want to use phpMyAdmin at a later date to view or manage the database, you'll need this to log in
 with the username `admin` and password that is auto-generated on this first run. You can find this info (and note it down)
-by running the `docker logs hemnet_commuter` command. Look for the log that says something like:
-_=> Creating MySQL admin user with random password_ followed by _You can now connect to this MySQL Server with XXXXXXX_.
+by running the `docker logs hemnet_commuter` command.
+Look for the log that says something like: `=> Creating MySQL admin user with random password` followed by
+`You can now connect to this MySQL Server with XXXXXXX`.
 
 Next, create a new database and fill it with the required table structures in the supplied SQL file:
 
-```bash
-docker exec -i hemnet_commuter mysql -uroot -e "CREATE DATABASE hemnet_commuter"
-docker exec -i hemnet_commuter mysql -uroot hemnet_commuter < hemnet_commuter.sql
+```console
+$ docker exec -i hemnet_commuter mysql -uroot -e "CREATE DATABASE hemnet_commuter"
+$ docker exec -i hemnet_commuter mysql -uroot hemnet_commuter < hemnet_commuter.sql
 ```
 
 #### Continued use
 
-Once the Docker container is set up, use the commands `docker start hemnet_commuter`
-and `docker stop hemnet_commuter` to start and stop the server.
+Once the Docker container is set up, you can use the following commands to start and stop the server:
+
+```console
+$ docker start hemnet_commuter
+$ docker stop hemnet_commuter
+```
 
 You can check the status of any running Docker containers with the `docker ps` command.
 
@@ -101,6 +106,8 @@ They are used in the Dockerfile to create an empty skeleton database and user.
 If you are running Hemnet Commuter anywhere where another (potentially malicious) user could get to it, you should change
 the database credentials. Make a copy of `app/config_defaults.ini` called `app/config.ini` and save them there (this file will be ignored by git).
 
+See the readme from the LAMP docker image for more details: [mattrayner/docker-lamp](https://github.com/mattrayner/docker-lamp#mysql-databases).
+
 ### Google Maps & TravelTime
 
 Hemnet Commuter uses the Google Maps API to fetch travel times between houses and your commute locations.
@@ -113,7 +120,7 @@ called `app/config.ini` and save them there (this file will be ignored by git).
 
 In the database, add one or more rows in the `saved_searches` DB table with the numeric IDs for your saved searches.
 
-> `#TODO`: Add a front-end method to do manage these.
+> `#TODO`: Add a front-end method to do manage these (the error message even suggests this already exists).
 
 Open Hemnet Commuter in your web browser. Hopefully it should load with a big yellow _"Update"_ button
 which you can press to fetch all data.
@@ -134,4 +141,4 @@ Please consider contributing / reporting issues via GitHub and I'll do my best t
 
 This tool is in no way endorsed by Hemnet. But it does use their publicly-visible data. Thanks!
 
-<img src="hemnet.svg" width="200">
+<img src="app/hemnet.svg" width="200">
