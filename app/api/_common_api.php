@@ -17,6 +17,9 @@ if(!isset($not_json) || $not_json = false){
 // Check that the config.ini file exists
 $ini_fn = dirname(__DIR__)."/config.ini";
 if(!file_exists($ini_fn)){
+  $ini_fn = dirname(__DIR__)."/config_defaults.ini";
+}
+if(!file_exists($ini_fn)){
   echo json_encode(array(
     'status' => 'error',
     'msg' => 'No config file found! Should be at "app/config.ini" - see README.md'

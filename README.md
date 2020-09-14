@@ -99,14 +99,15 @@ The default database credentials are public on GitHub, so anyone will be able to
 They are used in the Dockerfile to create an empty skeleton database and user.
 
 If you are running Hemnet Commuter anywhere where another (potentially malicious) user could get to it, you should change
-the database credentials.
+the database credentials. Make a copy of `app/config_defaults.ini` called `app/config.ini` and save them there (this file will be ignored by git).
 
 ### Google Maps & TravelTime
 
 Hemnet Commuter uses the Google Maps API to fetch travel times between houses and your commute locations.
 It uses TravelTime to fetch a map of all potential commute locations within your criteria.
 
-For these features to work, you will need to get API keys for the two services. Save them in `app/config.ini`.
+For these features to work, you will need to get API keys for the two services. Make a copy of `app/config_defaults.ini`
+called `app/config.ini` and save them there (this file will be ignored by git).
 
 ### First run
 
