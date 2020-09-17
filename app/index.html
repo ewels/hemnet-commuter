@@ -251,6 +251,14 @@
                   ng-blur="update_results()" id="size_tomt_min" class="form-control form-control-sm"
                   style="width: 80px;"></td>
             </tr>
+            <tr ng-class="{'filter-inactive': filters.days_on_hemnet_max == stats.days_on_hemnet[1]}">
+              <th><label for="days_on_hemnet_max">Days on Hemnet</label></th>
+              <td><input type="range" ng-model="filters.days_on_hemnet_max" class="form-control-range"
+                  min="{{stats.days_on_hemnet[0]}}" max="{{stats.days_on_hemnet[1]}}" ng-change="update_results()"></td>
+              <td><input type="text" ng-model="filters.days_on_hemnet_max"
+                  ng-model-options="{debounce: {'default': 200}}" ng-blur="update_results()" id="days_on_hemnet_max"
+                  class="form-control form-control-sm" style="width: 80px;"></td>
+            </tr>
           </table>
         </div>
 

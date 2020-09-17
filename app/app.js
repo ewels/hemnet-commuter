@@ -21,6 +21,8 @@ app.controller("hemnetCommuterController", ['$scope', '$http', '$timeout', funct
     bidding: "0",
     price_min: 0,
     price_max: 10000000,
+    days_on_hemnet_max: 999999999,
+    days_on_hemnet_min: 0,
     size_total_min: 0,
     size_tomt_min: 0,
     hide_failed_commutes: [],
@@ -28,6 +30,8 @@ app.controller("hemnetCommuterController", ['$scope', '$http', '$timeout', funct
   // https://stackoverflow.com/a/28246130/713980
   $scope.$watch('filters.price_min', function () { $scope.filters.price_min = parseFloat($scope.filters.price_min); });
   $scope.$watch('filters.price_max', function () { $scope.filters.price_max = parseFloat($scope.filters.price_max); });
+  $scope.$watch('filters.days_on_hemnet_max', function () { $scope.filters.days_on_hemnet_max = parseFloat($scope.filters.days_on_hemnet_max); });
+  $scope.$watch('filters.days_on_hemnet_min', function () { $scope.filters.days_on_hemnet_min = parseFloat($scope.filters.days_on_hemnet_min); });
   $scope.$watch('filters.size_total_min', function () { $scope.filters.size_total_min = parseFloat($scope.filters.size_total_min); });
   $scope.$watch('filters.size_tomt_min', function () { $scope.filters.size_tomt_min = parseFloat($scope.filters.size_tomt_min); });
 
@@ -35,6 +39,7 @@ app.controller("hemnetCommuterController", ['$scope', '$http', '$timeout', funct
     price: [0, 10000000],
     size_total: [0, 10000],
     size_tomt: [0, 3000],
+    days_on_hemnet: [0, 999999999],
   }
   $scope.initialising = false;
 
@@ -226,6 +231,12 @@ app.controller("hemnetCommuterController", ['$scope', '$http', '$timeout', funct
     if ($scope.filters.price_max != $scope.stats.price[1]) {
       postdata.price_max = $scope.filters.price_max;
     }
+    if ($scope.filters.days_on_hemnet_min != $scope.stats.days_on_hemnet[0]) {
+      postdata.days_on_hemnet_min = $scope.filters.days_on_hemnet_min;
+    }
+    if ($scope.filters.days_on_hemnet_max != $scope.stats.days_on_hemnet[1]) {
+      postdata.days_on_hemnet_max = $scope.filters.days_on_hemnet_max;
+    }
     if ($scope.filters.size_total_min != $scope.stats.size_total[0]) {
       postdata.size_total_min = $scope.filters.size_total_min;
     }
@@ -287,7 +298,8 @@ app.controller("hemnetCommuterController", ['$scope', '$http', '$timeout', funct
       $scope.marker_colour_scale_size_total = chroma.scale('RdYlGn').domain([stats_size_total[0], stats_size_total[1]]);
       $scope.marker_colour_scale_size_tomt = chroma.scale('RdYlGn').domain([500, 4000]);
       $scope.marker_colour_scale_rooms = chroma.scale('RdYlGn').domain([1, 8]);
-      $scope.marker_colour_scale_age = chroma.scale('BuGn').domain([30, 0]);
+      var stats_days_on_hemnet = get_min_max('age', response.data.results);
+      $scope.marker_colour_scale_age = chroma.scale('BuGn').domain([Math.min(30, stats_days_on_hemnet[1] + 2), 0]);
       for (let id in $scope.commute_locations) {
         var dateobj = new Date();
         dateobj.setHours(0, 0, 0, 0);
@@ -316,6 +328,7 @@ app.controller("hemnetCommuterController", ['$scope', '$http', '$timeout', funct
         $scope.stats.price = get_min_max('price', response.data.results);
         $scope.stats.size_total = get_min_max('size_total', response.data.results);
         $scope.stats.size_tomt = get_min_max('land_area', response.data.results);
+        $scope.stats.days_on_hemnet = get_min_max('age', response.data.results);
 
         // Build user-filters
         for (let user_id in $scope.users) {

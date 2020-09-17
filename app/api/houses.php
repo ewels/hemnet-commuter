@@ -97,6 +97,8 @@ function get_houses($postdata){
     if(isset($postdata['bidding']) && $postdata['bidding'] == '-1' && @$house['ongoing_bidding'] == '1') $remove = true;
     if(isset($postdata['price_min']) && @$house['price'] < $postdata['price_min']) $remove = true;
     if(isset($postdata['price_max']) && @$house['price'] > $postdata['price_max']) $remove = true;
+    if(isset($postdata['days_on_hemnet_max']) && @$house['age'] > $postdata['days_on_hemnet_max']) $remove = true;
+    if(isset($postdata['days_on_hemnet_min']) && @$house['age'] < $postdata['days_on_hemnet_min']) $remove = true;
     if(isset($postdata['size_total_min']) && $house['size_total'] < $postdata['size_total_min']) $remove = true;
     if(isset($postdata['size_tomt_min']) && $house['land_area'] < $postdata['size_tomt_min']) $remove = true;
     if(isset($postdata['hide_ratings'])){

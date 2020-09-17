@@ -73,7 +73,7 @@ This container will now start up in the background and create a new MySQL databa
 
 If you want to use phpMyAdmin at a later date to view or manage the database, you'll need this to log in
 with the username `admin` and password that is auto-generated on this first run. You can find this info (and note it down)
-by running the `docker logs hemnet_commuter` command.
+by running the `docker logs hemnet_commuter | less` command.
 Look for the log that says something like: `=> Creating MySQL admin user with random password` followed by
 `You can now connect to this MySQL Server with XXXXXXX`.
 
