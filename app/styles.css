@@ -66,3 +66,9 @@ footer a {
 .extra-marker .fa-number:before {
   font-family: -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,"Noto Sans",sans-serif,"Apple Color Emoji","Segoe UI Emoji","Segoe UI Symbol","Noto Color Emoji";
 }
+
+@media screen and (max-width: 1320px){
+  #commute_icon {
+    display:none;
+  }
+}
