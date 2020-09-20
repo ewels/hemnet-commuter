@@ -47,8 +47,10 @@ footer a {
   font-family: -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,"Noto Sans",sans-serif,"Apple Color Emoji","Segoe UI Emoji","Segoe UI Symbol","Noto Color Emoji";
 }
 
-@media screen and (max-width: 1320px){
-  #commute_icon {
-    display:none;
-  }
+.carousel .carousel-control-next-icon,
+.carousel .carousel-control-prev-icon {
+  filter: brightness(0);
+}
+.carousel-indicators li {
+  opacity: 0.2;
 }
