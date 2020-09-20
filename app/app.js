@@ -8,12 +8,9 @@
  */
 
 var app = angular.module("hemnetCommuterApp", ['ui-leaflet']);
-app.controller("hemnetCommuterController", ['$scope', '$http', '$timeout', function ($scope, $http, $timeout) {
+app.controller("hemnetCommuterController", ['$scope', '$compile', '$http', '$timeout', function ($scope, $compile, $http, $timeout) {
 
   // Filters
-  $scope.show_filters = false;
-  $scope.show_map_commute_settings = false;
-  $scope.show_map_marker_settings = false;
   $scope.show_recent_ratings = false;
   $scope.filters = {
     hide_ratings: {},
@@ -42,6 +39,7 @@ app.controller("hemnetCommuterController", ['$scope', '$http', '$timeout', funct
     days_on_hemnet: [0, 999999999],
   }
   $scope.initialising = false;
+  $scope.sidebar = false;
 
   // Settings
   $scope.map_settings = {
@@ -181,6 +179,28 @@ app.controller("hemnetCommuterController", ['$scope', '$http', '$timeout', funct
   $scope.hemnet_results_updating = false;
   $scope.hemnet_results_update_btn_text = 'Update';
 
+  // Build custom leaflet buttons for map settings
+  L.Control.HncBtn = L.Control.extend({
+    options: {
+      ngclick: '',
+      ngclass: '',
+      icon_class: ''
+    },
+    onAdd: function (map) {
+      opts = this.options;
+      $scope.sidebar
+      var btn_link = `<div class="rounded shadow" style="background-color:white;">
+        <button ng-click="${opts.ngclick}" ng-class="${opts.ngclass}" class="btn px-2">
+          <i class="fa fa-fw ${opts.icon_class}"></i>
+        </button>
+      </div>`;
+      var linkFn = $compile(btn_link);
+      var content = linkFn($scope);
+      return content[0];
+    }
+  });
+
+
   // Set up the map
   angular.extend($scope, {
     center: {
@@ -198,6 +218,25 @@ app.controller("hemnetCommuterController", ['$scope', '$http', '$timeout', funct
         }
       },
       overlays: {}
+    },
+    controls: {
+      custom: [
+        new L.Control.HncBtn({
+          'ngclick': `sidebar = sidebar == 'filters' ? false : 'filters'`,
+          'ngclass': `sidebar == 'filters' ? 'btn-secondary' : 'btn-outline-secondary'`,
+          'icon_class': 'fa-filter'
+        }),
+        new L.Control.HncBtn({
+          'ngclick': `sidebar = sidebar == 'commute' ? false : 'commute'`,
+          'ngclass': `sidebar == 'commute' ? 'btn-success' : 'btn-outline-success'`,
+          'icon_class': 'fa-bus'
+        }),
+        new L.Control.HncBtn({
+          'ngclick': `sidebar = sidebar == 'map' ? false : 'map'`,
+          'ngclass': `sidebar == 'map' ? 'btn-info' : 'btn-outline-info'`,
+          'icon_class': 'fa-map-marker'
+        }),
+      ]
     }
   });
 

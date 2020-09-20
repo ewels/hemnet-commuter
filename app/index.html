@@ -35,7 +35,7 @@
 <body ng-controller="hemnetCommuterController" style="padding:0;">
 
   <div class="row mr-0 h-100" style="position:relative;">
-    <div class="col-md-8 px-0 h-100 order-2">
+    <div ng-class="!sidebar ? 'col-md-8' : 'col-md-4'" class="px-0 h-100 order-2">
       <leaflet bounds="bounds" lf-center="center" event-broadcast="events" markers="markers" layers="layers"
         controls="controls" style="position: absolute; top: 0; bottom: 0; width: 100%;"></leaflet>
     </div>
@@ -48,8 +48,7 @@
         </h1>
         <p ng-show="update_results_call_active" class="small text-muted">Loading houses..</p>
         <p ng-show="commute_map_call_active" class="small text-muted">Loading commute map..</p>
-        <p ng-show="missing_geo.length > 0" class="small text-danger">Missing location for {{missing_geo.length}}
-          houses! Fix on the <a href="update.php">update page</a>.</p>
+        <p ng-show="missing_geo.length > 0" class="small text-danger">Missing location for {{missing_geo.length}} houses! Fix on the <a href="update.php">update page</a>.</p>
         <hr>
         <div ng-show="error_msg" class="alert alert-danger">
           <h4 class="alert-heading">Error</h4>
@@ -60,13 +59,6 @@
           <i class="fa fa-refresh mr-2" ng-class="{'fa-spin': hemnet_results_updating}"></i>
           {{ hemnet_results_update_btn_text }}
         </button>
-        <div class="form-row">
-          <div class="col-4"><button ng-click="show_filters = !show_filters; show_map_commute_settings = false; show_map_marker_settings = false;" class="btn btn-block btn-secondary"><i class="fa fa-filter mr-2"></i> Filters</button></div>
-          <div class="col-4"><button ng-click="show_map_commute_settings = !show_map_commute_settings; show_filters = false; show_map_marker_settings = false;" class="btn btn-block btn-success">
-              <i class="fa fa-bus mr-2" id="commute_icon"></i> Commute
-            </button></div>
-          <div class="col-4"><button ng-click="show_map_marker_settings = !show_map_marker_settings; show_filters = false; show_map_commute_settings = false;" class="btn btn-block btn-info"><i class="fa fa-map-marker mr-2"></i> Map</button></div>
-        </div>
         <p class="small text-muted my-2">
           Showing <span ng-bind="num_results" class="badge badge-secondary"></span> out of <span ng-bind="num_total_results" class="badge badge-secondary"></span> houses.
           &nbsp;
@@ -120,163 +112,6 @@
                   </div>
                 </div>
               </div>
-            </div>
-          </div>
-        </div>
-
-
-        <!-- FILTERS -->
-        <div ng-show="show_filters" class="pt-3 mt-3 border-top">
-          <h4>Filters</h4>
-          <h6>Ratings</h6>
-          <p>Click to hide houses that are any of the following:</p>
-          <table class="table table-sm">
-            <tr ng-repeat="(user_id, user_name) in users" ng-class="{'filter-inactive': !filters.hide_ratings[user_id]['yes'] && !filters.hide_ratings[user_id]['maybe'] && !filters.hide_ratings[user_id]['no'] && !filters.hide_ratings[user_id]['not_set'] }">
-              <th>{{ user_name }}</th>
-              <td class="px-2">
-                <input class="form-check-input" type="checkbox" id="rating_yes_{{user_id}}" ng-model="filters.hide_ratings[user_id].yes" ng-change="update_results()">
-                <label class="form-check-label" for="rating_yes_{{user_id}}">Yes</label>
-              </td>
-              <td class="px-2">
-                <input class="form-check-input" type="checkbox" id="rating_maybe_{{user_id}}" ng-model="filters.hide_ratings[user_id].maybe" ng-change="update_results()">
-                <label class="form-check-label" for="rating_maybe_{{user_id}}">Maybe</label>
-              </td>
-              <td class="px-2">
-                <input class="form-check-input" type="checkbox" id="rating_no_{{user_id}}" ng-model="filters.hide_ratings[user_id].no" ng-change="update_results()">
-                <label class="form-check-label" for="rating_no_{{user_id}}">No</label>
-              </td>
-              <td class="px-2">
-                <input class="form-check-input" type="checkbox" id="rating_not_set_{{user_id}}" ng-model="filters.hide_ratings[user_id].not_set" ng-change="update_results()">
-                <label class="form-check-label" for="rating_not_set_{{user_id}}">Not set</label>
-              </td>
-            </tr>
-          </table>
-
-          <h6>Commute time thresholds</h6>
-          <table class="table table-sm">
-            <tr ng-repeat="(commute_id, commute) in commute_locations" ng-class="{'filter-inactive': filters.hide_failed_commutes[commute_id] == '0' }">
-              <td class="small">{{ commute.address }}</td>
-              <td colspan="2">
-                <div class="custom-control custom-switch">
-                  <input type="checkbox" class="custom-control-input" id="hide_failed_commute_{{commute_id}}" ng-model="filters.hide_failed_commutes[commute_id]" ng-change="update_results()">
-                  <label class="custom-control-label" for="hide_failed_commute_{{commute_id}}">Hide failing</label>
-                </div>
-              </td>
-            </tr>
-          </table>
-
-          <h6>Basic stats</h6>
-          <table class="table table-sm">
-            <tr ng-class="{'filter-inactive': filters.kommande == 0}">
-              <th><label for="filters_kommande">Kommande</label></th>
-              <td colspan="2">
-                <select id="filters_kommande" ng-model="filters.kommande" ng-change="update_results()" class="custom-select custom-select-sm">
-                  <option value="0">--</option>
-                  <option value="1">Show only Kommande</option>
-                  <option value="-1">Hide Kommande</option>
-                </select>
-              </td>
-            </tr>
-            <tr ng-class="{'filter-inactive': filters.bidding == 0}">
-              <th><label for="filters_bidding">Bidding</label></th>
-              <td colspan="2">
-                <select id="filters_bidding" ng-model="filters.bidding" ng-change="update_results()" class="custom-select custom-select-sm">
-                  <option value="0">--</option>
-                  <option value="1">Show only Bidding</option>
-                  <option value="-1">Hide Bidding</option>
-                </select>
-              </td>
-            </tr>
-            <tr ng-class="{'filter-inactive': filters.price_min == stats.price[0]}">
-              <th><label for="price_min">Min price</label></th>
-              <td><input type="range" ng-model="filters.price_min" class="form-control-range" min="{{stats.price[0]}}" max="{{stats.price[1]}}" ng-change="update_results()"></td>
-              <td><input type="text" ng-model="filters.price_min" ng-model-options="{debounce: {'default': 200}}" ng-blur="update_results()" id="price_min" class="form-control form-control-sm" style="width: 80px;">
-              </td>
-            </tr>
-            <tr ng-class="{'filter-inactive': filters.price_max == stats.price[1]}">
-              <th><label for="price_max">Max price</label></th>
-              <td><input type="range" ng-model="filters.price_max" class="form-control-range" min="{{stats.price[0]}}" max="{{stats.price[1]}}" ng-change="update_results()"></td>
-              <td><input type="text" ng-model="filters.price_max" ng-model-options="{debounce: {'default': 200}}" ng-blur="update_results()" id="price_max" class="form-control form-control-sm" style="width: 80px;">
-              </td>
-            </tr>
-            <tr ng-class="{'filter-inactive': filters.size_total_min == stats.size_total[0]}">
-              <th><label for="size_total_min">Min size <small style="white-space: nowrap;">(Bo + Bi)</small></label>
-              </th>
-              <td><input type="range" ng-model="filters.size_total_min" class="form-control-range" min="{{stats.size_total[0]}}" max="{{stats.size_total[1]}}" ng-change="update_results()"></td>
-              <td><input type="text" ng-model="filters.size_total_min" ng-model-options="{debounce: {'default': 200}}" ng-blur="update_results()" id="size_total_min" class="form-control form-control-sm" style="width: 80px;"></td>
-            </tr>
-            <tr ng-class="{'filter-inactive': filters.size_tomt_min == stats.size_tomt[0]}">
-              <th><label for="size_tomt_min">Min tomt</label></th>
-              <td><input type="range" ng-model="filters.size_tomt_min" class="form-control-range" min="{{stats.size_tomt[0]}}" max="{{stats.size_tomt[1]}}" ng-change="update_results()"></td>
-              <td><input type="text" ng-model="filters.size_tomt_min" ng-model-options="{debounce: {'default': 200}}" ng-blur="update_results()" id="size_tomt_min" class="form-control form-control-sm" style="width: 80px;"></td>
-            </tr>
-            <tr ng-class="{'filter-inactive': filters.days_on_hemnet_max == stats.days_on_hemnet[1]}">
-              <th><label for="days_on_hemnet_max">Days on Hemnet</label></th>
-              <td><input type="range" ng-model="filters.days_on_hemnet_max" class="form-control-range" min="{{stats.days_on_hemnet[0]}}" max="{{stats.days_on_hemnet[1]}}" ng-change="update_results()"></td>
-              <td><input type="text" ng-model="filters.days_on_hemnet_max" ng-model-options="{debounce: {'default': 200}}" ng-blur="update_results()" id="days_on_hemnet_max" class="form-control form-control-sm" style="width: 80px;"></td>
-            </tr>
-          </table>
-        </div>
-
-        <!-- COMMUTE SETTINGS -->
-        <div ng-show="show_map_commute_settings" class="pt-3 mt-3 border-top">
-          <h4>
-            Commute settings
-            <button ng-click="add_commute_location()" class="btn btn-sm btn-link text-muted" style="font-size: .7rem;">[add place]</button>
-          </h4>
-          <div class="form-row mb-2" ng-repeat="(commute_id, commute) in commute_locations">
-            <div class="col-auto">
-              <button ng-click="delete_commute_address(commute_id)" class="btn btn-sm btn-link text-muted border"><i class="fa fa-trash" aria-hidden="true"></i></button>
-            </div>
-            <div class="col">
-              <p ng-bind="commute.address" class="small my-1"></p>
-            </div>
-            <div class="col-3">
-              <input type="time" class="form-control form-control-sm" placeholder="hh:mm" ng-model="commute.max_time" ng-change="update_commute_time(commute_id)" ng-model-options="{updateOn: 'blur'}">
-            </div>
-          </div>
-          <p class="small text-muted my-0">Time is max commute time, hh:mm</p>
-        </div>
-
-        <!-- MAP SETTINGS -->
-        <div ng-show="show_map_marker_settings" class="pt-3 mt-3 border-top">
-          <h4>Map settings</h4>
-
-          <h6 class="mt-4">Map Markers</h6>
-          <div class="form-row py-2 small">
-            <div class="col-2 my-1">
-              <label for="map_settings_marker_colour_icon">Colour + Icon:</label>
-            </div>
-            <div class="col-10">
-              <select id="map_settings_marker_colour_icon" ng-model="map_settings.marker_colour_icon" ng-change="update_marker_col_icon()" class="custom-select custom-select-sm">
-                <optgroup ng-repeat="(key,options) in map_setting_selects.marker_colour_icon" label="{{key}}">
-                  <option ng-repeat="(val, txt) in options" value="{{val}}">{{txt}}</option>
-                </optgroup>
-              </select>
-            </div>
-          </div>
-          <div class="form-row border-top py-2 small">
-            <div class="col-2 my-1">
-              <label for="map_settings_marker_colour">Colour:</label>
-            </div>
-            <div class="col-10">
-              <select id="map_settings_marker_colour" ng-model="map_settings.marker_colour" ng-change="update_markers()" class="custom-select custom-select-sm">
-                <optgroup ng-repeat="(key,options) in map_setting_selects.marker_colour" label="{{key}}">
-                  <option ng-repeat="(val, txt) in options" value="{{val}}">{{txt}}</option>
-                </optgroup>
-              </select>
-            </div>
-          </div>
-          <div class="form-row py-2 border-top small">
-            <div class="col-2 my-1">
-              <label for="map_settings_marker_icon">Icon:</label>
-            </div>
-            <div class="col-10">
-              <select id="map_settings_marker_icon" ng-model="map_settings.marker_icon" ng-change="update_markers()" class="custom-select custom-select-sm">
-                <optgroup ng-repeat="(key,options) in map_setting_selects.marker_icon" label="{{key}}">
-                  <option ng-repeat="(val, txt) in options" value="{{val}}">{{txt}}</option>
-                </optgroup>
-              </select>
             </div>
           </div>
         </div>
@@ -362,7 +197,7 @@
               <td><span ng-bind="active_house.tenure"></span></td>
             </tr>
           </table>
-
+        
           <div class="row my-5 house_ratings">
             <div ng-repeat="(user_id, user_name) in users" class="col-6">
               <h5>{{ user_name }}</h5>
@@ -383,13 +218,172 @@
           </div>
           <p class="p-3 mb-2 bg-success text-white" style="display:none;" id="saving_ratings_notification">Saving ratings..</p>
         </div>
+        </div>
+        <footer>
+          Hemnet-Commuter was written by <a href="http://phil.ewels.co.uk">Phil Ewels</a>.
+          It is in no way connected with, or endorsed by, <a href="https://www.hemnet.se">hemnet.se</a>.<br>
+          The code for this website is released with the MIT open-source licence and can be viewed on GitHub:
+          <a href="https://github.com/ewels/hemnet-commuter">https://github.com/ewels/hemnet-commuter</a>.
+        </footer>
+        </div>
+        <div ng-class="!sidebar ? 'd-none' : 'col-md-4'" class="order-3 h-100 overflow-auto">
+      <!-- FILTERS -->
+      <div ng-show="sidebar == 'filters'" class="pt-3">
+        <h3 class="text-success"><i class="fa fa-filter mr-1"></i> Filters</h3>
+        <h6>Ratings</h6>
+        <p>Click to hide houses that are any of the following:</p>
+        <table class="table table-sm">
+          <tr ng-repeat="(user_id, user_name) in users" ng-class="{'filter-inactive': !filters.hide_ratings[user_id]['yes'] && !filters.hide_ratings[user_id]['maybe'] && !filters.hide_ratings[user_id]['no'] && !filters.hide_ratings[user_id]['not_set'] }">
+            <th>{{ user_name }}</th>
+            <td class="px-2">
+              <input class="form-check-input" type="checkbox" id="rating_yes_{{user_id}}" ng-model="filters.hide_ratings[user_id].yes" ng-change="update_results()">
+              <label class="form-check-label" for="rating_yes_{{user_id}}">Yes</label>
+            </td>
+            <td class="px-2">
+              <input class="form-check-input" type="checkbox" id="rating_maybe_{{user_id}}" ng-model="filters.hide_ratings[user_id].maybe" ng-change="update_results()">
+              <label class="form-check-label" for="rating_maybe_{{user_id}}">Maybe</label>
+            </td>
+            <td class="px-2">
+              <input class="form-check-input" type="checkbox" id="rating_no_{{user_id}}" ng-model="filters.hide_ratings[user_id].no" ng-change="update_results()">
+              <label class="form-check-label" for="rating_no_{{user_id}}">No</label>
+            </td>
+            <td class="px-2">
+              <input class="form-check-input" type="checkbox" id="rating_not_set_{{user_id}}" ng-model="filters.hide_ratings[user_id].not_set" ng-change="update_results()">
+              <label class="form-check-label" for="rating_not_set_{{user_id}}">Not set</label>
+            </td>
+          </tr>
+        </table>
+
+        <h6>Commute time thresholds</h6>
+        <table class="table table-sm">
+          <tr ng-repeat="(commute_id, commute) in commute_locations" ng-class="{'filter-inactive': filters.hide_failed_commutes[commute_id] == '0' }">
+            <td class="small">{{ commute.address }}</td>
+            <td colspan="2">
+              <div class="custom-control custom-switch">
+                <input type="checkbox" class="custom-control-input" id="hide_failed_commute_{{commute_id}}" ng-model="filters.hide_failed_commutes[commute_id]" ng-change="update_results()">
+                <label class="custom-control-label" for="hide_failed_commute_{{commute_id}}">Hide failing</label>
+              </div>
+            </td>
+          </tr>
+        </table>
+
+        <h6>Basic stats</h6>
+        <table class="table table-sm">
+          <tr ng-class="{'filter-inactive': filters.kommande == 0}">
+            <th><label for="filters_kommande">Kommande</label></th>
+            <td colspan="2">
+              <select id="filters_kommande" ng-model="filters.kommande" ng-change="update_results()" class="custom-select custom-select-sm">
+                <option value="0">--</option>
+                <option value="1">Show only Kommande</option>
+                <option value="-1">Hide Kommande</option>
+              </select>
+            </td>
+          </tr>
+          <tr ng-class="{'filter-inactive': filters.bidding == 0}">
+            <th><label for="filters_bidding">Bidding</label></th>
+            <td colspan="2">
+              <select id="filters_bidding" ng-model="filters.bidding" ng-change="update_results()" class="custom-select custom-select-sm">
+                <option value="0">--</option>
+                <option value="1">Show only Bidding</option>
+                <option value="-1">Hide Bidding</option>
+              </select>
+            </td>
+          </tr>
+          <tr ng-class="{'filter-inactive': filters.price_min == stats.price[0]}">
+            <th><label for="price_min">Min price</label></th>
+            <td><input type="range" ng-model="filters.price_min" class="form-control-range" min="{{stats.price[0]}}" max="{{stats.price[1]}}" ng-change="update_results()"></td>
+            <td><input type="text" ng-model="filters.price_min" ng-model-options="{debounce: {'default': 200}}" ng-blur="update_results()" id="price_min" class="form-control form-control-sm" style="width: 80px;">
+            </td>
+          </tr>
+          <tr ng-class="{'filter-inactive': filters.price_max == stats.price[1]}">
+            <th><label for="price_max">Max price</label></th>
+            <td><input type="range" ng-model="filters.price_max" class="form-control-range" min="{{stats.price[0]}}" max="{{stats.price[1]}}" ng-change="update_results()"></td>
+            <td><input type="text" ng-model="filters.price_max" ng-model-options="{debounce: {'default': 200}}" ng-blur="update_results()" id="price_max" class="form-control form-control-sm" style="width: 80px;">
+            </td>
+          </tr>
+          <tr ng-class="{'filter-inactive': filters.size_total_min == stats.size_total[0]}">
+            <th><label for="size_total_min">Min size <small style="white-space: nowrap;">(Bo + Bi)</small></label>
+            </th>
+            <td><input type="range" ng-model="filters.size_total_min" class="form-control-range" min="{{stats.size_total[0]}}" max="{{stats.size_total[1]}}" ng-change="update_results()"></td>
+            <td><input type="text" ng-model="filters.size_total_min" ng-model-options="{debounce: {'default': 200}}" ng-blur="update_results()" id="size_total_min" class="form-control form-control-sm" style="width: 80px;"></td>
+          </tr>
+          <tr ng-class="{'filter-inactive': filters.size_tomt_min == stats.size_tomt[0]}">
+            <th><label for="size_tomt_min">Min tomt</label></th>
+            <td><input type="range" ng-model="filters.size_tomt_min" class="form-control-range" min="{{stats.size_tomt[0]}}" max="{{stats.size_tomt[1]}}" ng-change="update_results()"></td>
+            <td><input type="text" ng-model="filters.size_tomt_min" ng-model-options="{debounce: {'default': 200}}" ng-blur="update_results()" id="size_tomt_min" class="form-control form-control-sm" style="width: 80px;"></td>
+          </tr>
+          <tr ng-class="{'filter-inactive': filters.days_on_hemnet_max == stats.days_on_hemnet[1]}">
+            <th><label for="days_on_hemnet_max">Days on Hemnet</label></th>
+            <td><input type="range" ng-model="filters.days_on_hemnet_max" class="form-control-range" min="{{stats.days_on_hemnet[0]}}" max="{{stats.days_on_hemnet[1]}}" ng-change="update_results()"></td>
+            <td><input type="text" ng-model="filters.days_on_hemnet_max" ng-model-options="{debounce: {'default': 200}}" ng-blur="update_results()" id="days_on_hemnet_max" class="form-control form-control-sm" style="width: 80px;"></td>
+          </tr>
+        </table>
       </div>
-      <footer>
-        Hemnet-Commuter was written by <a href="http://phil.ewels.co.uk">Phil Ewels</a>.
-        It is in no way connected with, or endorsed by, <a href="https://www.hemnet.se">hemnet.se</a>.<br>
-        The code for this website is released with the MIT open-source licence and can be viewed on GitHub:
-        <a href="https://github.com/ewels/hemnet-commuter">https://github.com/ewels/hemnet-commuter</a>.
-      </footer>
+
+      <!-- COMMUTE SETTINGS -->
+      <div ng-show="sidebar == 'commute'" class="pt-3">
+        <h3 class="text-success">
+          <i class="fa fa-bus mr-2"></i> Commute settings
+          <button ng-click="add_commute_location()" class="btn btn-sm btn-link text-muted" style="font-size: .7rem;">[add place]</button>
+        </h3>
+        <div class="form-row mb-2" ng-repeat="(commute_id, commute) in commute_locations">
+          <div class="col-auto">
+            <button ng-click="delete_commute_address(commute_id)" class="btn btn-sm btn-link text-muted border"><i class="fa fa-trash" aria-hidden="true"></i></button>
+          </div>
+          <div class="col">
+            <p ng-bind="commute.address" class="small my-1"></p>
+          </div>
+          <div class="col-3">
+            <input type="time" class="form-control form-control-sm" placeholder="hh:mm" ng-model="commute.max_time" ng-change="update_commute_time(commute_id)" ng-model-options="{updateOn: 'blur'}">
+          </div>
+        </div>
+        <p class="small text-muted my-0">Time is max commute time, hh:mm</p>
+      </div>
+
+      <!-- MAP SETTINGS -->
+      <div ng-show="sidebar == 'map'" class="pt-3">
+        <h3 class="text-success">
+          <i class="fa fa-map-marker"></i> Map settings
+        </h3>
+
+        <h6 class="mt-4">Map Markers</h6>
+        <div class="form-row py-2 small">
+          <div class="col-2 my-1">
+            <label for="map_settings_marker_colour_icon">Colour + Icon:</label>
+          </div>
+          <div class="col-10">
+            <select id="map_settings_marker_colour_icon" ng-model="map_settings.marker_colour_icon" ng-change="update_marker_col_icon()" class="custom-select custom-select-sm">
+              <optgroup ng-repeat="(key,options) in map_setting_selects.marker_colour_icon" label="{{key}}">
+                <option ng-repeat="(val, txt) in options" value="{{val}}">{{txt}}</option>
+              </optgroup>
+            </select>
+          </div>
+        </div>
+        <div class="form-row border-top py-2 small">
+          <div class="col-2 my-1">
+            <label for="map_settings_marker_colour">Colour:</label>
+          </div>
+          <div class="col-10">
+            <select id="map_settings_marker_colour" ng-model="map_settings.marker_colour" ng-change="update_markers()" class="custom-select custom-select-sm">
+              <optgroup ng-repeat="(key,options) in map_setting_selects.marker_colour" label="{{key}}">
+                <option ng-repeat="(val, txt) in options" value="{{val}}">{{txt}}</option>
+              </optgroup>
+            </select>
+          </div>
+        </div>
+        <div class="form-row py-2 border-top small">
+          <div class="col-2 my-1">
+            <label for="map_settings_marker_icon">Icon:</label>
+          </div>
+          <div class="col-10">
+            <select id="map_settings_marker_icon" ng-model="map_settings.marker_icon" ng-change="update_markers()" class="custom-select custom-select-sm">
+              <optgroup ng-repeat="(key,options) in map_setting_selects.marker_icon" label="{{key}}">
+                <option ng-repeat="(val, txt) in options" value="{{val}}">{{txt}}</option>
+              </optgroup>
+            </select>
+          </div>
+        </div>
+      </div>
     </div>
   </div>
 
