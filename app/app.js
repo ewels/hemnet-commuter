@@ -11,7 +11,6 @@ var app = angular.module("hemnetCommuterApp", ['ui-leaflet']);
 app.controller("hemnetCommuterController", ['$scope', '$compile', '$http', '$timeout', function ($scope, $compile, $http, $timeout) {
 
   // Filters
-  $scope.show_recent_ratings = false;
   $scope.filters = {
     hide_ratings: {},
     kommande: "0",
@@ -221,6 +220,11 @@ app.controller("hemnetCommuterController", ['$scope', '$compile', '$http', '$tim
     },
     controls: {
       custom: [
+        new L.Control.HncBtn({
+          'ngclick': `sidebar = sidebar == 'recent_ratings' ? false : 'recent_ratings'; update_recent_ratings();`,
+          'ngclass': `sidebar == 'recent_ratings' ? 'btn-info' : 'btn-outline-info'`,
+          'icon_class': 'fa-clock-o'
+        }),
         new L.Control.HncBtn({
           'ngclick': `sidebar = sidebar == 'filters' ? false : 'filters'`,
           'ngclass': `sidebar == 'filters' ? 'btn-secondary' : 'btn-outline-secondary'`,
@@ -790,14 +794,6 @@ app.controller("hemnetCommuterController", ['$scope', '$compile', '$http', '$tim
   }
 
   // Show recent ratings
-  $scope.show_recent_ratings_btn = function () {
-    // Already open - close and return
-    if ($scope.show_recent_ratings) {
-      $scope.show_recent_ratings = false;
-      return;
-    }
-    $scope.update_recent_ratings();
-  }
   $scope.update_recent_ratings = function () {
     // Fetch latest and display
     var post_data = {};
@@ -807,7 +803,6 @@ app.controller("hemnetCommuterController", ['$scope', '$compile', '$http', '$tim
     $http.post("api/ratings.php?recent", JSON.stringify(post_data)).then(function (response) {
       console.log(response.data);
       $scope.recent_ratings = response.data.results;
-      $scope.show_recent_ratings = true;
     });
   }
   $scope.recent_ratings_click = function (house_id) {
