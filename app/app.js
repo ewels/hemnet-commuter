@@ -181,15 +181,15 @@ app.controller("hemnetCommuterController", ['$scope', '$compile', '$http', '$tim
   // Build custom leaflet buttons for map settings
   L.Control.HncBtn = L.Control.extend({
     options: {
+      title: '',
       ngclick: '',
       ngclass: '',
       icon_class: ''
     },
     onAdd: function (map) {
       opts = this.options;
-      $scope.sidebar
       var btn_link = `<div class="rounded shadow" style="background-color:white;">
-        <button ng-click="${opts.ngclick}" ng-class="${opts.ngclass}" class="btn px-2">
+        <button ng-click="${opts.ngclick}" ng-class="${opts.ngclass}" class="btn px-2" title="${opts.title}">
           <i class="fa fa-fw ${opts.icon_class}"></i>
         </button>
       </div>`;
@@ -221,21 +221,25 @@ app.controller("hemnetCommuterController", ['$scope', '$compile', '$http', '$tim
     controls: {
       custom: [
         new L.Control.HncBtn({
+          'title': 'Recent Ratings',
           'ngclick': `sidebar = sidebar == 'recent_ratings' ? false : 'recent_ratings'; update_recent_ratings();`,
           'ngclass': `sidebar == 'recent_ratings' ? 'btn-success' : 'btn-outline-success'`,
           'icon_class': 'fa-clock-o'
         }),
         new L.Control.HncBtn({
+          'title': 'Filters',
           'ngclick': `sidebar = sidebar == 'filters' ? false : 'filters'`,
           'ngclass': `sidebar == 'filters' ? 'btn-secondary' : 'btn-outline-secondary'`,
           'icon_class': 'fa-filter'
         }),
         new L.Control.HncBtn({
+          'title': 'Commutes',
           'ngclick': `sidebar = sidebar == 'commute' ? false : 'commute'`,
           'ngclass': `sidebar == 'commute' ? 'btn-primary' : 'btn-outline-primary'`,
           'icon_class': 'fa-bus'
         }),
         new L.Control.HncBtn({
+          'title': 'Map Settings',
           'ngclick': `sidebar = sidebar == 'map' ? false : 'map'`,
           'ngclass': `sidebar == 'map' ? 'btn-info' : 'btn-outline-info'`,
           'icon_class': 'fa-map-marker'
