@@ -177,6 +177,7 @@ app.controller("hemnetCommuterController", ['$scope', '$compile', '$http', '$tim
   $scope.commute_map_call_active = false;
   $scope.hemnet_results_updating = false;
   $scope.hemnet_results_update_btn_text = 'Update';
+  $scope.active_house_carousel = [];
 
   // Build custom leaflet buttons for map settings
   L.Control.HncBtn = L.Control.extend({
@@ -644,7 +645,65 @@ app.controller("hemnetCommuterController", ['$scope', '$compile', '$http', '$tim
     if (args.model.id !== undefined) {
       $scope.active_id = args.model.id;
       $scope.active_house = $scope.results[$scope.active_id];
+      $scope.active_house_carousel = [];
+      $scope.active_house.maklare_url = false;
       console.log("House clicked:", $scope.active_house);
+      // Fetch the images for the carousel and the mäklare URL
+      var graphQL_query = `
+      query imagesForListing($id: ID!) {
+        listing(id: $id) {
+          id
+          brokerAgency {
+            name
+          }
+          ... on ActivePropertyListing {
+            isForeclosure
+            listingBrokerGalleryUrl
+            images(limit: 500) {
+              images {
+                fullscreenUrl: url(format: WIDTH1024)
+                labels
+              }
+            }
+          }
+          ... on ProjectUnit {
+            isForeclosure
+            listingBrokerGalleryUrl
+            images(limit: 500) {
+              images {
+                fullscreenUrl: url(format: WIDTH1024)
+                labels
+              }
+            }
+          }
+        }
+      }`;
+      var req = {
+        method: 'POST',
+        url: 'https://www.hemnet.se/graphql',
+        headers: {
+          'Accept': '*/*',
+          'Content-Type': 'application/json'
+        },
+        data: {
+          "operationName": "imagesForListing",
+          "query": graphQL_query,
+          "variables": { "id": $scope.active_id }
+        }
+      }
+      $http(req).then(function (response) {
+        if (response.status != 200) {
+          console.error("Could not fetch house listing images with Hemnet GraphQL query!");
+          console.log(response);
+          return;
+        }
+        $scope.active_house.maklare_url = response.data.data.listing.listingBrokerGalleryUrl;
+        var idx = 0;
+        angular.forEach(response.data.data.listing.images.images, function (img) {
+          $scope.active_house_carousel.push({ image: img.fullscreenUrl, id: idx });
+          idx++;
+        });
+      });
     }
   });
 

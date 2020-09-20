@@ -75,16 +75,35 @@
 
         <!-- ACTIVE HOUSE DETAILS -->
         <div ng-hide="active_id == false" class="pt-3 mt-3 border-top">
-          <h3><a ng-href="{{active_house.url}}" target="_blank"><span ng-bind="active_house.address"></span> <i class="fa fa-external-link" aria-hidden="true"></i></a></h3>
           <h3>
-            <span class="badge" ng-class="{'badge-success': active_house.price < 4000000, 'badge-primary': active_house.price > 4000000 && active_house.price < 5700000, 'badge-danger': active_house.price > 5700000}">
-              <span ng-bind="active_house.price / 1000000 | number:3"></span> MKr</span>
-            <span class="float-right small mt-2">
-              <span ng-show="active_house.upcoming == 1" class="badge badge-success"><i class="fa fa-bolt mr-2" aria-hidden="true"></i>Kommande</span>
-              <span ng-show="active_house.ongoing_bidding == 1" class="badge badge-info" style="background-color: #67458c;"><i class="fa fa-gavel mr-2" aria-hidden="true"></i> Budgivning pågår</span>
+            <span ng-bind="active_house.address"></span>
+            <span class="float-right">
+              <span class="badge" ng-class="{'badge-success': active_house.price < 4000000, 'badge-primary': active_house.price > 4000000 && active_house.price < 5700000, 'badge-danger': active_house.price > 5700000}">
+                <span ng-bind="active_house.price / 1000000 | number:3"></span> MKr
+              </span>
             </span>
           </h3>
-          <img ng-src="{{active_house.image_url}}" class="w-100 my-2">
+          <h4 ng-show="active_house.new_construction == 1 || active_house.upcoming == 1 || active_house.ongoing_bidding == 1">
+            <span ng-show="active_house.new_construction == 1" class="badge badge-light border text-secondary"><i class="fa fa-certificate mr-2" aria-hidden="true"></i>Nyproduktion</span>
+            <span ng-show="active_house.upcoming == 1" class="badge badge-success"><i class="fa fa-bolt mr-2" aria-hidden="true"></i>Kommande</span>
+            <span ng-show="active_house.ongoing_bidding == 1" class="badge badge-info" style="background-color: #67458c;"><i class="fa fa-gavel mr-2" aria-hidden="true"></i> Budgivning pågår</span>
+          </h4>
+
+          <div class="form-row mb-3">
+            <div class="col-6"><a ng-href="{{active_house.url}}" target="_blank" class="btn btn-block btn-primary"><i class="fa fa-home mr-2"></i> Hemnet</a></div>
+            <div class="col-6"><a ng-href="{{active_house.maklare_url}}" ng-disabled="!active_house.maklare_url" target="_blank" class="btn btn-block btn-success"><i class="fa fa-bookmark mr-2" id="commute_icon"></i> Mäklare</a></div>
+          </div>
+
+          <!-- IMAGES. Show single image from saved-search crawl first, then carousel if GraphQL query succeeds on selection of active house -->
+          <div class="text-center">
+            <img ng-show="active_house_carousel.length == 0" ng-src="{{active_house.image_url}}" class="my-2 mx-auto" style="max-height: 300px;">
+          </div>
+          <div ng-show="active_house_carousel.length > 0" uib-carousel active="0" no-transition="true" class="mb-3">
+            <div uib-slide ng-repeat="slide in active_house_carousel track by slide.id" index="slide.id">
+              <img ng-src="{{slide.image}}" class="m-auto" style="max-height: 300px;">
+            </div>
+          </div>
+
           <table class="table table-sm small table-hover">
             <tr>
               <th width="50%">Location:</th>
