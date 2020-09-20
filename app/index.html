@@ -197,7 +197,7 @@
               <td><span ng-bind="active_house.tenure"></span></td>
             </tr>
           </table>
-        
+
           <div class="row my-5 house_ratings">
             <div ng-repeat="(user_id, user_name) in users" class="col-6">
               <h5>{{ user_name }}</h5>
@@ -324,8 +324,8 @@
       <div ng-show="sidebar == 'commute'" class="pt-3">
         <h3 class="text-success">
           <i class="fa fa-bus mr-2"></i> Commute settings
-          <button ng-click="add_commute_location()" class="btn btn-sm btn-link text-muted" style="font-size: .7rem;">[add place]</button>
         </h3>
+        <button ng-click="add_commute_location()" class="my-3 btn btn-sm btn-secondary">Add new location</button>
         <div class="form-row mb-2" ng-repeat="(commute_id, commute) in commute_locations">
           <div class="col-auto">
             <button ng-click="delete_commute_address(commute_id)" class="btn btn-sm btn-link text-muted border"><i class="fa fa-trash" aria-hidden="true"></i></button>
