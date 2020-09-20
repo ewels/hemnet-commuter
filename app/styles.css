@@ -23,27 +23,6 @@ h2, h3, h4, h5, h6 {
 .btn {
   font-family: 'Open Sans', sans-serif;
 }
-.btn-primary {
-  background-color: #39aa35;
-  border-color: #00b100;
-}
-.btn-outline-primary {
-  color: #39aa35;
-  border-color: #39aa35;
-}
-.btn-primary:hover, .btn-primary:active,
-.btn-outline-primary:hover, .btn-outline-primary:active {
-  background-color: #39aa35;
-  border-color: #39aa35;
-}
-.btn-primary:focus, .btn-outline-primary:focus {
-  -webkit-box-shadow: 0 0 0 2px rgba(57, 170, 53, 0.5);
-  box-shadow: 0 0 0 2px rgba(57, 170, 53, 0.5);
-}
-.btn-primary:disabled {
-  background-color: rgba(57, 170, 53, 0.7);
-  border-color: rgba(0, 177, 0, 0.5);
-}
 
 footer {
   margin-top: 60px;

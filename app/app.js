@@ -222,7 +222,7 @@ app.controller("hemnetCommuterController", ['$scope', '$compile', '$http', '$tim
       custom: [
         new L.Control.HncBtn({
           'ngclick': `sidebar = sidebar == 'recent_ratings' ? false : 'recent_ratings'; update_recent_ratings();`,
-          'ngclass': `sidebar == 'recent_ratings' ? 'btn-info' : 'btn-outline-info'`,
+          'ngclass': `sidebar == 'recent_ratings' ? 'btn-success' : 'btn-outline-success'`,
           'icon_class': 'fa-clock-o'
         }),
         new L.Control.HncBtn({
@@ -232,7 +232,7 @@ app.controller("hemnetCommuterController", ['$scope', '$compile', '$http', '$tim
         }),
         new L.Control.HncBtn({
           'ngclick': `sidebar = sidebar == 'commute' ? false : 'commute'`,
-          'ngclass': `sidebar == 'commute' ? 'btn-success' : 'btn-outline-success'`,
+          'ngclass': `sidebar == 'commute' ? 'btn-primary' : 'btn-outline-primary'`,
           'icon_class': 'fa-bus'
         }),
         new L.Control.HncBtn({
