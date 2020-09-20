@@ -7,7 +7,7 @@
  * Hemnet Commuter AngularJS code
  */
 
-var app = angular.module("hemnetCommuterApp", ['ui-leaflet']);
+var app = angular.module("hemnetCommuterApp", ['ui-leaflet', 'ngAnimate', 'ngTouch', 'ui.bootstrap']);
 app.controller("hemnetCommuterController", ['$scope', '$compile', '$http', '$timeout', function ($scope, $compile, $http, $timeout) {
 
   // Filters
@@ -189,7 +189,7 @@ app.controller("hemnetCommuterController", ['$scope', '$compile', '$http', '$tim
     onAdd: function (map) {
       opts = this.options;
       var btn_link = `<div class="rounded shadow" style="background-color:white;">
-        <button ng-click="${opts.ngclick}" ng-class="${opts.ngclass}" class="btn px-2" title="${opts.title}">
+        <button ng-click="${opts.ngclick}" ng-class="${opts.ngclass}" class="btn px-2" title="${opts.title}" uib-tooltip="${opts.title}" tooltip-placement="left">
           <i class="fa fa-fw ${opts.icon_class}"></i>
         </button>
       </div>`;

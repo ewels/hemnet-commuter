@@ -23,6 +23,7 @@ h2, h3, h4, h5, h6 {
 .btn {
   font-family: 'Open Sans', sans-serif;
 }
+.nav, .pagination, .carousel, .panel-title a { cursor: pointer; }
 
 footer {
   margin-top: 60px;
