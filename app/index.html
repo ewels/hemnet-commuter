@@ -75,7 +75,7 @@
 
         <!-- ACTIVE HOUSE DETAILS -->
         <div ng-hide="active_id == false" class="pt-3 mt-3 border-top">
-          <h3>
+          <h3 class="mb-4">
             <span ng-bind="active_house.address"></span>
             <span class="float-right">
               <span class="badge" ng-class="{'badge-success': active_house.price < 4000000, 'badge-primary': active_house.price > 4000000 && active_house.price < 5700000, 'badge-danger': active_house.price > 5700000}">
@@ -89,13 +89,27 @@
             <span ng-show="active_house.ongoing_bidding == 1" class="badge badge-info" style="background-color: #67458c;"><i class="fa fa-gavel mr-2" aria-hidden="true"></i> Budgivning pågår</span>
           </h4>
 
+          <!-- Buttons - first row -->
           <div class="form-row mb-3">
             <div class="col-4"><a ng-href="{{active_house.url}}" target="_blank" class="btn btn-block btn-primary"><i class="fa fa-home mr-2"></i> Hemnet</a></div>
             <div class="col-4"><a ng-href="{{active_house.maklare_url}}" ng-disabled="!active_house.maklare_url" target="_blank" class="btn btn-block btn-success"><i class="fa fa-bookmark mr-2" id="commute_icon"></i> Mäklare</a></div>
             <div class="col-4"><button ng-disabled="!planritning_idx" ng-click="carousel_idx = planritning_idx" class="btn btn-block btn-outline-secondary">
               <img style="width:20px;" class="mr-2" src="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzEiIGhlaWdodD0iMjQiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PHRpdGxlPlBsYW5yaXRuaW5nPC90aXRsZT48cGF0aCBkPSJNMjkgMGEyIDIgMCAwMTIgMnYyMGEyIDIgMCAwMS0yIDJIMmEyIDIgMCAwMS0yLTJWMmEyIDIgMCAwMTItMmgyN3pNMTEuNzEgMjJINS45OTlMNiAyNGg3LjVsLS4wMDEtLjE4NC0uMDE0LjAxNUwxMS43MSAyMnpNMjkgMkgydjIwaDRsNS43MDktLjAwMS01LjE2My01LjMyNyAxLjM3LTEuNDE1TDE0LjQ1MSAyMkgyOXYtOGgtOS42MjV2NGgtMS45Mzh2LTZIMjlWMnptLTkuNjI1IDB2OGgtMS45MzhWMmgxLjkzOHoiIGZpbGw9IiMzMzMiIGZpbGwtcnVsZT0iZXZlbm9kZCIvPjwvc3ZnPg==" alt="">
-              Planritning
+              Plan
             </button></div>
+          </div>
+
+          <!-- Buttons - second row -->
+          <div class="form-row mb-3">
+            <div class="col-4"><a ng-href="https://www.google.com/maps?q={{active_house.lat}},{{active_house.lng}}" target="_blank" class="btn btn-sm btn-block btn-outline-primary">
+              <small><i class="fa fa-google mr-2"></i> Google Maps</a></small>
+            </div>
+            <div class="col-4"><a ng-href="http://maps.apple.com/?ll={{active_house.lat}},{{active_house.lng}}&z=19&q={{active_house.address}}" target="_blank" class="btn btn-sm btn-block btn-outline-dark">
+              <small><i class="fa fa-apple mr-2"></i> Apple Maps</a></small>
+            </div>
+            <div class="col-4"><a ng-href="api/link_lantmateriet.php?lat={{active_house.lat}}&lng={{active_house.lng}}&z=14" target="_blank" class="btn btn-sm btn-block btn-outline-danger">
+              <small><i class="fa fa-compass mr-2"></i> Lantmäteriet</a></small>
+            </div>
           </div>
 
           <!-- IMAGE SLIDER -->
@@ -143,18 +157,10 @@
               <th>Driftkostnad:</th>
               <td><span ng-bind="active_house.driftkostnad | number:0"></span> kr/year <small>( <span ng-bind="active_house.driftkostnad / 12 | number:0"></span> kr/month)</small></td>
             </tr>
-            <tr>
-              <th>Location</th>
-              <td>
-                <a ng-href="https://www.google.com/maps?q={{active_house.lat}},{{active_house.lng}}" target="_blank" class="badge badge-info">
-                  <i class="fa fa-map-marker" aria-hidden="true"></i> Google maps &nbsp; <i class="fa fa-external-link" aria-hidden="true"></i>
-                </a>
-              </td>
-            </tr>
             <tr ng-repeat="(commute_id, commute) in commute_locations">
               <th ng-bind="commute.address"></th>
               <td>
-                <a ng-href="https://www.google.se/maps/preview?daddr={{active_house.lat}},{{active_house.lng}}&saddr={{commute.lat}},{{commute.lng}}&dirflg=r" target="_blank" ng-class="['badge', {'badge-success': active_house.commute_times[commute_id].pass_threshold, 'badge-danger': !active_house.commute_times[commute_id].pass_threshold}]">
+                <a ng-href="https://www.google.se/maps/preview?saddr={{active_house.lat}},{{active_house.lng}}&daddr={{commute.lat}},{{commute.lng}}&dirflg=r" target="_blank" ng-class="['badge', {'badge-success': active_house.commute_times[commute_id].pass_threshold, 'badge-danger': !active_house.commute_times[commute_id].pass_threshold}]">
                   <span ng-if="active_house.commute_times[commute_id].status == 'OK'">{{active_house.commute_times[commute_id].duration_text}}</span>
                   <span ng-if="active_house.commute_times[commute_id].status != 'OK'">{{active_house.commute_times[commute_id].status}}</span>
                   &nbsp; <i class="fa fa-external-link" aria-hidden="true"></i>

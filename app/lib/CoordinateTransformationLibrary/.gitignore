@@ -1,0 +1,7 @@
+/nbproject
+/build
+/bin
+/test/simpletest
+*.class
+.project
+.classpath
