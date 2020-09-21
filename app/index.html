@@ -83,7 +83,7 @@
               </span>
             </span>
           </h3>
-          <h4 ng-show="active_house.new_construction == 1 || active_house.upcoming == 1 || active_house.ongoing_bidding == 1">
+          <h4 ng-show="active_house.new_construction == 1 || active_house.upcoming == 1 || active_house.ongoing_bidding == 1" class="clearfix">
             <span ng-show="active_house.new_construction == 1" class="badge badge-light border text-secondary"><i class="fa fa-certificate mr-2" aria-hidden="true"></i>Nyproduktion</span>
             <span ng-show="active_house.upcoming == 1" class="badge badge-success"><i class="fa fa-bolt mr-2" aria-hidden="true"></i>Kommande</span>
             <span ng-show="active_house.ongoing_bidding == 1" class="badge badge-info" style="background-color: #67458c;"><i class="fa fa-gavel mr-2" aria-hidden="true"></i> Budgivning pågår</span>
@@ -91,24 +91,32 @@
 
           <!-- Buttons - first row -->
           <div class="form-row mb-3">
-            <div class="col-4"><a ng-href="{{active_house.url}}" target="_blank" class="btn btn-block btn-primary"><i class="fa fa-home mr-2"></i> Hemnet</a></div>
-            <div class="col-4"><a ng-href="{{active_house.maklare_url}}" ng-disabled="!active_house.maklare_url" target="_blank" class="btn btn-block btn-success"><i class="fa fa-bookmark mr-2" id="commute_icon"></i> Mäklare</a></div>
-            <div class="col-4"><button ng-disabled="!planritning_idx" ng-click="carousel_idx = planritning_idx" class="btn btn-block btn-outline-secondary">
+            <div class="col-4"><a ng-href="{{active_house.url}}" target="_blank" class="btn btn-block btn-primary" style="white-space: nowrap; overflow: hidden;">
+              <i class="fa fa-home mr-2"></i> Hemnet
+            </a></div>
+            <div class="col-4"><a ng-href="{{active_house.maklare_url}}" ng-disabled="!active_house.maklare_url" target="_blank" class="btn btn-block btn-success" style="white-space: nowrap; overflow: hidden;">
+              <i class="fa fa-bookmark mr-2" id="commute_icon"></i> Mäklare
+            </a></div>
+            <div class="col-4"><button ng-disabled="!planritning_idx" ng-click="carousel_idx = planritning_idx" class="btn btn-block btn-outline-secondary" style="white-space: nowrap; overflow: hidden;">
               <img style="width:20px;" class="mr-2" src="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzEiIGhlaWdodD0iMjQiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PHRpdGxlPlBsYW5yaXRuaW5nPC90aXRsZT48cGF0aCBkPSJNMjkgMGEyIDIgMCAwMTIgMnYyMGEyIDIgMCAwMS0yIDJIMmEyIDIgMCAwMS0yLTJWMmEyIDIgMCAwMTItMmgyN3pNMTEuNzEgMjJINS45OTlMNiAyNGg3LjVsLS4wMDEtLjE4NC0uMDE0LjAxNUwxMS43MSAyMnpNMjkgMkgydjIwaDRsNS43MDktLjAwMS01LjE2My01LjMyNyAxLjM3LTEuNDE1TDE0LjQ1MSAyMkgyOXYtOGgtOS42MjV2NGgtMS45Mzh2LTZIMjlWMnptLTkuNjI1IDB2OGgtMS45MzhWMmgxLjkzOHoiIGZpbGw9IiMzMzMiIGZpbGwtcnVsZT0iZXZlbm9kZCIvPjwvc3ZnPg==" alt="">
-              Plan
+              Planritning
             </button></div>
           </div>
 
-          <!-- Buttons - second row -->
+          <!-- Buttons - maps -->
           <div class="form-row mb-3">
-            <div class="col-4"><a ng-href="https://www.google.com/maps?q={{active_house.lat}},{{active_house.lng}}" target="_blank" class="btn btn-sm btn-block btn-outline-primary">
-              <small><i class="fa fa-google mr-2"></i> Google Maps</a></small>
+            <!-- Have to use the old style URLs to get satellite + a marker -->
+            <div class="col-3"><a ng-href="http://maps.google.com/maps?t=k&q=loc:{{active_house.lat}}+{{active_house.lng}}&z=23" target="_blank" class="btn btn-sm btn-block btn-outline-primary" style="overflow:hidden;">
+              <small style="white-space: nowrap;"><i class="fa fa-google mr-1"></i> Maps</a></small>
             </div>
-            <div class="col-4"><a ng-href="http://maps.apple.com/?ll={{active_house.lat}},{{active_house.lng}}&z=19&q={{active_house.address}}" target="_blank" class="btn btn-sm btn-block btn-outline-dark">
-              <small><i class="fa fa-apple mr-2"></i> Apple Maps</a></small>
+            <div class="col-3"><a ng-href="http://maps.google.com/maps?layer=c&cbll={{active_house.lat}},{{active_house.lng}}" target="_blank" class="btn btn-sm btn-block btn-outline-info" style="overflow:hidden;">
+              <small style="white-space: nowrap;"><i class="fa fa-google mr-1"></i> Street View</a></small>
             </div>
-            <div class="col-4"><a ng-href="api/link_lantmateriet.php?lat={{active_house.lat}}&lng={{active_house.lng}}&z=14" target="_blank" class="btn btn-sm btn-block btn-outline-danger">
-              <small><i class="fa fa-compass mr-2"></i> Lantmäteriet</a></small>
+            <div class="col-3"><a ng-href="http://maps.apple.com/?ll={{active_house.lat}},{{active_house.lng}}&z=19&q={{active_house.address}}" target="_blank" class="btn btn-sm btn-block btn-outline-dark" style="overflow:hidden;">
+              <small style="white-space: nowrap;"><i class="fa fa-apple mr-1"></i> Maps</a></small>
+            </div>
+            <div class="col-3"><a ng-href="api/link_lantmateriet.php?lat={{active_house.lat}}&lng={{active_house.lng}}&z=14" target="_blank" class="btn btn-sm btn-block btn-outline-danger" style="overflow:hidden;">
+              <small style="white-space: nowrap;"><i class="fa fa-compass mr-1"></i> Lantmäteriet</a></small>
             </div>
           </div>
 
