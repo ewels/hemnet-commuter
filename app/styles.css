@@ -51,6 +51,11 @@ footer a {
 .carousel .carousel-control-prev-icon {
   filter: brightness(0);
 }
+.carousel-indicators {
+  bottom: -50px;
+}
 .carousel-indicators li {
-  opacity: 0.2;
+  opacity: 0.1;
+  background-color: #000;
+  transition: none;
 }

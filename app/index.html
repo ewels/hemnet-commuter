@@ -90,15 +90,16 @@
           </h4>
 
           <div class="form-row mb-3">
-            <div class="col-6"><a ng-href="{{active_house.url}}" target="_blank" class="btn btn-block btn-primary"><i class="fa fa-home mr-2"></i> Hemnet</a></div>
-            <div class="col-6"><a ng-href="{{active_house.maklare_url}}" ng-disabled="!active_house.maklare_url" target="_blank" class="btn btn-block btn-success"><i class="fa fa-bookmark mr-2" id="commute_icon"></i> Mäklare</a></div>
+            <div class="col-4"><a ng-href="{{active_house.url}}" target="_blank" class="btn btn-block btn-primary"><i class="fa fa-home mr-2"></i> Hemnet</a></div>
+            <div class="col-4"><a ng-href="{{active_house.maklare_url}}" ng-disabled="!active_house.maklare_url" target="_blank" class="btn btn-block btn-success"><i class="fa fa-bookmark mr-2" id="commute_icon"></i> Mäklare</a></div>
+            <div class="col-4"><button ng-disabled="!planritning_idx" ng-click="carousel_idx = planritning_idx" class="btn btn-block btn-outline-secondary">
+              <img style="width:20px;" class="mr-2" src="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzEiIGhlaWdodD0iMjQiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PHRpdGxlPlBsYW5yaXRuaW5nPC90aXRsZT48cGF0aCBkPSJNMjkgMGEyIDIgMCAwMTIgMnYyMGEyIDIgMCAwMS0yIDJIMmEyIDIgMCAwMS0yLTJWMmEyIDIgMCAwMTItMmgyN3pNMTEuNzEgMjJINS45OTlMNiAyNGg3LjVsLS4wMDEtLjE4NC0uMDE0LjAxNUwxMS43MSAyMnpNMjkgMkgydjIwaDRsNS43MDktLjAwMS01LjE2My01LjMyNyAxLjM3LTEuNDE1TDE0LjQ1MSAyMkgyOXYtOGgtOS42MjV2NGgtMS45Mzh2LTZIMjlWMnptLTkuNjI1IDB2OGgtMS45MzhWMmgxLjkzOHoiIGZpbGw9IiMzMzMiIGZpbGwtcnVsZT0iZXZlbm9kZCIvPjwvc3ZnPg==" alt="">
+              Planritning
+            </button></div>
           </div>
 
-          <!-- IMAGES. Show single image from saved-search crawl first, then carousel if GraphQL query succeeds on selection of active house -->
-          <div class="text-center">
-            <img ng-show="active_house_carousel.length == 0" ng-src="{{active_house.image_url}}" class="my-2 mx-auto" style="max-height: 300px;">
-          </div>
-          <div ng-show="active_house_carousel.length > 0" uib-carousel active="0" no-transition="true" class="mb-3">
+          <!-- IMAGE SLIDER -->
+          <div uib-carousel no-transition="true" active="carousel_idx" class="mb-5">
             <div uib-slide ng-repeat="slide in active_house_carousel track by slide.id" index="slide.id">
               <img ng-src="{{slide.image}}" class="m-auto" style="max-height: 300px;">
             </div>
