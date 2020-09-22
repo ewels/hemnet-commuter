@@ -7,8 +7,20 @@
  * Hemnet Commuter AngularJS code
  */
 
-var app = angular.module("hemnetCommuterApp", ['ui-leaflet', 'ngAnimate', 'ngTouch', 'ui.bootstrap']);
-app.controller("hemnetCommuterController", ['$scope', '$compile', '$http', '$timeout', function ($scope, $compile, $http, $timeout) {
+var app = angular.module("hemnetCommuterApp", ['ui-leaflet', 'ngCookies', 'ngAnimate', 'ngTouch', 'ui.bootstrap']);
+app.controller("hemnetCommuterController", ['$scope', '$compile', '$http', '$timeout', '$cookies', function ($scope, $compile, $http, $timeout, $cookies) {
+
+  // Saved search credentials
+  $scope.saved_searches = [];
+  $scope.update_saved_searches = false;
+  $scope.hemnet_api_key = false;
+  $scope.hemnet_email = '';
+  $scope.hemnet_password = '';
+  $scope.hemnet_saved_searches = [];
+  $scope.saved_search_selected = [];
+  if ($cookies.get('hc_hemnet_api_key')) {
+    $scope.hemnet_api_key = $cookies.get('hc_hemnet_api_key');
+  }
 
   // Filters
   $scope.filters = {
@@ -230,6 +242,12 @@ app.controller("hemnetCommuterController", ['$scope', '$compile', '$http', '$tim
           'icon_class': 'fa-clock-o'
         }),
         new L.Control.HncBtn({
+          'title': 'Map Settings',
+          'ngclick': `sidebar = sidebar == 'map' ? false : 'map'`,
+          'ngclass': `sidebar == 'map' ? 'btn-info' : 'btn-outline-info'`,
+          'icon_class': 'fa-map-marker'
+        }),
+        new L.Control.HncBtn({
           'title': 'Filters',
           'ngclick': `sidebar = sidebar == 'filters' ? false : 'filters'`,
           'ngclass': `sidebar == 'filters' ? 'btn-secondary' : 'btn-outline-secondary'`,
@@ -240,12 +258,6 @@ app.controller("hemnetCommuterController", ['$scope', '$compile', '$http', '$tim
           'ngclick': `sidebar = sidebar == 'commute' ? false : 'commute'`,
           'ngclass': `sidebar == 'commute' ? 'btn-primary' : 'btn-outline-primary'`,
           'icon_class': 'fa-bus'
-        }),
-        new L.Control.HncBtn({
-          'title': 'Map Settings',
-          'ngclick': `sidebar = sidebar == 'map' ? false : 'map'`,
-          'ngclass': `sidebar == 'map' ? 'btn-info' : 'btn-outline-info'`,
-          'icon_class': 'fa-map-marker'
         }),
       ]
     }
@@ -885,5 +897,205 @@ app.controller("hemnetCommuterController", ['$scope', '$compile', '$http', '$tim
     $scope.active_house = $scope.results[house_id];
     $scope.markers[house_id].focus = true;
   }
+
+  // Sign in to Hemnet
+  $scope.hemnet_signin = function () {
+    if ($scope.hemnet_email.length == 0 || $scope.hemnet_password.length == 0) {
+      return;
+    }
+    var req = {
+      method: 'POST',
+      url: 'https://www.hemnet.se/graphql',
+      headers: {
+        'Accept': '*/*',
+        'Content-Type': 'application/json'
+      },
+      data: {
+        "query": `mutation iOSAuthenticateUser($email: String!, $password: String!) {
+                    authenticateUser(email: $email, password: $password) {
+                      apiToken
+                      errors {
+                        type
+                        message
+                      }
+                    }
+                  }`,
+        "variables": {
+          "email": $scope.hemnet_email,
+          "password": $scope.hemnet_password
+        }
+      }
+    }
+    $http(req).then(function (response) {
+      $scope.hemnet_password = '';
+      if (response.status != 200) {
+        alert("Could not log in to Hemnet with Hemnet GraphQL query!");
+        console.error(response);
+        return;
+      }
+      if (response.data.data.authenticateUser.errors.length > 0) {
+        alert("Could not log in to Hemnet: " + response.data.data.authenticateUser.errors[0].message);
+        console.error(response.data.data.authenticateUser);
+        return;
+      }
+      $scope.hemnet_api_key = response.data.data.authenticateUser.apiToken;
+      $cookies.put('hc_hemnet_api_key', $scope.hemnet_api_key);
+      $scope.hemnet_fetch_saved_searches();
+    });
+  }
+
+  // Fetch Hemnet saved search details
+  $scope.hemnet_fetch_saved_searches = function () {
+    if (!$scope.hemnet_api_key) {
+      return;
+    }
+    var req = {
+      method: 'POST',
+      url: 'https://www.hemnet.se/graphql',
+      headers: {
+        'Accept': '*/*',
+        'Content-Type': 'application/json',
+        'hemnet-token': $scope.hemnet_api_key
+      },
+      data: {
+        "query": `query iOSSavedSearchesQuery($limit: Int!, $offset: Int!) {
+                    me {
+                    legacySavedSearches(limit: $limit, offset: $offset) {
+                      total
+                      limit
+                      offset
+                      savedSearches {
+                          totalListings
+                          name
+                          id
+                          search {
+                            ...ListingSearchFragment
+                          }
+                        }
+                      }
+                    }
+                  }
+
+                  fragment BoundingBoxFragment on BoundingBox {
+                    northEast {
+                      ...GeometryPointFragment
+                    }
+                    southWest {
+                      ...GeometryPointFragment
+                    }
+                  }
+
+                  fragment GeometryPointFragment on GeometryPoint {
+                    lat
+                    long
+                  }
+
+                  fragment ListingSearchFragment on ListingSearch {
+                    boundingBox {
+                      ...BoundingBoxFragment
+                    }
+                    openHouseWithin
+                    housingFormGroups
+                    locations {
+                      fullName
+                      id
+                      type
+                    }
+                    biddingStarted
+                    keywords
+                    geometries
+                    coastlineDistanceMax
+                    coastlineDistanceMin
+                    constructionYearMax
+                    constructionYearMin
+                    feeMax
+                    feeMin
+                    landAreaMax
+                    landAreaMin
+                    livingAreaMax
+                    livingAreaMin
+                    priceMax
+                    priceMin
+                    roomsMax
+                    roomsMin
+                    squareMeterPriceMax
+                    squareMeterPriceMin
+                    waterDistanceMax
+                    waterDistanceMin
+                    upcoming
+                    newConstruction
+                    deactivatedBeforeOpenHouse
+                    publishedSince
+                  }`,
+        "variables": {
+          "limit": 40,
+          "offset": 0
+        }
+      }
+    }
+    $http(req).then(function (response) {
+      if (response.status != 200) {
+        alert("Could not fetch Hemnet saved searches!");
+        console.error(response);
+        return;
+      }
+      $scope.hemnet_saved_searches = response.data.data.me.legacySavedSearches.savedSearches;
+      $scope.saved_search_selected = [];
+      angular.forEach($scope.hemnet_saved_searches, function (saved_search) {
+        $scope.saved_search_selected['search_' + saved_search.id] = true;
+      });
+    });
+  }
+
+  // Save the search data from Hemnet to our database
+  $scope.save_saved_searches = function () {
+
+    $scope.saved_searches = [];
+    angular.forEach($scope.hemnet_saved_searches, function (saved_search) {
+      if ($scope.saved_search_selected['search_' + saved_search.id]) {
+        $scope.saved_searches.push(saved_search);
+      }
+    });
+
+    $http.post("api/saved_searches.php", { 'savedSearches': $scope.saved_searches }).then(function (response) {
+      // Check it worked
+      if (response.data.status != 'success') {
+        if (response.data.msg) {
+          $scope.error_msg = response.data.msg;
+        } else {
+          $scope.error_msg = "Something went wrong saving the searches! Please check the PHP logs.";
+        }
+        console.log(response.data);
+        return;
+      }
+
+      // Trigger an update for the hemnet results
+      $scope.needs_update = true;
+      $scope.update_hemnet_results();
+
+      $scope.update_saved_searches = false;
+    });
+  }
+
+  // Fetch search data from our database
+  $scope.fetch_saved_searches = function () {
+    $scope.saved_searches = [];
+    $http.get("api/saved_searches.php").then(function (response) {
+      // Check it worked
+      if (response.data.status != 'success') {
+        if (response.data.msg) {
+          $scope.error_msg = response.data.msg;
+        } else {
+          $scope.error_msg = "Something went wrong fetchin the saved searches! Please check the PHP logs.";
+        }
+        console.log(response.data);
+        return;
+      }
+
+      $scope.saved_searches = response.data.saved_searches;
+
+    });
+  }
+  $scope.fetch_saved_searches();
 
 }]);

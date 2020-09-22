@@ -1,13 +1,14 @@
 -- phpMyAdmin SQL Dump
--- version 4.9.0.1
+-- version 5.0.2
 -- https://www.phpmyadmin.net/
 --
--- Host: localhost:23002
--- Generation Time: Sep 07, 2020 at 06:10 PM
--- Server version: 5.7.26
--- PHP Version: 7.3.8
+-- Host: localhost
+-- Generation Time: Sep 22, 2020 at 10:59 PM
+-- Server version: 5.7.30-0ubuntu0.18.04.1-log
+-- PHP Version: 7.4.8
 
 SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";
+START TRANSACTION;
 SET time_zone = "+00:00";
 
 
@@ -17,7 +18,7 @@ SET time_zone = "+00:00";
 /*!40101 SET NAMES utf8mb4 */;
 
 --
--- Database: `hemnet_commuter_cache`
+-- Database: `hemnet_commuter`
 --
 
 -- --------------------------------------------------------
@@ -147,7 +148,9 @@ CREATE TABLE `house_tags` (
 
 CREATE TABLE `saved_searches` (
   `id` int(12) NOT NULL,
-  `search_id` int(12) NOT NULL
+  `search_id` int(12) NOT NULL,
+  `name` varchar(255) NOT NULL,
+  `search` longblob NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 -- --------------------------------------------------------
@@ -294,6 +297,7 @@ ALTER TABLE `tags`
 --
 ALTER TABLE `users`
   MODIFY `id` int(12) NOT NULL AUTO_INCREMENT;
+COMMIT;
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
 /*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */;

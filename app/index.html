@@ -10,6 +10,7 @@
   <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.8.0/angular.min.js"></script>
   <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.8.0/angular-animate.js"></script>
   <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.8.0/angular-touch.js"></script>
+  <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.8.0/angular-cookies.js"></script>
   <!-- Leaflet -->
   <script src="https://unpkg.com/leaflet@1.6.0/dist/leaflet.js"></script>
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.6.0/dist/leaflet.css" />
@@ -55,8 +56,7 @@
           <h4 class="alert-heading">Error</h4>
           <p class="small">{{ error_msg }} </p>
         </div>
-        <button ng-show="needs_update" ng-click="update_hemnet_results()"
-          ng-class="{'disabled': hemnet_results_updating}" class="btn btn-block btn-warning mb-2">
+        <button ng-show="needs_update" ng-click="update_hemnet_results()" ng-class="{'disabled': hemnet_results_updating}" class="btn btn-block btn-warning mb-2">
           <i class="fa fa-refresh mr-2" ng-class="{'fa-spin': hemnet_results_updating}"></i>
           {{ hemnet_results_update_btn_text }}
         </button>
@@ -70,8 +70,7 @@
         </p>
 
         <!-- INFO WHEN NO ACTIVE HOUSE -->
-        <div ng-show="active_id == false" class="text-muted pt-3 mt-3 border-top">Click a house marker on the map to see
-          more information here.</div>
+        <div ng-show="active_id == false" class="text-muted pt-3 mt-3 border-top">Click a house marker on the map to see more information here.</div>
 
         <!-- ACTIVE HOUSE DETAILS -->
         <div ng-hide="active_id == false" class="pt-3 mt-3 border-top">
@@ -418,6 +417,55 @@
             </select>
           </div>
         </div>
+
+        <h6 class="mt-4">Hemnet Saved Searches</h6>
+
+        <div ng-show="!update_saved_searches" class="mb-4">
+          <ul>
+            <li ng-repeat="saved_search in saved_searches"><a href="https://www.hemnet.se/bostader?subscription={{saved_search.search_id}}" target="_blank">{{saved_search.name}}</a></li>
+          </ul>
+          <button ng-click="update_saved_searches = true; hemnet_fetch_saved_searches()" class="btn btn-warning mb-4">Updated saved searches</button>
+        </div>
+
+        <div ng-show="!hemnet_api_key && update_saved_searches" class="mb-4">
+          <p class="small text-muted">To fetch your saved searches from Hemnet, we need you to log in.</p>
+          <div class="form-row py-2 border-top small">
+            <div class="col-2 my-1">
+              <label for="hemnet_email">Email address</label>
+            </div>
+            <div class="col-10">
+              <input type="input" ng-model="hemnet_email" class="form-control" id="hemnet_email">
+            </div>
+          </div>
+          <div class="form-row py-2 border-top border-bottom mb-2 small">
+            <div class="col-2 my-1">
+              <label for="hemnet_password">Password</label>
+            </div>
+            <div class="col-10">
+              <input type="password" ng-model="hemnet_password" class="form-control" id="hemnet_password">
+            </div>
+          </div>
+          <button class="btn btn-success" ng-click="hemnet_signin()">Sign in to Hemnet</button>
+          <p class="small text-muted mt-2">
+            This information is not saved to the database and will be forgotten as soon as you close or refresh this web page.
+            Only the saved search IDs and details are logged in the DB.
+            You need to sign in here and refresh your saved searches each time you update their settings on Hemnet.
+          </p>
+        </div>
+
+        <div ng-show="hemnet_api_key && update_saved_searches" class="mb-4">
+          <p class="small text-muted">Select which saved searches you would like to use. Click update when you're ready.</p>
+          <div ng-repeat="saved_search in hemnet_saved_searches" class="custom-control custom-switch mb-2">
+            <input type="checkbox" ng-model="saved_search_selected['search_'+saved_search.id]" class="custom-control-input" id="{{saved_search.id}}">
+            <label class="custom-control-label" for="{{saved_search.id}}">{{saved_search.name}}</label>
+          </div>
+          <button ng-click="save_saved_searches()" ng-class="{'disabled': hemnet_results_updating}" class="btn btn-block btn-warning mb-2">
+            <i class="fa fa-refresh mr-2" ng-class="{'fa-spin': hemnet_results_updating}"></i>
+            {{ hemnet_results_update_btn_text }}
+          </button>
+        </div>
+
+
       </div>
     </div>
   </div>
