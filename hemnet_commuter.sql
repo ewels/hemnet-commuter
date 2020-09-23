@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: localhost
--- Generation Time: Sep 22, 2020 at 10:59 PM
+-- Generation Time: Sep 24, 2020 at 12:13 AM
 -- Server version: 5.7.30-0ubuntu0.18.04.1-log
 -- PHP Version: 7.4.8
 
@@ -75,29 +75,24 @@ CREATE TABLE `commute_times` (
 
 CREATE TABLE `houses` (
   `id` int(20) NOT NULL,
-  `address` varchar(255) NOT NULL,
-  `location_name` varchar(255) NOT NULL,
-  `typeSummary` varchar(255) NOT NULL,
-  `project` int(1) NOT NULL DEFAULT '0',
-  `new_construction` int(1) NOT NULL DEFAULT '0',
-  `ongoing_bidding` int(1) NOT NULL DEFAULT '0',
-  `foreclosure` int(1) NOT NULL DEFAULT '0',
-  `upcoming` int(1) NOT NULL DEFAULT '0',
-  `has_price_change` int(1) NOT NULL DEFAULT '0',
-  `rooms` varchar(10) NOT NULL,
-  `age` int(5) NOT NULL,
-  `deactivated_before_open_house` int(1) NOT NULL DEFAULT '0',
-  `image_url` varchar(255) NOT NULL,
-  `url` varchar(255) NOT NULL,
-  `locations_string` varchar(255) NOT NULL,
-  `should_display_showings` int(1) NOT NULL DEFAULT '0',
-  `lat` varchar(30) NOT NULL,
-  `lng` varchar(30) NOT NULL,
-  `price` int(30) NOT NULL,
-  `land_area` int(30) NOT NULL,
-  `living_area` int(30) NOT NULL,
-  `supplemental_area` int(30) NOT NULL,
-  `size_total` int(30) NOT NULL,
+  `title` varchar(255) NOT NULL,
+  `type` varchar(255) NOT NULL,
+  `isUpcoming` int(1) NOT NULL DEFAULT '0',
+  `isNewConstruction` int(1) NOT NULL DEFAULT '0',
+  `isForeclosure` int(1) NOT NULL DEFAULT '0',
+  `isBiddingOngoing` int(1) NOT NULL DEFAULT '0',
+  `livingArea` double NOT NULL,
+  `landArea` double NOT NULL,
+  `supplementalArea` double NOT NULL,
+  `daysOnHemnet` int(30) NOT NULL,
+  `numberOfRooms` double NOT NULL,
+  `lat` double NOT NULL,
+  `lng` double NOT NULL,
+  `askingPrice` double NOT NULL,
+  `runningCosts` double NOT NULL,
+  `nextOpenHouse` int(30) DEFAULT NULL,
+  `upcomingOpenHouses` varchar(255) NOT NULL,
+  `size_total` double NOT NULL,
   `created` int(18) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
@@ -150,7 +145,8 @@ CREATE TABLE `saved_searches` (
   `id` int(12) NOT NULL,
   `search_id` int(12) NOT NULL,
   `name` varchar(255) NOT NULL,
-  `search` longblob NOT NULL
+  `search` longblob NOT NULL,
+  `created` int(20) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 -- --------------------------------------------------------
