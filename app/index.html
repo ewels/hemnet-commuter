@@ -93,7 +93,7 @@
             <div class="col-4"><a ng-href="{{active_house.listingHemnetUrl}}" target="_blank" class="btn btn-block btn-primary" style="white-space: nowrap; overflow: hidden;">
               <i class="fa fa-home mr-2"></i> Hemnet
             </a></div>
-            <div class="col-4"><a ng-href="{{active_house.listingBrokerUrl}}" ng-disabled="!active_house.maklare_url" target="_blank" class="btn btn-block btn-success" style="white-space: nowrap; overflow: hidden;">
+            <div class="col-4"><a ng-href="{{active_house.listingBrokerUrl}}" target="_blank" class="btn btn-block btn-success" style="white-space: nowrap; overflow: hidden;">
               <i class="fa fa-bookmark mr-2" id="commute_icon"></i> Mäklare
             </a></div>
             <div class="col-4"><button ng-disabled="!planritning_idx" ng-click="carousel_idx = planritning_idx" class="btn btn-block btn-outline-secondary" style="white-space: nowrap; overflow: hidden;">
@@ -121,7 +121,7 @@
 
           <!-- IMAGE SLIDER -->
           <div uib-carousel no-transition="true" active="carousel_idx" class="mb-5">
-            <div uib-slide ng-repeat="slide in active_house_carousel track by slide.id" index="slide.id">
+            <div uib-slide ng-repeat="slide in active_house.carousel track by slide.id" index="slide.id">
               <img ng-src="{{slide.image}}" class="m-auto" style="max-height: 300px;">
             </div>
           </div>
@@ -160,7 +160,7 @@
             </tr>
             <tr ng-show="active_house.runningCosts > 0">
               <th>Driftkostnad:</th>
-              <td>{{ active_house.runningCosts }} kr/year <small>( <span ng-bind="active_house.runningCosts / 12 | number:0"></span> kr/month)</small></td>
+              <td>{{ active_house.runningCosts | number:0 }} kr/year <small>( <span ng-bind="active_house.runningCosts / 12 | number:0"></span> kr/month)</small></td>
             </tr>
             <tr ng-repeat="(commute_id, commute) in commute_locations">
               <th ng-bind="commute.address"></th>

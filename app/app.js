@@ -191,7 +191,6 @@ app.controller("hemnetCommuterController", ['$scope', '$compile', '$http', '$tim
   $scope.commute_map_call_active = false;
   $scope.hemnet_results_updating = false;
   $scope.hemnet_results_update_btn_text = 'Update';
-  $scope.active_house_carousel = [];
 
   // Build custom leaflet buttons for map settings
   L.Control.HncBtn = L.Control.extend({
@@ -659,10 +658,9 @@ app.controller("hemnetCommuterController", ['$scope', '$compile', '$http', '$tim
     if (args.model.id !== undefined) {
       $scope.active_id = args.model.id;
       $scope.active_house = $scope.results[$scope.active_id];
-      $scope.active_house_carousel = [];
+      $scope.active_house.carousel = [];
       $scope.carousel_idx = 0;
       $scope.planritning_idx = false;
-      $scope.active_house.maklare_url = false;
       console.log("House clicked:", $scope.active_house);
       // Fetch the images for the carousel and the mäklare URL
       var graphQL_query = `
@@ -674,6 +672,7 @@ app.controller("hemnetCommuterController", ['$scope', '$compile', '$http', '$tim
 
       fragment FullListingImageFragment on ListingImage {
         original: url(format: ORIGINAL)
+        labels
       }
 
       fragment FullPropertyListingFragment on PropertyListing {
@@ -689,11 +688,6 @@ app.controller("hemnetCommuterController", ['$scope', '$compile', '$http', '$tim
         yearlyLeaseholdFee {
           ...MoneyFragment
         }
-
-        floorPlanImages {
-          ...FullListingImageFragment
-        }
-
         ... on ActivePropertyListing {
           fee {
             ...MoneyFragment
@@ -749,19 +743,14 @@ app.controller("hemnetCommuterController", ['$scope', '$compile', '$http', '$tim
         $scope.active_house = Object.assign($scope.active_house, response.data.data.listing);
 
         // Build the carousel
-//        var slides = [];
-//        var idx = 0;
-//        angular.forEach(response.data.data.listing.images.images, function (img) {
-//          slides.push({ image: img.fullscreenUrl, id: idx });
-//          if (img.labels.indexOf('FLOOR_PLAN') !== -1 && !$scope.planritning_idx) {
-//            $scope.planritning_idx = idx;
-//          }
-//          idx++;
-//        });
-//        if (slides.length > 0) {
-//          $scope.active_house_carousel = slides;
-//          $scope.carousel_idx = 0;
-//        }
+        var idx = 0;
+        angular.forEach(response.data.data.listing.allImages, function (img) {
+          $scope.active_house.carousel.push({ image: img.original, id: idx });
+          if (img.labels.indexOf('FLOOR_PLAN') !== -1 && !$scope.planritning_idx) {
+            $scope.planritning_idx = idx;
+          }
+          idx++;
+        });
       });
     }
   });
