@@ -27,14 +27,7 @@ function fetch_hemnet_houses(){
 
   $str_keys = [
     'id',
-    'streetAddress',
-    'type',
-    'area',
-    'legacyPrimaryLocation',
-    'publishedAt',
-    'legacyConstructionYear',
-    'description',
-    'listingBrokerUrl'
+    'type'
   ];
   $bool_keys = [
     'isUpcoming',
@@ -53,12 +46,12 @@ function fetch_hemnet_houses(){
   // Kick off API calls for each saved search
   foreach($saved_searches['saved_searches'] as $saved_search){
 
-    $api_limit = 50;
+    $api_limit = 200;
     $api_offset = 0;
     $num_results = false;
 
     // We can't fetch all results in one query, so we need to loop through the offset pages
-    while($num_results == false || $api_offset < $num_results){
+    while($num_results === false || $api_offset < $num_results){
 
       $postdata = array(
         'query' => graphql_iOSSearchQuery(),
@@ -70,14 +63,18 @@ function fetch_hemnet_houses(){
       );
 
       $postdata['variables']['searchInput'] = array();
+      // We need this, otherwise we get all of Sweden
+      $postdata['variables']['searchInput']['locationIds'] = [];
+
+      // Build query from saved search metadata
       foreach($saved_search['search'] as $k => $v){
         // Empty fields
         if(is_null($v)) continue;
+        if(is_array($v) && count($v) == 0) continue;
+        if(is_string($v) && strlen($v) == 0) continue;
         // Location IDs
         if($k == 'locations'){
           foreach($v as $loc){
-            if(!in_array('locationIds', $postdata['variables']['searchInput']))
-              $postdata['variables']['searchInput']['locationIds'] = [];
             $postdata['variables']['searchInput']['locationIds'][] = $loc['id'];
           }
           continue;
@@ -118,7 +115,6 @@ function fetch_hemnet_houses(){
       // Parse the response
       $results_json = @json_decode($result_raw, true);
       $num_results = $results_json['data']['searchListings']['total'];
-      die($num_results);
 
       foreach($results_json['data']['searchListings']['listings'] as $listing){
 
@@ -149,12 +145,10 @@ function fetch_hemnet_houses(){
         // Array keys two-deep
         $this_house['lat'] = $listing['coordinates']['lat'];
         $this_house['lng'] = $listing['coordinates']['long'];
-        $this_house['askingPrice'] = '';
+        $this_house['askingPrice'] = 0;
         if(array_key_exists('askingPrice', $listing) && !is_null($listing['askingPrice'])) $this_house['askingPrice'] = $listing['askingPrice']['amount'];
-        $this_house['runningCosts'] = '';
+        $this_house['runningCosts'] = 0;
         if(array_key_exists('runningCosts', $listing) && !is_null($listing['runningCosts'])) $this_house['runningCosts'] = $listing['runningCosts']['amount'];
-        $this_house['tenure'] = '';
-        if(array_key_exists('tenure', $listing) && !is_null($listing['tenure'])) $this_house['tenure'] = $listing['tenure']['name'];
 
         // Closest visning date
         $this_house['nextOpenHouse'] = null;
@@ -171,10 +165,7 @@ function fetch_hemnet_houses(){
           }
         }
         $this_house['upcomingOpenHouses'] = implode(',', $upcomingOpenHouses);
-
-        // Manually calculated fields
         $this_house['size_total'] = $this_house['livingArea'] + $this_house['supplementalArea'];
-        $this_house['url'] = 'https://www.hemnet.se/bostad/'.$listing['id']; // Used to get this field with the previous method, but it works with just the ID
         $this_house['created'] = time();
 
         // Assoc ID with key as house ID in case a house comes up more than once in different searches, prevents duplication
@@ -195,10 +186,14 @@ function fetch_hemnet_houses(){
 
   // Save each house to the db
   foreach($houses as $id => $house){
+    // Remove null values
+    $house = array_filter($house, function($value) { return !is_null($value); });
+
+    // Prep SQL statement
     $sql = '
       INSERT INTO `houses` (`'.implode('`, `', array_keys($house)).'`)
       VALUES ("'.implode('", "', $house).'")';
-    if(!$mysqli->query($sql)) return array("status"=>"error", "msg" => "Could not insert house $id into DB:<br>$sql<br>".$mysqli->error);
+    if(!$mysqli->query($sql)) return array("status"=>"error", "msg" => "Could not insert house $id into DB!", "sql" => $sql, "sql_error" => $mysqli->error, "house" => $house);
   }
 
   return array("status"=>"success", "msg" => "Found ".count($houses)." houses");
@@ -224,7 +219,80 @@ if ( basename(__FILE__) == basename($_SERVER["SCRIPT_FILENAME"]) ) {
 
 
 function graphql_iOSSearchQuery(){
-  return '
+    // This query returns as few fields as possible - only the stuff that we may want to filter on in the DB
+    // Everything else can be fetched when a single house is clicked on in the map.
+    return '
+      query iOSSearchQuery($searchInput: ListingSearchInput!, $limit: Int!, $offset: Int, $sort: ListingSearchSorting) {
+        searchListings(search: $searchInput, limit: $limit, offset: $offset, sort: $sort) {
+          total
+          offset
+          limit
+          listings {
+            ...PartialPropertyListingFragment
+          }
+        }
+      }
+
+      fragment MoneyFragment on Money {
+        amount
+      }
+
+      fragment PartialPropertyListingFragment on PropertyListing {
+        id
+        type: primaryTypeGroup
+        isUpcoming
+
+        coordinates {
+          lat
+          long
+        }
+
+        ... on ProjectUnit {
+          askingPrice {
+            ...MoneyFragment
+          }
+          runningCosts {
+            ...MoneyFragment
+          }
+
+          livingArea
+          landArea
+          supplementalArea
+          daysOnHemnet
+          isBiddingOngoing
+          numberOfRooms
+
+          upcomingOpenHouses {
+            start
+          }
+        }
+
+        ... on ActivePropertyListing {
+          askingPrice {
+            ...MoneyFragment
+          }
+          runningCosts {
+            ...MoneyFragment
+          }
+
+          livingArea
+          landArea
+          supplementalArea
+          daysOnHemnet
+          isNewConstruction
+          isForeclosure
+          isBiddingOngoing
+          numberOfRooms
+
+          upcomingOpenHouses {
+            start
+          }
+        }
+      }
+    ';
+
+    // The older query with more fields. We may want to look at this again for reference later? Can delete soon though.
+    $old_query = '
     query iOSSearchQuery($searchInput: ListingSearchInput!, $limit: Int!, $offset: Int, $sort: ListingSearchSorting) {
       searchListings(search: $searchInput, limit: $limit, offset: $offset, sort: $sort) {
         total

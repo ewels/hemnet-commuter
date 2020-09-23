@@ -91,16 +91,16 @@ function get_houses($postdata){
   foreach($house_results as $house_id => $house){
     $remove = false;
     if(isset($postdata['house_id']) && $house['id'] != $postdata['house_id']) $remove = true;
-    if(isset($postdata['kommande']) && $postdata['kommande'] == '1' && @$house['upcoming'] != '1') $remove = true;
-    if(isset($postdata['kommande']) && $postdata['kommande'] == '-1' && @$house['upcoming'] == '1') $remove = true;
-    if(isset($postdata['bidding']) && $postdata['bidding'] == '1' && @$house['ongoing_bidding'] != '1') $remove = true;
-    if(isset($postdata['bidding']) && $postdata['bidding'] == '-1' && @$house['ongoing_bidding'] == '1') $remove = true;
-    if(isset($postdata['price_min']) && @$house['price'] < $postdata['price_min']) $remove = true;
-    if(isset($postdata['price_max']) && @$house['price'] > $postdata['price_max']) $remove = true;
-    if(isset($postdata['days_on_hemnet_max']) && @$house['age'] > $postdata['days_on_hemnet_max']) $remove = true;
-    if(isset($postdata['days_on_hemnet_min']) && @$house['age'] < $postdata['days_on_hemnet_min']) $remove = true;
+    if(isset($postdata['kommande']) && $postdata['kommande'] == '1' && @$house['isUpcoming'] != '1') $remove = true;
+    if(isset($postdata['kommande']) && $postdata['kommande'] == '-1' && @$house['isUpcoming'] == '1') $remove = true;
+    if(isset($postdata['bidding']) && $postdata['bidding'] == '1' && @$house['isBiddingOngoing'] != '1') $remove = true;
+    if(isset($postdata['bidding']) && $postdata['bidding'] == '-1' && @$house['isBiddingOngoing'] == '1') $remove = true;
+    if(isset($postdata['price_min']) && @$house['askingPrice'] < $postdata['price_min']) $remove = true;
+    if(isset($postdata['price_max']) && @$house['askingPrice'] > $postdata['price_max']) $remove = true;
+    if(isset($postdata['days_on_hemnet_max']) && @$house['daysOnHemnet'] > $postdata['days_on_hemnet_max']) $remove = true;
+    if(isset($postdata['days_on_hemnet_min']) && @$house['daysOnHemnet'] < $postdata['days_on_hemnet_min']) $remove = true;
     if(isset($postdata['size_total_min']) && $house['size_total'] < $postdata['size_total_min']) $remove = true;
-    if(isset($postdata['size_tomt_min']) && $house['land_area'] < $postdata['size_tomt_min']) $remove = true;
+    if(isset($postdata['size_tomt_min']) && $house['landArea'] < $postdata['size_tomt_min']) $remove = true;
     if(isset($postdata['hide_ratings'])){
       foreach($postdata['hide_ratings'] as $user_id => $ratings){
         foreach($ratings as $rating){
