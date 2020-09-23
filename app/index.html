@@ -138,9 +138,10 @@
               </td>
             </tr>
             <tr>
-              <th style="white-space: nowrap;">Upcoming visning:</th>
+              <th style="white-space: nowrap;">Upcoming viewings:</th>
               <td>
-                <span ng-bind="active_house.nextOpenHouse === null ? 'Yes' : 'No'"></span>
+                <span ng-show="active_house.nextOpenHouse === null">No</span>
+                <p ng-show="active_house.upcomingOpenHouses.length > 0" ng-repeat="open_house in active_house.upcomingOpenHouses" class="mb-0">{{ open_house * 1000.00 | date: 'EEE d MMM, HH:mm' }}</p>
               </td>
             </tr>
             <tr>

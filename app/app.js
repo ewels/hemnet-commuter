@@ -741,6 +741,9 @@ app.controller("hemnetCommuterController", ['$scope', '$compile', '$http', '$tim
         }
         // Merge this data with what we have already
         $scope.active_house = Object.assign($scope.active_house, response.data.data.listing);
+        if ($scope.active_house.upcomingOpenHouses !== null && $scope.active_house.upcomingOpenHouses.trim().length > 0) {
+          $scope.active_house.upcomingOpenHouses = $scope.active_house.upcomingOpenHouses.split(',');
+        }
 
         // Build the carousel
         var idx = 0;
