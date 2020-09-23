@@ -422,8 +422,12 @@
 
         <div ng-show="!update_saved_searches" class="mb-4">
           <ul>
-            <li ng-repeat="saved_search in saved_searches"><a href="https://www.hemnet.se/bostader?subscription={{saved_search.search_id}}" target="_blank">{{saved_search.name}}</a></li>
+            <li ng-repeat="saved_search in saved_searches">
+              <a href="https://www.hemnet.se/bostader?subscription={{saved_search.search_id}}" target="_blank">{{saved_search.name}}</a>
+              <em class="small text-muted ml-3">({{saved_search.created * 1000.0 | date: 'EEE d MMM HH:mm' }})</em>
+            </li>
           </ul>
+          <p class="small text-muted">Times show when Hemnet Commuter last pulled the search settings from Hemnet.</p>
           <button ng-click="update_saved_searches = true; hemnet_fetch_saved_searches()" class="btn btn-warning mb-4">Updated saved searches</button>
         </div>
 

@@ -15,13 +15,14 @@ function fetch_saved_searches(){
 
   // Get ratings for this house
   $results = [];
-  $sql = 'SELECT `search_id`, `name`, `search` FROM `saved_searches`';
+  $sql = 'SELECT `search_id`, `name`, `search`, `created` FROM `saved_searches`';
   if ($result = $mysqli->query($sql)) {
     while ($row = $result->fetch_assoc()) {
       $results[$row['search_id']] = array(
         'search_id' => $row['search_id'],
         'name' => $row['name'],
         'search' => json_decode($row['search'], true),
+        'created' => $row['created']
       );
     }
     $result->free_result();
@@ -56,7 +57,8 @@ function update_saved_searches($postdata){
       INSERT INTO `saved_searches`
       SET `search_id` = "'.$mysqli->real_escape_string($saved_search['search_id']).'",
           `name` = "'.$mysqli->real_escape_string($saved_search['name']).'",
-          `search` = "'.$mysqli->real_escape_string($saved_search['search']).'"';
+          `search` = "'.$mysqli->real_escape_string($saved_search['search']).'",
+          `created` = "'.time().'"';
     if(!$mysqli->query($sql)) return array("status"=>"error", "msg" => "Could not insert saved search into DB:<br>$sql<br>".$mysqli->error);
   }
 
