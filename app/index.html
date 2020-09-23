@@ -75,25 +75,25 @@
         <!-- ACTIVE HOUSE DETAILS -->
         <div ng-hide="active_id == false" class="pt-3 mt-3 border-top">
           <h3 class="mb-4">
-            <span ng-bind="active_house.address"></span>
+            <span ng-bind="active_house.title"></span>
             <span class="float-right">
-              <span class="badge" ng-class="{'badge-success': active_house.price < 4000000, 'badge-primary': active_house.price > 4000000 && active_house.price < 5700000, 'badge-danger': active_house.price > 5700000}">
-                <span ng-bind="active_house.price / 1000000 | number:3"></span> MKr
+              <span class="badge" ng-class="{'badge-success': active_house.askingPrice < 4000000, 'badge-primary': active_house.askingPrice > 4000000 && active_house.askingPrice < 5700000, 'badge-danger': active_house.askingPrice > 5700000}">
+                <span ng-bind="active_house.askingPrice / 1000000 | number:3"></span> MKr
               </span>
             </span>
           </h3>
-          <h4 ng-show="active_house.new_construction == 1 || active_house.upcoming == 1 || active_house.ongoing_bidding == 1" class="clearfix">
-            <span ng-show="active_house.new_construction == 1" class="badge badge-light border text-secondary"><i class="fa fa-certificate mr-2" aria-hidden="true"></i>Nyproduktion</span>
-            <span ng-show="active_house.upcoming == 1" class="badge badge-success"><i class="fa fa-bolt mr-2" aria-hidden="true"></i>Kommande</span>
-            <span ng-show="active_house.ongoing_bidding == 1" class="badge badge-info" style="background-color: #67458c;"><i class="fa fa-gavel mr-2" aria-hidden="true"></i> Budgivning pågår</span>
+          <h4 ng-show="active_house.isNewConstruction == 1 || active_house.isUpcoming == 1 || active_house.isBiddingOngoing == 1" class="clearfix">
+            <span ng-show="active_house.isNewConstruction == 1" class="badge badge-light border text-secondary"><i class="fa fa-certificate mr-2" aria-hidden="true"></i>Nyproduktion</span>
+            <span ng-show="active_house.isUpcoming == 1" class="badge badge-success"><i class="fa fa-bolt mr-2" aria-hidden="true"></i>Kommande</span>
+            <span ng-show="active_house.isBiddingOngoing == 1" class="badge badge-info" style="background-color: #67458c;"><i class="fa fa-gavel mr-2" aria-hidden="true"></i> Budgivning pågår</span>
           </h4>
 
           <!-- Buttons - first row -->
           <div class="form-row mb-3">
-            <div class="col-4"><a ng-href="{{active_house.url}}" target="_blank" class="btn btn-block btn-primary" style="white-space: nowrap; overflow: hidden;">
+            <div class="col-4"><a ng-href="{{active_house.listingHemnetUrl}}" target="_blank" class="btn btn-block btn-primary" style="white-space: nowrap; overflow: hidden;">
               <i class="fa fa-home mr-2"></i> Hemnet
             </a></div>
-            <div class="col-4"><a ng-href="{{active_house.maklare_url}}" ng-disabled="!active_house.maklare_url" target="_blank" class="btn btn-block btn-success" style="white-space: nowrap; overflow: hidden;">
+            <div class="col-4"><a ng-href="{{active_house.listingBrokerUrl}}" ng-disabled="!active_house.maklare_url" target="_blank" class="btn btn-block btn-success" style="white-space: nowrap; overflow: hidden;">
               <i class="fa fa-bookmark mr-2" id="commute_icon"></i> Mäklare
             </a></div>
             <div class="col-4"><button ng-disabled="!planritning_idx" ng-click="carousel_idx = planritning_idx" class="btn btn-block btn-outline-secondary" style="white-space: nowrap; overflow: hidden;">
@@ -111,7 +111,7 @@
             <div class="col-3"><a ng-href="http://maps.google.com/maps?layer=c&cbll={{active_house.lat}},{{active_house.lng}}" target="_blank" class="btn btn-sm btn-block btn-outline-info" style="overflow:hidden;">
               <small style="white-space: nowrap;"><i class="fa fa-google mr-1"></i> Street View</a></small>
             </div>
-            <div class="col-3"><a ng-href="http://maps.apple.com/?ll={{active_house.lat}},{{active_house.lng}}&z=19&q={{active_house.address}}" target="_blank" class="btn btn-sm btn-block btn-outline-dark" style="overflow:hidden;">
+            <div class="col-3"><a ng-href="http://maps.apple.com/?ll={{active_house.lat}},{{active_house.lng}}&z=19&q={{active_house.streetAddress}}" target="_blank" class="btn btn-sm btn-block btn-outline-dark" style="overflow:hidden;">
               <small style="white-space: nowrap;"><i class="fa fa-apple mr-1"></i> Maps</a></small>
             </div>
             <div class="col-3"><a ng-href="api/link_lantmateriet.php?lat={{active_house.lat}}&lng={{active_house.lng}}&z=14" target="_blank" class="btn btn-sm btn-block btn-outline-danger" style="overflow:hidden;">
@@ -128,41 +128,39 @@
 
           <table class="table table-sm small table-hover">
             <tr>
-              <th width="50%">Location:</th>
-              <td ng-bind="active_house.location_name"></td>
+              <th width="50%">Area:</th>
+              <td>{{ active_house.area }} / {{ active_house.legacyPrimaryLocation }}</td>
             </tr>
             <tr>
               <th>Days on hemnet:</th>
               <td>
-                <span ng-bind="active_house.age"></span>
+                <span ng-bind="active_house.daysOnHemnet"></span>
               </td>
             </tr>
             <tr>
               <th style="white-space: nowrap;">Upcoming visning:</th>
               <td>
-                <span ng-bind="active_house.upcoming_open_houses == 1 ? 'Yes' : 'No'"></span>
+                <span ng-bind="active_house.nextOpenHouse === null ? 'Yes' : 'No'"></span>
               </td>
             </tr>
             <tr>
               <th>Size:</th>
               <td>
-                <span ng-bind="(active_house.living_area * 1) + (active_house.supplemental_area * 1)"></span> m<sup>2</sup>
-                <small>(<span ng-bind="active_house.living_area"></span> Bo <span ng-show="active_house.supplemental_area > 0">+ <span ng-bind="active_house.supplemental_area"></span> Bi</span>)</small>
+                {{ active_house.size_total }} m<sup>2</sup>
+                <small>({{ active_house.livingArea }} Bo <span ng-show="active_house.supplementalArea > 0">+ {{ active_house.supplementalArea }} Bi</span>)</small>
               </td>
             </tr>
             <tr>
               <th>Tomt:</th>
-              <td>
-                <span ng-bind="active_house.land_area | number:0"></span> m<sup>2</sup>
-              </td>
+              <td>{{ active_house.formattedLandArea }}</td>
             </tr>
             <tr>
               <th>Rooms:</th>
-              <td><span ng-bind="active_house.rooms"></span></td>
+              <td>{{ active_house.numberOfRooms }}</td>
             </tr>
-            <tr ng-show="active_house.driftkostnad > 0">
+            <tr ng-show="active_house.runningCosts > 0">
               <th>Driftkostnad:</th>
-              <td><span ng-bind="active_house.driftkostnad | number:0"></span> kr/year <small>( <span ng-bind="active_house.driftkostnad / 12 | number:0"></span> kr/month)</small></td>
+              <td>{{ active_house.runningCosts }} kr/year <small>( <span ng-bind="active_house.runningCosts / 12 | number:0"></span> kr/month)</small></td>
             </tr>
             <tr ng-repeat="(commute_id, commute) in commute_locations">
               <th ng-bind="commute.address"></th>
@@ -174,15 +172,16 @@
                 </a>
               </td>
             </tr>
-            <tr ng-show="active_house.tenure">
+            <tr>
               <th>Construction:</th>
-              <td><span ng-bind="active_house.construction_year"></span></td>
+              <td>{{ active_house.legacyConstructionYear }}</td>
             </tr>
-            <tr ng-show="active_house.tenure">
+            <tr>
               <th>Tenure:</th>
-              <td><span ng-bind="active_house.tenure"></span></td>
+              <td>{{ active_house.tenure.name }}</td>
             </tr>
           </table>
+          <p class="small text-muted" style="white-space: pre-wrap;">{{ active_house.description }}</p>
 
           <div class="row my-5 house_ratings">
             <div ng-repeat="(user_id, user_name) in users" class="col-6">

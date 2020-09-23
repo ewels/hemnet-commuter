@@ -27,6 +27,7 @@ function fetch_hemnet_houses(){
 
   $str_keys = [
     'id',
+    'title',
     'type'
   ];
   $bool_keys = [
@@ -239,6 +240,7 @@ function graphql_iOSSearchQuery(){
 
       fragment PartialPropertyListingFragment on PropertyListing {
         id
+        title
         type: primaryTypeGroup
         isUpcoming
 
@@ -290,96 +292,4 @@ function graphql_iOSSearchQuery(){
         }
       }
     ';
-
-    // The older query with more fields. We may want to look at this again for reference later? Can delete soon though.
-    $old_query = '
-    query iOSSearchQuery($searchInput: ListingSearchInput!, $limit: Int!, $offset: Int, $sort: ListingSearchSorting) {
-      searchListings(search: $searchInput, limit: $limit, offset: $offset, sort: $sort) {
-        total
-        offset
-        limit
-
-        listings {
-          ...PartialPropertyListingFragment
-          labels {
-            text
-            category
-            identifier
-          }
-        }
-      }
-    }
-
-    fragment MoneyFragment on Money {
-      amount
-    }
-
-    fragment PartialPropertyListingFragment on PropertyListing {
-      id
-      type: primaryTypeGroup
-      area
-      legacyPrimaryLocation
-      isUpcoming
-      streetAddress
-
-      coordinates {
-        lat
-        long
-      }
-
-      ... on Project {
-        publishedAt
-      }
-
-      ... on ProjectUnit {
-        askingPrice {
-          ...MoneyFragment
-        }
-        runningCosts {
-          ...MoneyFragment
-        }
-
-        livingArea
-        landArea
-        supplementalArea
-        daysOnHemnet
-        publishedAt
-        numberOfRooms
-
-        upcomingOpenHouses {
-          start
-        }
-
-        isBiddingOngoing
-      }
-
-      ... on ActivePropertyListing {
-        askingPrice {
-          ...MoneyFragment
-        }
-        runningCosts {
-          ...MoneyFragment
-        }
-
-        livingArea
-        landArea
-        supplementalArea
-        daysOnHemnet
-        publishedAt
-        legacyConstructionYear
-        tenure {
-          name
-        }
-        description
-        isNewConstruction
-        isForeclosure
-        isBiddingOngoing
-        listingBrokerUrl
-        numberOfRooms
-
-        upcomingOpenHouses {
-          start
-        }
-      }
-    }';
 }
