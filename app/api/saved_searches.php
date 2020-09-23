@@ -26,6 +26,8 @@ function fetch_saved_searches(){
       );
     }
     $result->free_result();
+  } else {
+    return array("status"=>"error", "msg" => "Could not fetch saved search from DB:<br>$sql<br>".$mysqli->error);
   }
   return array("status"=>"success", "msg" => "Found ".count($results)." saved searches", 'saved_searches' => $results);
 }
