@@ -53,9 +53,12 @@ footer a {
 }
 .carousel-indicators {
   bottom: -50px;
+  margin-left: 0;
+  margin-right: 0;
 }
 .carousel-indicators li {
   opacity: 0.1;
-  background-color: #000;
+  background-color: #333;
+  height: 5px;
   transition: none;
 }
