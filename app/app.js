@@ -10,6 +10,10 @@
 var app = angular.module("hemnetCommuterApp", ['ui-leaflet', 'ngCookies', 'ngAnimate', 'ngTouch', 'ui.bootstrap']);
 app.controller("hemnetCommuterController", ['$scope', '$compile', '$http', '$timeout', '$cookies', function ($scope, $compile, $http, $timeout, $cookies) {
 
+  // Put some common functions onto the $scope
+  $scope.isArray = angular.isArray;
+  $scope.console = console;
+
   // Saved search credentials
   $scope.saved_searches = [];
   $scope.update_saved_searches = false;
@@ -772,7 +776,9 @@ app.controller("hemnetCommuterController", ['$scope', '$compile', '$http', '$tim
         }
         // Merge this data with what we have already
         $scope.active_house = Object.assign($scope.active_house, response.data.data.listing);
-        if ($scope.active_house.upcomingOpenHouses !== null && $scope.active_house.upcomingOpenHouses.trim().length > 0) {
+
+        // Split the upcoming active houses string into an array
+        if ($scope.active_house.upcomingOpenHouses !== null && $scope.active_house.upcomingOpenHouses.length > 0) {
           $scope.active_house.upcomingOpenHouses = $scope.active_house.upcomingOpenHouses.split(',');
         }
 

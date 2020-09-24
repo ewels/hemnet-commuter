@@ -141,7 +141,7 @@
               <th style="white-space: nowrap;">Upcoming viewings:</th>
               <td>
                 <span ng-show="active_house.nextOpenHouse === null">No</span>
-                <p ng-show="active_house.upcomingOpenHouses.length > 0" ng-repeat="open_house in active_house.upcomingOpenHouses" class="mb-0">{{ open_house * 1000.00 | date: 'EEE d MMM, HH:mm' }}</p>
+                <p ng-show="isArray(active_house.upcomingOpenHouses) && active_house.upcomingOpenHouses.length > 0" ng-repeat="open_house in active_house.upcomingOpenHouses track by $index" class="mb-0">{{ open_house * 1000.00 | date: 'EEE d MMM, HH:mm' }}</p>
               </td>
             </tr>
             <tr>
