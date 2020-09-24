@@ -51,6 +51,7 @@ app.controller("hemnetCommuterController", ['$scope', '$compile', '$http', '$tim
     size_total: [0, 10000],
     size_tomt: [0, 3000],
     days_on_hemnet: [0, 999999999],
+    next_visning_timestamps: [0, 999999999],
   }
   $scope.initialising = false;
   $scope.sidebar = false;
@@ -67,12 +68,13 @@ app.controller("hemnetCommuterController", ['$scope', '$compile', '$http', '$tim
     "Ratings": { rating_combined: 'Rating: Combined' },
     "Commutes": { commute_threshold_combined: 'Commute threshold: Combined' },
     "Stats": {
+      days_until_next_visning: 'Days until next visning',
       status: 'Kommande/Bidding',
       price: 'Price',
       size_total: 'Total size',
       size_tomt: 'Land area',
       rooms: 'Rooms',
-      days_on_hemnet: 'Days on Hemnet',
+      days_on_hemnet: 'Days on Hemnet'
     }
   };
   $scope.map_setting_selects = {
@@ -137,6 +139,12 @@ app.controller("hemnetCommuterController", ['$scope', '$compile', '$http', '$tim
     'size_tomt': function (house) { return $scope.marker_colour_scale_size_tomt(house.landArea).hex(); },
     'rooms': function (house) { return $scope.marker_colour_scale_rooms(house.numberOfRooms).hex(); },
     'days_on_hemnet': function (house) { return $scope.marker_colour_scale_age(house.daysOnHemnet).hex(); },
+    'days_until_next_visning': function (house) {
+      if (house.nextOpenHouse != null) {
+        return $scope.marker_colour_scale_next_visning(house.nextOpenHouse).hex();
+      }
+      return $scope.base_marker_colour;
+    },
   }
 
   // Functions to assign icons to markers
@@ -168,6 +176,14 @@ app.controller("hemnetCommuterController", ['$scope', '$compile', '$http', '$tim
     'size_tomt': function (house) { return ['fa-number', house.landArea]; },
     'rooms': function (house) { return ['fa-number', house.numberOfRooms] },
     'days_on_hemnet': function (house) { return ['fa-number', house.daysOnHemnet] },
+    'days_until_next_visning': function (house) {
+      if (house.nextOpenHouse != null) {
+        var days_until_next_visning = Math.round((house.nextOpenHouse * 1000.0 - Date.now()) / (1000.0 * 60 * 60 * 24));
+        return ['fa-number', days_until_next_visning]
+      } else {
+        return ['fa-cross'];
+      }
+    },
   }
 
   // House results
@@ -373,6 +389,8 @@ app.controller("hemnetCommuterController", ['$scope', '$compile', '$http', '$tim
       $scope.marker_colour_scale_rooms = chroma.scale('RdYlGn').domain([1, 8]);
       var stats_days_on_hemnet = get_min_max('daysOnHemnet', response.data.results);
       $scope.marker_colour_scale_age = chroma.scale('BuGn').domain([Math.min(30, stats_days_on_hemnet[1] + 2), 0]);
+      var stats_next_visning_timestamps = get_min_max('nextOpenHouse', response.data.results);
+      $scope.marker_colour_scale_next_visning = chroma.scale('PRGn').domain([stats_next_visning_timestamps[0], stats_next_visning_timestamps[1]]);
       for (let id in $scope.commute_locations) {
         var dateobj = new Date();
         dateobj.setHours(0, 0, 0, 0);
@@ -402,6 +420,7 @@ app.controller("hemnetCommuterController", ['$scope', '$compile', '$http', '$tim
         $scope.stats.size_total = get_min_max('size_total', response.data.results);
         $scope.stats.size_tomt = get_min_max('landArea', response.data.results);
         $scope.stats.days_on_hemnet = get_min_max('daysOnHemnet', response.data.results);
+        $scope.stats.next_visning_timestamps = get_min_max('nextOpenHouse', response.data.results);
 
         // Build user-filters
         for (let user_id in $scope.users) {
