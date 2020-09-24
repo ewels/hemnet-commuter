@@ -778,8 +778,12 @@ app.controller("hemnetCommuterController", ['$scope', '$compile', '$http', '$tim
         $scope.active_house = Object.assign($scope.active_house, response.data.data.listing);
 
         // Split the upcoming active houses string into an array
-        if ($scope.active_house.upcomingOpenHouses !== null && $scope.active_house.upcomingOpenHouses.length > 0) {
-          $scope.active_house.upcomingOpenHouses = $scope.active_house.upcomingOpenHouses.split(',');
+        if ($scope.active_house.upcomingOpenHouses !== null) {
+          if (typeof $scope.active_house.upcomingOpenHouses == "string") {
+            $scope.active_house.upcomingOpenHouses = $scope.active_house.upcomingOpenHouses.split(',');
+          } else {
+            $scope.active_house.upcomingOpenHouses = [$scope.active_house.upcomingOpenHouses];
+          }
         }
 
         // Build the carousel
