@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: localhost
--- Generation Time: Sep 24, 2020 at 12:13 AM
+-- Generation Time: Sep 24, 2020 at 11:00 PM
 -- Server version: 5.7.30-0ubuntu0.18.04.1-log
 -- PHP Version: 7.4.8
 
@@ -93,6 +93,7 @@ CREATE TABLE `houses` (
   `nextOpenHouse` int(30) DEFAULT NULL,
   `upcomingOpenHouses` varchar(255) NOT NULL,
   `size_total` double NOT NULL,
+  `image_url` varchar(255) NOT NULL DEFAULT '',
   `created` int(18) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
