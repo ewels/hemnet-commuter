@@ -59,6 +59,8 @@ app.controller("hemnetCommuterController", ['$scope', '$compile', '$http', '$tim
   }
   $scope.initialising = false;
   $scope.sidebar = false;
+  $scope.photos_modal = false;
+  $scope.photos_modal_planritning = true;
 
   // Settings
   $scope.map_settings = {
@@ -197,7 +199,6 @@ app.controller("hemnetCommuterController", ['$scope', '$compile', '$http', '$tim
   $scope.active_id = false;
   $scope.active_house = false;
   $scope.carousel_idx = 0;
-  $scope.planritning_idx = false;
   $scope.num_total_results = 0;
   $scope.all_results = [];
   $scope.num_results = 0;
@@ -695,7 +696,6 @@ app.controller("hemnetCommuterController", ['$scope', '$compile', '$http', '$tim
       $scope.active_house = $scope.results[$scope.active_id];
       $scope.active_house.carousel = [];
       $scope.carousel_idx = 0;
-      $scope.planritning_idx = false;
       console.log("House clicked:", $scope.active_house);
       // Fetch the images for the carousel and the mäklare URL
       var graphQL_query = `
@@ -786,9 +786,6 @@ app.controller("hemnetCommuterController", ['$scope', '$compile', '$http', '$tim
         var idx = 0;
         angular.forEach(response.data.data.listing.allImages, function (img) {
           $scope.active_house.carousel.push({ image: img.original, id: idx });
-          if (img.labels.indexOf('FLOOR_PLAN') !== -1 && !$scope.planritning_idx) {
-            $scope.planritning_idx = idx;
-          }
           idx++;
         });
       });

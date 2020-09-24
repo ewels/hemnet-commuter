@@ -37,7 +37,7 @@
 
 </head>
 
-<body ng-controller="hemnetCommuterController" style="padding:0;">
+<body ng-controller="hemnetCommuterController" style="padding:0;" ng-class="{'modal-open': photos_modal}">
 
   <div class="row mr-0 h-100" style="position:relative;">
     <div ng-class="!sidebar ? 'col-md-8' : 'col-md-4'" class="px-0 h-100 order-2">
@@ -96,9 +96,8 @@
             <div class="col-4"><a ng-href="{{active_house.listingBrokerUrl}}" target="_blank" class="btn btn-block btn-success" style="white-space: nowrap; overflow: hidden;">
               <i class="fa fa-bookmark mr-2" id="commute_icon"></i> Mäklare
             </a></div>
-            <div class="col-4"><button ng-disabled="!planritning_idx" ng-click="carousel_idx = planritning_idx" class="btn btn-block btn-outline-secondary" style="white-space: nowrap; overflow: hidden;">
-              <img style="width:20px;" class="mr-2" src="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzEiIGhlaWdodD0iMjQiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PHRpdGxlPlBsYW5yaXRuaW5nPC90aXRsZT48cGF0aCBkPSJNMjkgMGEyIDIgMCAwMTIgMnYyMGEyIDIgMCAwMS0yIDJIMmEyIDIgMCAwMS0yLTJWMmEyIDIgMCAwMTItMmgyN3pNMTEuNzEgMjJINS45OTlMNiAyNGg3LjVsLS4wMDEtLjE4NC0uMDE0LjAxNUwxMS43MSAyMnpNMjkgMkgydjIwaDRsNS43MDktLjAwMS01LjE2My01LjMyNyAxLjM3LTEuNDE1TDE0LjQ1MSAyMkgyOXYtOGgtOS42MjV2NGgtMS45Mzh2LTZIMjlWMnptLTkuNjI1IDB2OGgtMS45MzhWMmgxLjkzOHoiIGZpbGw9IiMzMzMiIGZpbGwtcnVsZT0iZXZlbm9kZCIvPjwvc3ZnPg==" alt="">
-              Planritning
+            <div class="col-4"><button ng-click="photos_modal = true" class="btn btn-block btn-secondary" style="white-space: nowrap; overflow: hidden;">
+              <i class="fa fa-picture-o mr-2"></i> Photos
             </button></div>
           </div>
 
@@ -497,6 +496,43 @@
       </div>
     </div>
   </div>
+
+<!-- Photos modal -->
+<div ng-show="photos_modal" class="modal fade show d-block" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-xl" style="max-width: 95%;">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2 class="modal-title" id="exampleModalLabel">
+          {{ active_house.title }}
+          <small class="text-muted ml-4"><small>{{ active_house.area }} / {{ active_house.legacyPrimaryLocation }}</small></small>
+        </h2>
+        <button ng-click="photos_modal = false" type="button" class="close" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body" style="max-height: calc(100vh - 12rem);">
+        <div class="container-fluid">
+          <div class="row">
+            <div ng-class="{'col-7': photos_modal_planritning, 'col-12': !photos_modal_planritning}" style="max-height: calc(100vh - 14rem); overflow-y: auto;">
+              <img ng-src="{{slide.original}}" ng-repeat="slide in active_house.allImages" class="mx-auto w-100 border mb-3">
+            </div>
+            <div ng-show="photos_modal_planritning" class="col-5" style="max-height: calc(100vh - 14rem); overflow-y: auto;">
+              <img ng-show="slide.labels.indexOf('FLOOR_PLAN') !== -1" ng-src="{{slide.original}}" ng-repeat="slide in active_house.allImages" class="mx-auto w-100 border mb-3">
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button ng-click="photos_modal_planritning = !photos_modal_planritning" class="btn btn-outline-secondary" style="white-space: nowrap; overflow: hidden;">
+          <img style="width:20px;" class="mr-2" src="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzEiIGhlaWdodD0iMjQiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PHRpdGxlPlBsYW5yaXRuaW5nPC90aXRsZT48cGF0aCBkPSJNMjkgMGEyIDIgMCAwMTIgMnYyMGEyIDIgMCAwMS0yIDJIMmEyIDIgMCAwMS0yLTJWMmEyIDIgMCAwMTItMmgyN3pNMTEuNzEgMjJINS45OTlMNiAyNGg3LjVsLS4wMDEtLjE4NC0uMDE0LjAxNUwxMS43MSAyMnpNMjkgMkgydjIwaDRsNS43MDktLjAwMS01LjE2My01LjMyNyAxLjM3LTEuNDE1TDE0LjQ1MSAyMkgyOXYtOGgtOS42MjV2NGgtMS45Mzh2LTZIMjlWMnptLTkuNjI1IDB2OGgtMS45MzhWMmgxLjkzOHoiIGZpbGw9IiMzMzMiIGZpbGwtcnVsZT0iZXZlbm9kZCIvPjwvc3ZnPg==" alt="">
+          Toggle Planritning
+        </button>
+        <button ng-click="photos_modal = false" type="button" class="btn btn-secondary">Close</button>
+      </div>
+    </div>
+  </div>
+</div>
+<div ng-show="photos_modal" class="modal-backdrop fade show"></div>
 
 </body>
 
