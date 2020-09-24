@@ -344,7 +344,7 @@ app.controller("hemnetCommuterController", ['$scope', '$compile', '$http', '$tim
       if ($scope.filters.hide_ratings[user_id]['no']) { ratings.push('no'); }
       if ($scope.filters.hide_ratings[user_id]['not_set']) { ratings.push('not_set'); }
       if (ratings.length > 0) {
-        if (!postdata.hasOwnProperty('ratings')) {
+        if (!postdata.hasOwnProperty('hide_ratings')) {
           postdata.hide_ratings = {};
         }
         postdata.hide_ratings[user_id] = ratings;
