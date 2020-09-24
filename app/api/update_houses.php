@@ -150,6 +150,7 @@ function fetch_hemnet_houses(){
         if(array_key_exists('askingPrice', $listing) && !is_null($listing['askingPrice'])) $this_house['askingPrice'] = $listing['askingPrice']['amount'];
         $this_house['runningCosts'] = 0;
         if(array_key_exists('runningCosts', $listing) && !is_null($listing['runningCosts'])) $this_house['runningCosts'] = $listing['runningCosts']['amount'];
+        if(array_key_exists('thumbnail', $listing) && !is_null($listing['thumbnail'])) $this_house['image_url'] = $listing['thumbnail']['itemGalleryLarge'];
 
         // Closest visning date
         $this_house['nextOpenHouse'] = null;
@@ -264,6 +265,10 @@ function graphql_iOSSearchQuery(){
           isBiddingOngoing
           numberOfRooms
 
+          thumbnail {
+            ...ThumbnailFragment
+          }
+
           upcomingOpenHouses {
             start
           }
@@ -286,10 +291,18 @@ function graphql_iOSSearchQuery(){
           isBiddingOngoing
           numberOfRooms
 
+          thumbnail {
+            ...ThumbnailFragment
+          }
+
           upcomingOpenHouses {
             start
           }
         }
+      }
+
+      fragment ThumbnailFragment on ListingImage {
+        itemGalleryLarge: url(format: ITEMGALLERY_L)
       }
     ';
 }
