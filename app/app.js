@@ -102,7 +102,7 @@ app.controller("hemnetCommuterController", ['$scope', '$compile', '$http', '$tim
         if (house.ratings[user_id] == 'no') { score += -1; }
       }
       if (score >= 2) { return '#28a745'; }
-      if (score == 1) { return '#c3e6cb'; }
+      if (score == 1) { return '#87d699'; }
       if (score == 0) { return '#17a2b8'; }
       if (score == -1) { return '#f5c6cb'; }
       if (score <= -2) { return '#dc3545'; }
@@ -165,7 +165,7 @@ app.controller("hemnetCommuterController", ['$scope', '$compile', '$http', '$tim
     'rating_combined': function (house) {
       var col = $scope.set_marker_colour['rating_combined'](house);
       if (col == '#28a745') { return ['fa-star']; }
-      if (col == '#c3e6cb') { return ['fa-thumbs-up']; }
+      if (col == '#87d699') { return ['fa-thumbs-up']; }
       if (col == '#17a2b8') { return ['fa-question']; }
       if (col == '#f5c6cb') { return ['fa-thumbs-down']; }
       if (col == '#dc3545') { return ['fa-trash']; }
