@@ -26,6 +26,18 @@ function get_houses($postdata){
     "commute_locations" => get_commute_locations(),
   );
 
+  // Filter sanity checks
+  if(isset($postdata['open_house_before']) && strtotime($postdata['open_house_before']) == false){
+    $results['status'] = 'error';
+    $results['msg'] = 'Open house before filter string "'.$postdata['open_house_before'].'" could not be parsed';
+    return($results);
+  }
+  if(isset($postdata['open_house_after']) && strtotime($postdata['open_house_after']) == false){
+    $results['status'] = 'error';
+    $results['msg'] = 'Open house after filter string "'.$postdata['open_house_after'].'" could not be parsed';
+    return($results);
+  }
+
   ///
   /// NB: I should do all of this in joins but it's late and I'm a bad person.
   ///
@@ -101,6 +113,22 @@ function get_houses($postdata){
     if(isset($postdata['days_on_hemnet_min']) && @$house['daysOnHemnet'] < $postdata['days_on_hemnet_min']) $remove = true;
     if(isset($postdata['size_total_min']) && $house['size_total'] < $postdata['size_total_min']) $remove = true;
     if(isset($postdata['size_tomt_min']) && $house['landArea'] < $postdata['size_tomt_min']) $remove = true;
+    if(isset($postdata['has_upcoming_open_house']) && $postdata['has_upcoming_open_house'] == '1' && is_null($house['nextOpenHouse'])) $remove = true;
+    if(isset($postdata['has_upcoming_open_house']) && $postdata['has_upcoming_open_house'] == '-1' && !is_null($house['nextOpenHouse'])) $remove = true;
+    if(isset($postdata['open_house_before'])){
+      if(is_null($house['nextOpenHouse']) || floatval($house['nextOpenHouse']) == 0) $remove = true;
+      else if(floatval($house['nextOpenHouse']) > strtotime($postdata['open_house_before'])) $remove = true;
+    }
+    if(isset($postdata['open_house_after'])){
+      if(is_null($house['nextOpenHouse']) || floatval($house['nextOpenHouse']) == 0) $remove = true;
+      else {
+        $has_oh_after = false;
+        foreach(explode(',', $house['upcomingOpenHouses']) as $oh) {
+          if(floatval($oh) > strtotime($postdata['open_house_after'])) $has_oh_after = true;
+        }
+        if(!$has_oh_after) $remove = true;
+      }
+    }
     if(isset($postdata['hide_ratings'])){
       foreach($postdata['hide_ratings'] as $user_id => $ratings){
         foreach($ratings as $rating){

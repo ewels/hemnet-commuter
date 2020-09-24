@@ -33,6 +33,9 @@ app.controller("hemnetCommuterController", ['$scope', '$compile', '$http', '$tim
     days_on_hemnet_min: 0,
     size_total_min: 0,
     size_tomt_min: 0,
+    has_upcoming_open_house: "0",
+    open_house_before: '',
+    open_house_after: '',
     hide_failed_commutes: [],
   }
   // https://stackoverflow.com/a/28246130/713980
@@ -125,15 +128,15 @@ app.controller("hemnetCommuterController", ['$scope', '$compile', '$http', '$tim
       return $scope.base_marker_colour;
     },
     'status': function (house) {
-      if (house.upcoming == '1') { return '#28a745'; }
-      if (house.ongoing_bidding == '1') { return '#67458c'; }
+      if (house.isUpcoming == '1') { return '#28a745'; }
+      if (house.isBiddingOngoing == '1') { return '#67458c'; }
       return $scope.base_marker_colour;
     },
-    'price': function (house) { return $scope.marker_colour_scale_price(parseFloat(house.price)).hex(); },
+    'price': function (house) { return $scope.marker_colour_scale_price(parseFloat(house.askingPrice)).hex(); },
     'size_total': function (house) { return $scope.marker_colour_scale_size_total(house.size_total).hex(); },
-    'size_tomt': function (house) { return $scope.marker_colour_scale_size_tomt(house.land_area).hex(); },
-    'rooms': function (house) { return $scope.marker_colour_scale_rooms(house.rooms).hex(); },
-    'days_on_hemnet': function (house) { return $scope.marker_colour_scale_age(house.age).hex(); },
+    'size_tomt': function (house) { return $scope.marker_colour_scale_size_tomt(house.landArea).hex(); },
+    'rooms': function (house) { return $scope.marker_colour_scale_rooms(house.numberOfRooms).hex(); },
+    'days_on_hemnet': function (house) { return $scope.marker_colour_scale_age(house.daysOnHemnet).hex(); },
   }
 
   // Functions to assign icons to markers
@@ -141,8 +144,8 @@ app.controller("hemnetCommuterController", ['$scope', '$compile', '$http', '$tim
   $scope.set_marker_icon = {
     'none': function (house) { return [$scope.base_marker_icon]; },
     'status': function (house) {
-      if (house.upcoming == '1') { return ['fa-bolt']; }
-      if (house.ongoing_bidding == '1') { return ['fa-gavel']; }
+      if (house.isUpcoming == '1') { return ['fa-bolt']; }
+      if (house.isBiddingOngoing == '1') { return ['fa-gavel']; }
       return [$scope.base_marker_icon];
     },
     'rating_combined': function (house) {
@@ -160,11 +163,11 @@ app.controller("hemnetCommuterController", ['$scope', '$compile', '$http', '$tim
       else if (col == '#dc3545') { return ['fa-times']; }
       return ['fa-question'];
     },
-    'price': function (house) { return ['fa-number', (house.price / 1000000).toFixed(1)] },
+    'price': function (house) { return ['fa-number', (house.askingPrice / 1000000).toFixed(1)] },
     'size_total': function (house) { return ['fa-number', house.size_total]; },
-    'size_tomt': function (house) { return ['fa-number', house.land_area]; },
-    'rooms': function (house) { return ['fa-number', house.rooms] },
-    'days_on_hemnet': function (house) { return ['fa-number', house.age] },
+    'size_tomt': function (house) { return ['fa-number', house.landArea]; },
+    'rooms': function (house) { return ['fa-number', house.numberOfRooms] },
+    'days_on_hemnet': function (house) { return ['fa-number', house.daysOnHemnet] },
   }
 
   // House results
@@ -304,6 +307,15 @@ app.controller("hemnetCommuterController", ['$scope', '$compile', '$http', '$tim
     if ($scope.filters.size_tomt_min != $scope.stats.size_tomt[0]) {
       postdata.size_tomt_min = $scope.filters.size_tomt_min;
     }
+    if ($scope.filters.has_upcoming_open_house != "0") {
+      postdata.has_upcoming_open_house = $scope.filters.has_upcoming_open_house;
+    }
+    if ($scope.filters.open_house_before.trim().length > 0) {
+      postdata.open_house_before = $scope.filters.open_house_before;
+    }
+    if ($scope.filters.open_house_after.trim().length > 0) {
+      postdata.open_house_after = $scope.filters.open_house_after;
+    }
     for (var user_id in $scope.users) {
       var ratings = [];
       if ($scope.filters.hide_ratings[user_id]['yes']) { ratings.push('yes'); }
@@ -353,13 +365,13 @@ app.controller("hemnetCommuterController", ['$scope', '$compile', '$http', '$tim
       $scope.commute_time_min = response.data.commute_time_min;
       $scope.commute_time_avg = response.data.commute_time_avg;
       $scope.marker_colour_scale_commute = chroma.scale('RdYlGn').domain([$scope.commute_time_max, $scope.commute_time_min]);
-      var stats_price = get_min_max('price', response.data.results);
+      var stats_price = get_min_max('askingPrice', response.data.results);
       $scope.marker_colour_scale_price = chroma.scale('RdYlGn').domain([stats_price[1], stats_price[0]]);
       var stats_size_total = get_min_max('size_total', response.data.results);
       $scope.marker_colour_scale_size_total = chroma.scale('RdYlGn').domain([stats_size_total[0], stats_size_total[1]]);
       $scope.marker_colour_scale_size_tomt = chroma.scale('RdYlGn').domain([500, 4000]);
       $scope.marker_colour_scale_rooms = chroma.scale('RdYlGn').domain([1, 8]);
-      var stats_days_on_hemnet = get_min_max('age', response.data.results);
+      var stats_days_on_hemnet = get_min_max('daysOnHemnet', response.data.results);
       $scope.marker_colour_scale_age = chroma.scale('BuGn').domain([Math.min(30, stats_days_on_hemnet[1] + 2), 0]);
       for (let id in $scope.commute_locations) {
         var dateobj = new Date();
@@ -386,10 +398,10 @@ app.controller("hemnetCommuterController", ['$scope', '$compile', '$http', '$tim
         $scope.all_results = response.data.results;
 
         // Get stats
-        $scope.stats.price = get_min_max('price', response.data.results);
+        $scope.stats.price = get_min_max('askingPrice', response.data.results);
         $scope.stats.size_total = get_min_max('size_total', response.data.results);
-        $scope.stats.size_tomt = get_min_max('land_area', response.data.results);
-        $scope.stats.days_on_hemnet = get_min_max('age', response.data.results);
+        $scope.stats.size_tomt = get_min_max('landArea', response.data.results);
+        $scope.stats.days_on_hemnet = get_min_max('daysOnHemnet', response.data.results);
 
         // Build user-filters
         for (let user_id in $scope.users) {

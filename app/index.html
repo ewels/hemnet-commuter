@@ -351,6 +351,30 @@
             <td><input type="range" ng-model="filters.days_on_hemnet_max" class="form-control-range" min="{{stats.days_on_hemnet[0]}}" max="{{stats.days_on_hemnet[1]}}" ng-change="update_results()"></td>
             <td><input type="text" ng-model="filters.days_on_hemnet_max" ng-model-options="{debounce: {'default': 200}}" ng-blur="update_results()" id="days_on_hemnet_max" class="form-control form-control-sm" style="width: 80px;"></td>
           </tr>
+          <tr ng-class="{'filter-inactive': filters.has_upcoming_open_house == 0}">
+            <th><label for="filters_has_upcoming_open_house">Visnings</label></th>
+            <td colspan="2">
+              <select id="filters_has_upcoming_open_house" ng-model="filters.has_upcoming_open_house" ng-change="update_results()" class="custom-select custom-select-sm">
+                <option value="0">--</option>
+                <option value="1">Show only houses with upcoming visnings</option>
+                <option value="-1">Hide houses with upcoming visnings</option>
+              </select>
+            </td>
+          </tr>
+          <tr ng-class="{'filter-inactive': filters.open_house_before == ''}">
+            <th><label for="open_house_before">Has visning before</label></th>
+            <td colspan="2">
+              <input type="text" ng-model="filters.open_house_before" ng-model-options="{debounce: {'default': 200}}" ng-blur="update_results()" id="open_house_before" class="form-control form-control-sm">
+              <small class="text-muted"><em>Any date or time, e.g. <u ng-click="filters.open_house_before = 'Midnight next Tuesday'; update_results()">Midnight next Tuesday</u></em>. See <a href="https://www.php.net/manual/en/datetime.formats.php" target="_blank">docs</a>.</small>
+            </td>
+          </tr>
+          <tr ng-class="{'filter-inactive': filters.open_house_after == ''}">
+            <th><label for="open_house_after">Has visning after</label></th>
+            <td colspan="2">
+              <input type="text" ng-model="filters.open_house_after" ng-model-options="{debounce: {'default': 200}}" ng-blur="update_results()" id="open_house_after" class="form-control form-control-sm">
+              <small class="text-muted"><em>Any date or time, e.g. <em>"Oct 14th at 14:45"</em>. See <a href="https://www.php.net/manual/en/datetime.formats.php" target="_blank">docs</a>.</small>
+            </td>
+          </tr>
         </table>
       </div>
 
