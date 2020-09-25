@@ -62,3 +62,8 @@ footer a {
   height: 5px;
   transition: none;
 }
+
+.photos_modal_body_col {
+  max-height: calc(100vh - 14rem);
+  overflow-y: auto;
+}

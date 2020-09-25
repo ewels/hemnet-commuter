@@ -60,7 +60,10 @@ app.controller("hemnetCommuterController", ['$scope', '$compile', '$http', '$tim
   $scope.initialising = false;
   $scope.sidebar = false;
   $scope.photos_modal = false;
+  $scope.photos_modal_thumbs = true;
   $scope.photos_modal_planritning = true;
+  $scope.photos_modal_thumbs_width = 100;
+  $scope.photos_modal_planritning_width = 400;
 
   // Settings
   $scope.map_settings = {
