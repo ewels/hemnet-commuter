@@ -45,7 +45,7 @@ function translate_text($query, $db_only=false){
           `translatedText` = "'.$mysqli->real_escape_string($api_result['translatedText']).'",
           `created` = "'.time().'"
     ';
-    if(!$mysqli->query($sql)) return array('status' => 'error', 'error_msg' => $mysqli->error);
+    if(!$mysqli->query($sql)) return array('status' => 'error', 'msg' => $mysqli->error);
   }
 
   return $api_result;
