@@ -67,9 +67,9 @@ app.controller("hemnetCommuterController", ['$scope', '$compile', '$http', '$tim
 
   // Settings
   $scope.map_settings = {
-    marker_colour_icon: 'none',
-    marker_colour: 'none',
-    marker_icon: 'none'
+    marker_colour_icon: 'rating_combined',
+    marker_colour: 'rating_combined',
+    marker_icon: 'rating_combined'
   }
   // Build the dropdowns
   var base_setting_select = {
