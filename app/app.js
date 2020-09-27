@@ -99,14 +99,16 @@ app.controller("hemnetCommuterController", ['$scope', '$compile', '$http', '$tim
     'none': function (house) { return $scope.base_marker_colour; },
     'rating_combined': function (house) {
       var score = null;
+      var num_ratings = 0;
       for (let user_id in $scope.users) {
-        if (house.ratings[user_id] == 'yes') { score += 1; }
-        if (house.ratings[user_id] == 'maybe') { score += 0; }
-        if (house.ratings[user_id] == 'no') { score += -1; }
+        if (house.ratings[user_id] == 'yes') { score += 1; num_ratings++; }
+        if (house.ratings[user_id] == 'maybe') { score += 0; num_ratings++; }
+        if (house.ratings[user_id] == 'no') { score += -1; num_ratings++; }
       }
       if (score >= 2) { return '#28a745'; }
       if (score == 1) { return '#87d699'; }
-      if (score == 0) { return '#17a2b8'; }
+      if (score == 0 && num_ratings > 1) { return '#17a2b8'; }
+      if (score == 0 && num_ratings == 1) { return '#8bccd6'; }
       if (score == -1) { return '#f5c6cb'; }
       if (score <= -2) { return '#dc3545'; }
       return $scope.base_marker_colour;
@@ -170,6 +172,7 @@ app.controller("hemnetCommuterController", ['$scope', '$compile', '$http', '$tim
       if (col == '#28a745') { return ['fa-star']; }
       if (col == '#87d699') { return ['fa-thumbs-up']; }
       if (col == '#17a2b8') { return ['fa-question']; }
+      if (col == '#8bccd6') { return ['fa-question']; }
       if (col == '#f5c6cb') { return ['fa-thumbs-down']; }
       if (col == '#dc3545') { return ['fa-trash']; }
       return [$scope.base_marker_icon];
