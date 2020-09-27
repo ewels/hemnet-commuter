@@ -803,6 +803,16 @@ app.controller("hemnetCommuterController", ['$scope', '$compile', '$http', '$tim
 
         // Get the translated description text
         $http.post('api/translate.php', { query: response.data.data.listing.description }).then(function (response) {
+          // Check it worked
+          if (response.data.status != 'success') {
+            if (response.data.msg) {
+              $scope.error_msg = response.data.msg;
+            } else {
+              $scope.error_msg = "Something went wrong fetching the description translation! Please check the PHP logs.";
+            }
+            console.log(response.data);
+            return;
+          }
           $scope.active_house.description_translatedText = response.data.translatedText;
         });
       });
