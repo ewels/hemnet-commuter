@@ -218,6 +218,8 @@ app.controller("hemnetCommuterController", ['$scope', '$compile', '$http', '$tim
   $scope.commute_map_call_active = false;
   $scope.hemnet_results_updating = false;
   $scope.hemnet_results_update_btn_text = 'Update';
+  $scope.translate_target_language = '';
+  $scope.translate_description = false;
 
   // Build custom leaflet buttons for map settings
   L.Control.HncBtn = L.Control.extend({
@@ -422,6 +424,8 @@ app.controller("hemnetCommuterController", ['$scope', '$compile', '$http', '$tim
 
         $scope.num_total_results = response.data.num_results;
         $scope.all_results = response.data.results;
+
+        $scope.translate_target_language = response.data.translate_target_language;
 
         // Get stats
         $scope.stats.price = get_min_max('askingPrice', response.data.results);
@@ -697,6 +701,7 @@ app.controller("hemnetCommuterController", ['$scope', '$compile', '$http', '$tim
     if (args.model.id !== undefined) {
       $scope.active_id = args.model.id;
       $scope.active_house = $scope.results[$scope.active_id];
+      $scope.active_house.description_translatedText = '';
       $scope.active_house.carousel = [];
       $scope.carousel_idx = 0;
       console.log("House clicked:", $scope.active_house);
@@ -794,6 +799,11 @@ app.controller("hemnetCommuterController", ['$scope', '$compile', '$http', '$tim
         angular.forEach(response.data.data.listing.allImages, function (img) {
           $scope.active_house.carousel.push({ image: img.original, id: idx });
           idx++;
+        });
+
+        // Get the translated description text
+        $http.post('api/translate.php', { query: response.data.data.listing.description }).then(function (response) {
+          $scope.active_house.description_translatedText = response.data.translatedText;
         });
       });
     }

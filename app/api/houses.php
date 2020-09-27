@@ -12,6 +12,7 @@
 function get_houses($postdata){
 
   global $mysqli;
+  global $ini_array;
 
   require_once('comments.php');
   require_once('commute_locations.php');
@@ -24,6 +25,7 @@ function get_houses($postdata){
     "tags" => get_all_tags(),
     "users" => get_all_users(),
     "commute_locations" => get_commute_locations(),
+    "translate_target_language" => $ini_array['translate_target_language']
   );
 
   // Filter sanity checks

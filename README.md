@@ -52,7 +52,7 @@ I haven't done that. So you'll have to run the web server yourself I'm afraid.
 Before you start, you'll need:
 
 * A method of running an Apache / PHP / MySQL web server (eg. [MAMP](https://www.mamp.info/), Docker etc)
-* An API key for Google Maps (costs money, but easy to get loads of free credits for a trial. You won't need loads.)
+* An API key for Google Maps / Google Translate (costs money, but easy to get loads of free credits for a trial. You won't need loads.)
 * A [developer API key for TravelTime](https://traveltime.com/travel-time-maps?openDialog=true)
 
 ### Using Docker
@@ -108,13 +108,18 @@ the database credentials. Make a copy of `app/config_defaults.ini` called `app/c
 
 See the readme from the LAMP docker image for more details: [mattrayner/docker-lamp](https://github.com/mattrayner/docker-lamp#mysql-databases).
 
-### Google Maps & TravelTime
+### Google Maps, Google Translate & TravelTime
 
 Hemnet Commuter uses the Google Maps API to fetch travel times between houses and your commute locations.
+The Google Translate API is used to be able to translate the description text from Hemnet to your chosen language.
 It uses TravelTime to fetch a map of all potential commute locations within your criteria.
 
 For these features to work, you will need to get API keys for the two services. Make a copy of `app/config_defaults.ini`
 called `app/config.ini` and save them there (this file will be ignored by git).
+
+For Google you will need to register and set up a cloud computing account, then make a service account for Hemnet Commuter
+and set up some API keys which are allowed to use the `Geocoding API`, `Distance Matrix API` and `Cloud Translation API`.
+There are plenty of docs on how to do this, for example [here](https://cloud.google.com/translate/docs/setup?hl=en_GB).
 
 ### First run
 

@@ -85,6 +85,6 @@ if ( basename(__FILE__) == basename($_SERVER["SCRIPT_FILENAME"]) ) {
 
   $db_only = isset($postdata['db_only']) && $postdata['db_only'] ? true : false;
 
-  echo json_encode(translate_text($postdata['text'], $db_only), JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES);
+  echo json_encode(translate_text($postdata['query'], $db_only), JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES);
 
 }
