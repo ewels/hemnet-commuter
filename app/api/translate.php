@@ -21,9 +21,10 @@ function translate_text($query, $db_only=false){
   if(!isset($ini_array['translate_target_language']) or strlen($ini_array['translate_target_language']) == 0){
     return array("status"=>"error", "msg" => "Target language not set");
   }
+  $target = $ini_array['translate_target_language'];
 
   // Try to find existing translation in the DB
-  $sql = 'SELECT `translatedText` FROM `translations` WHERE `query` = "'.$mysqli->real_escape_string($query).'"';
+  $sql = 'SELECT `translatedText` FROM `translations` WHERE `target` = "'.$mysqli->real_escape_string($target).'" AND `query` = "'.$mysqli->real_escape_string($query).'"';
   if ($db_result = $mysqli->query($sql)) {
     while ($row = $db_result->fetch_assoc()) {
       return array("status"=>"success", "translatedText" => $row['translatedText'], "method" => "database");
@@ -32,7 +33,7 @@ function translate_text($query, $db_only=false){
   }
 
   // No results - fetch from Google API
-  $api_result = fetch_google_transation($query);
+  $api_result = fetch_google_transation($query, $target);
 
   // Save to DB if it worked
   if($api_result['status'] == 'success'){
@@ -40,6 +41,7 @@ function translate_text($query, $db_only=false){
     $sql = '
       INSERT INTO `translations`
       SET `query` = "'.$mysqli->real_escape_string($query).'",
+          `target` = "'.$mysqli->real_escape_string($target).'",
           `translatedText` = "'.$mysqli->real_escape_string($api_result['translatedText']).'",
           `created` = "'.time().'"
     ';
@@ -50,19 +52,12 @@ function translate_text($query, $db_only=false){
 }
 
 
-function fetch_google_transation($query){
+function fetch_google_transation($query, $target){
 
   global $ini_array;
 
-  if(!$query or strlen($query) == 0){
-    return array("status"=>"error", "msg" => "Empty text input");
-  }
-  if(!isset($ini_array['translate_target_language']) or strlen($ini_array['translate_target_language']) == 0){
-    return array("status"=>"error", "msg" => "Target language not set");
-  }
-
   // Get results
-  $google_url = 'https://translation.googleapis.com/language/translate/v2?q='.urlencode($query).'&format=text&source=sv&target='.$ini_array['translate_target_language'].'&key='.$ini_array['gmap_api_key'];
+  $google_url = 'https://translation.googleapis.com/language/translate/v2?q='.urlencode($query).'&format=text&source=sv&target='.$target.'&key='.$ini_array['gmap_api_key'];
   $api_result_raw = @file_get_contents($google_url);
   $api_result = @json_decode($api_result_raw);
   $header_parts = explode(' ', $http_response_header[0]);

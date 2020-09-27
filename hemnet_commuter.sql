@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: localhost
--- Generation Time: Sep 24, 2020 at 11:00 PM
+-- Generation Time: Sep 27, 2020 at 09:15 PM
 -- Server version: 5.7.30-0ubuntu0.18.04.1-log
 -- PHP Version: 7.4.8
 
@@ -164,6 +164,20 @@ CREATE TABLE `tags` (
 -- --------------------------------------------------------
 
 --
+-- Table structure for table `translations`
+--
+
+CREATE TABLE `translations` (
+  `id` int(12) NOT NULL,
+  `query` text CHARACTER SET utf8 COLLATE utf8_swedish_ci NOT NULL,
+  `target` text CHARACTER SET utf8 COLLATE utf8_swedish_ci NOT NULL,
+  `translatedText` text CHARACTER SET utf8 COLLATE utf8_swedish_ci NOT NULL,
+  `created` int(20) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+
+-- --------------------------------------------------------
+
+--
 -- Table structure for table `users`
 --
 
@@ -232,6 +246,12 @@ ALTER TABLE `tags`
   ADD PRIMARY KEY (`id`);
 
 --
+-- Indexes for table `translations`
+--
+ALTER TABLE `translations`
+  ADD PRIMARY KEY (`id`);
+
+--
 -- Indexes for table `users`
 --
 ALTER TABLE `users`
@@ -287,6 +307,12 @@ ALTER TABLE `saved_searches`
 -- AUTO_INCREMENT for table `tags`
 --
 ALTER TABLE `tags`
+  MODIFY `id` int(12) NOT NULL AUTO_INCREMENT;
+
+--
+-- AUTO_INCREMENT for table `translations`
+--
+ALTER TABLE `translations`
   MODIFY `id` int(12) NOT NULL AUTO_INCREMENT;
 
 --
