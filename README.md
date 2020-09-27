@@ -22,6 +22,7 @@ _Hemnet Commuter_ is a pet-project developed in my spare time to address these.
 * Customisable map marker display with colours and icons. For example:
   * Continuous colour scales showing graduation of price / commute times etc
   * Map marker icons showing rating, bidding status, and many more.
+* Auto-translation of house description texts to your language of choice
 
 #### Example screenshot:
 
@@ -54,6 +55,10 @@ Before you start, you'll need:
 * A method of running an Apache / PHP / MySQL web server (eg. [MAMP](https://www.mamp.info/), Docker etc)
 * An API key for Google Maps / Google Translate (costs money, but easy to get loads of free credits for a trial. You won't need loads.)
 * A [developer API key for TravelTime](https://traveltime.com/travel-time-maps?openDialog=true)
+
+For Google you will need to register and set up a cloud computing account, then make a service account for Hemnet Commuter
+and set up some API keys which are allowed to use the `Geocoding API`, `Distance Matrix API` and `Cloud Translation API`.
+There are plenty of docs on how to do this, for example [here](https://cloud.google.com/translate/docs/setup?hl=en_GB).
 
 ### Using Docker
 
@@ -116,10 +121,6 @@ It uses TravelTime to fetch a map of all potential commute locations within your
 
 For these features to work, you will need to get API keys for the two services. Make a copy of `app/config_defaults.ini`
 called `app/config.ini` and save them there (this file will be ignored by git).
-
-For Google you will need to register and set up a cloud computing account, then make a service account for Hemnet Commuter
-and set up some API keys which are allowed to use the `Geocoding API`, `Distance Matrix API` and `Cloud Translation API`.
-There are plenty of docs on how to do this, for example [here](https://cloud.google.com/translate/docs/setup?hl=en_GB).
 
 ### First run
 
