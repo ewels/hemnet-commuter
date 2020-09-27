@@ -270,9 +270,30 @@
       <!-- FILTERS -->
       <div ng-show="sidebar == 'filters'" class="pt-3">
         <h3 class="text-success"><i class="fa fa-filter mr-1"></i> Filters</h3>
+
         <h6>Ratings</h6>
         <p>Click to hide houses that are any of the following:</p>
         <table class="table table-sm">
+          <tr ng-class="{'filter-inactive': filters.min_combined_rating_score == num_users * -1}">
+            <th><label for="filters_min_combined_rating_score">Min combined rating score</label></th>
+            <td colspan="4">
+              <select id="filters_min_combined_rating_score" ng-model="filters.min_combined_rating_score" ng-change="update_results()" class="custom-select custom-select-sm">
+                <option ng-repeat="(user_id, user_name) in users" value="{{ num_users - $index }}">+{{ num_users - $index }}</option>
+                <option value="0">0</option>
+                <option ng-repeat="(user_id, user_name) in users" value="{{ ($index * -1) - 1 }}">{{ ($index * -1) - 1 }}</option>
+              </select>
+            </td>
+          </tr>
+          <tr ng-class="{'filter-inactive': filters.min_num_ratings === '0'}">
+            <th><label for="filters_min_num_ratings">Min number of ratings</label></th>
+            <td colspan="4">
+              <select id="filters_min_num_ratings" ng-model="filters.min_num_ratings" ng-change="update_results()" class="custom-select custom-select-sm">
+                <option>2</option>
+                <option>1</option>
+                <option>0</option>
+              </select>
+            </td>
+          </tr>
           <tr ng-repeat="(user_id, user_name) in users" ng-class="{'filter-inactive': !filters.hide_ratings[user_id]['yes'] && !filters.hide_ratings[user_id]['maybe'] && !filters.hide_ratings[user_id]['no'] && !filters.hide_ratings[user_id]['not_set'] }">
             <th>{{ user_name }}</th>
             <td class="px-2">

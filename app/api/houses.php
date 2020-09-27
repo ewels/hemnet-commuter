@@ -131,6 +131,22 @@ function get_houses($postdata){
         if(!$has_oh_after) $remove = true;
       }
     }
+    if(isset($postdata['min_combined_rating_score'])){
+      $score = false;
+      foreach($results['users'] as $user_id => $user_name){
+        if ($house['ratings'][$user_id] == 'yes') $score += 1;
+        if ($house['ratings'][$user_id] == 'maybe') $score += 0;
+        if ($house['ratings'][$user_id] == 'no') $score += -1;
+      }
+      if($score == false || $score < $postdata['min_combined_rating_score']) $remove = true;
+    }
+    if(isset($postdata['min_num_ratings'])){
+      $num_ratings = 0;
+      foreach($results['users'] as $user_id => $user_name){
+        if ($house['ratings'][$user_id] != 'not_set') $num_ratings++;
+      }
+      if($num_ratings < $postdata['min_num_ratings']) $remove = true;
+    }
     if(isset($postdata['hide_ratings'])){
       foreach($postdata['hide_ratings'] as $user_id => $ratings){
         foreach($ratings as $rating){

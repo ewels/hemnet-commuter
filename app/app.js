@@ -28,6 +28,8 @@ app.controller("hemnetCommuterController", ['$scope', '$compile', '$http', '$tim
 
   // Filters
   $scope.filters = {
+    min_combined_rating_score: 0,
+    min_num_ratings: "0",
     hide_ratings: {},
     kommande: "0",
     bidding: "0",
@@ -216,6 +218,7 @@ app.controller("hemnetCommuterController", ['$scope', '$compile', '$http', '$tim
   $scope.recent_ratings_filter_type = '';
   $scope.missing_geo = [];
   $scope.users = {};
+  $scope.num_users = 0;
   $scope.tags = {};
   $scope.commute_locations = {};
   $scope.commute_map_call_active = false;
@@ -312,6 +315,12 @@ app.controller("hemnetCommuterController", ['$scope', '$compile', '$http', '$tim
 
     // Build filters POST data
     var postdata = {};
+    if ($scope.filters.min_combined_rating_score != ($scope.num_users * -1).toString()) {
+      postdata.min_combined_rating_score = $scope.filters.min_combined_rating_score;
+    }
+    if ($scope.filters.min_num_ratings != "0") {
+      postdata.min_num_ratings = $scope.filters.min_num_ratings;
+    }
     if ($scope.filters.kommande != "0") {
       postdata.kommande = $scope.filters.kommande;
     }
@@ -438,6 +447,8 @@ app.controller("hemnetCommuterController", ['$scope', '$compile', '$http', '$tim
         $scope.stats.next_visning_timestamps = get_min_max('nextOpenHouse', response.data.results);
 
         // Build user-filters
+        $scope.num_users = Object.keys($scope.users).length;
+        $scope.filters.min_combined_rating_score = ($scope.num_users * -1).toString();
         for (let user_id in $scope.users) {
           $scope.filters.hide_ratings[user_id] = { 'yes': false, 'maybe': false, 'no': false, 'not_set': false };
         };
