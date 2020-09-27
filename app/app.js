@@ -222,7 +222,7 @@ app.controller("hemnetCommuterController", ['$scope', '$compile', '$http', '$tim
   $scope.hemnet_results_updating = false;
   $scope.hemnet_results_update_btn_text = 'Update';
   $scope.translate_target_language = '';
-  $scope.translate_description = false;
+  $scope.translate_description = true;
 
   // Build custom leaflet buttons for map settings
   L.Control.HncBtn = L.Control.extend({
