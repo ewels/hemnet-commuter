@@ -132,13 +132,12 @@ function get_houses($postdata){
       }
     }
     if(isset($postdata['min_combined_rating_score'])){
-      $score = false;
+      $score = 0;
       foreach($results['users'] as $user_id => $user_name){
         if ($house['ratings'][$user_id] == 'yes') $score += 1;
-        if ($house['ratings'][$user_id] == 'maybe') $score += 0;
         if ($house['ratings'][$user_id] == 'no') $score += -1;
       }
-      if($score == false || $score < $postdata['min_combined_rating_score']) $remove = true;
+      if($score < $postdata['min_combined_rating_score']) $remove = true;
     }
     if(isset($postdata['min_num_ratings'])){
       $num_ratings = 0;
