@@ -722,6 +722,9 @@ app.controller("hemnetCommuterController", ['$scope', '$compile', '$http', '$tim
   $scope.$on('leafletDirectiveMarker.click', function (event, args) {
     // Get house details
     if (args.model.id !== undefined) {
+      // Clear any active error message
+      $scope.error_msg = false;
+
       $scope.active_id = args.model.id;
       $scope.active_house = $scope.results[$scope.active_id];
       $scope.active_house.description_translatedText = '';

@@ -53,6 +53,9 @@
         </h1>
         <p ng-show="missing_geo.length > 0" class="small text-danger">Missing location for {{missing_geo.length}} houses! Fix on the <a href="update.php">update page</a>.</p>
         <div ng-show="error_msg" class="alert alert-danger">
+          <button ng-click="error_msg = false" type="button" class="close" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+          </button>
           <h4 class="alert-heading">Error</h4>
           <p class="small">{{ error_msg }} </p>
         </div>
