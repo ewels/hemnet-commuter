@@ -38,19 +38,14 @@ app.controller("hemnetCommuterController", ['$scope', '$compile', '$http', '$tim
     days_on_hemnet_max: 999999999,
     days_on_hemnet_min: 0,
     size_total_min: 0,
+    size_total_max: 999999999,
     size_tomt_min: 0,
+    size_tomt_max: 999999999,
     has_upcoming_open_house: "0",
     open_house_before: '',
     open_house_after: '',
     hide_failed_commutes: [],
   }
-  // https://stackoverflow.com/a/28246130/713980
-  $scope.$watch('filters.price_min', function () { $scope.filters.price_min = parseFloat($scope.filters.price_min); });
-  $scope.$watch('filters.price_max', function () { $scope.filters.price_max = parseFloat($scope.filters.price_max); });
-  $scope.$watch('filters.days_on_hemnet_max', function () { $scope.filters.days_on_hemnet_max = parseFloat($scope.filters.days_on_hemnet_max); });
-  $scope.$watch('filters.days_on_hemnet_min', function () { $scope.filters.days_on_hemnet_min = parseFloat($scope.filters.days_on_hemnet_min); });
-  $scope.$watch('filters.size_total_min', function () { $scope.filters.size_total_min = parseFloat($scope.filters.size_total_min); });
-  $scope.$watch('filters.size_tomt_min', function () { $scope.filters.size_tomt_min = parseFloat($scope.filters.size_tomt_min); });
 
   $scope.stats = {
     price: [0, 10000000],
@@ -314,6 +309,16 @@ app.controller("hemnetCommuterController", ['$scope', '$compile', '$http', '$tim
       return;
     }
 
+    // Fill in empty filters
+    if ($scope.filters.price_min == '') { $scope.filters.price_min = $scope.stats.price[0]; }
+    if ($scope.filters.price_max == '') { $scope.filters.price_max = $scope.stats.price[1]; }
+    if ($scope.filters.size_total_min == '') { $scope.filters.size_total_min = $scope.stats.size_total[0]; }
+    if ($scope.filters.size_total_max == '') { $scope.filters.size_total_max = $scope.stats.size_total[1]; }
+    if ($scope.filters.size_tomt_min == '') { $scope.filters.size_tomt_min = $scope.stats.size_tomt[0]; }
+    if ($scope.filters.size_tomt_max == '') { $scope.filters.size_tomt_max = $scope.stats.size_tomt[1]; }
+    if ($scope.filters.days_on_hemnet_min == '') { $scope.filters.days_on_hemnet_min = $scope.stats.days_on_hemnet[0]; }
+    if ($scope.filters.days_on_hemnet_max == '') { $scope.filters.days_on_hemnet_max = $scope.stats.days_on_hemnet[1]; }
+
     // Don't fire too frequently
     if ($scope.update_results_call_active) {
       $scope.update_results_call_requested = true;
@@ -351,8 +356,14 @@ app.controller("hemnetCommuterController", ['$scope', '$compile', '$http', '$tim
     if ($scope.filters.size_total_min != $scope.stats.size_total[0]) {
       postdata.size_total_min = $scope.filters.size_total_min;
     }
+    if ($scope.filters.size_total_max != $scope.stats.size_total[1]) {
+      postdata.size_total_max = $scope.filters.size_total_max;
+    }
     if ($scope.filters.size_tomt_min != $scope.stats.size_tomt[0]) {
       postdata.size_tomt_min = $scope.filters.size_tomt_min;
+    }
+    if ($scope.filters.size_tomt_max != $scope.stats.size_tomt[1]) {
+      postdata.size_tomt_max = $scope.filters.size_tomt_max;
     }
     if ($scope.filters.has_upcoming_open_house != "0") {
       postdata.has_upcoming_open_house = $scope.filters.has_upcoming_open_house;
@@ -454,6 +465,16 @@ app.controller("hemnetCommuterController", ['$scope', '$compile', '$http', '$tim
         $scope.stats.size_tomt = get_min_max('landArea', response.data.results);
         $scope.stats.days_on_hemnet = get_min_max('daysOnHemnet', response.data.results);
         $scope.stats.next_visning_timestamps = get_min_max('nextOpenHouse', response.data.results);
+
+        // Update filter values
+        $scope.filters.price_min = $scope.stats.price[0];
+        $scope.filters.price_max = $scope.stats.price[1];
+        $scope.filters.size_total_min = $scope.stats.size_total[0];
+        $scope.filters.size_total_max = $scope.stats.size_total[1];
+        $scope.filters.size_tomt_min = $scope.stats.size_tomt[0];
+        $scope.filters.size_tomt_max = $scope.stats.size_tomt[1];
+        $scope.filters.days_on_hemnet_min = $scope.stats.days_on_hemnet[0];
+        $scope.filters.days_on_hemnet_max = $scope.stats.days_on_hemnet[1];
 
         // Build user-filters
         $scope.num_users = Object.keys($scope.users).length;

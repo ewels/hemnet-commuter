@@ -353,33 +353,65 @@
               </select>
             </td>
           </tr>
-          <tr ng-class="{'filter-inactive': filters.price_min == stats.price[0]}">
-            <th><label for="price_min">Min price</label></th>
-            <td><input type="range" ng-model="filters.price_min" class="form-control-range" min="{{stats.price[0]}}" max="{{stats.price[1]}}" ng-change="update_results()"></td>
-            <td><input type="text" ng-model="filters.price_min" ng-model-options="{debounce: {'default': 200}}" ng-blur="update_results()" id="price_min" class="form-control form-control-sm" style="width: 80px;">
+          <tr ng-class="{'filter-inactive': filters.price_min == stats.price[0] && filters.price_max == stats.price[1]}">
+            <th><label for="price_min">Price <small>(kr)</small></label></th>
+            <td>
+              <div class="input-group input-group-sm">
+                <div class="input-group-prepend"><span class="input-group-text">Min</span></div>
+                <input type="text" ng-model="filters.price_min" ng-model-options="{debounce: {'default': 200}}" ng-blur="update_results()" id="price_min" class="form-control form-control-sm">
+              </div>
+            </td>
+            <td>
+              <div class="input-group input-group-sm">
+                <div class="input-group-prepend"><span class="input-group-text">Max</span></div>
+                <input type="text" ng-model="filters.price_max" ng-model-options="{debounce: {'default': 200}}" ng-blur="update_results()" id="price_max" class="form-control form-control-sm">
+              </div>
             </td>
           </tr>
-          <tr ng-class="{'filter-inactive': filters.price_max == stats.price[1]}">
-            <th><label for="price_max">Max price</label></th>
-            <td><input type="range" ng-model="filters.price_max" class="form-control-range" min="{{stats.price[0]}}" max="{{stats.price[1]}}" ng-change="update_results()"></td>
-            <td><input type="text" ng-model="filters.price_max" ng-model-options="{debounce: {'default': 200}}" ng-blur="update_results()" id="price_max" class="form-control form-control-sm" style="width: 80px;">
+          <tr ng-class="{'filter-inactive': filters.size_total_min == stats.size_total[0] && filters.size_total_max == stats.size_total[1]}">
+            <th><label for="size_total_min">Size <small style="white-space: nowrap;">(Bo + Bi)</small></label></th>
+            <td>
+              <div class="input-group input-group-sm">
+                <div class="input-group-prepend"><span class="input-group-text">Min</span></div>
+                <input type="text" ng-model="filters.size_total_min" ng-model-options="{debounce: {'default': 200}}" ng-blur="update_results()" id="size_total_min" class="form-control form-control-sm">
+              </div>
+            </td>
+            <td>
+              <div class="input-group input-group-sm">
+                <div class="input-group-prepend"><span class="input-group-text">Max</span></div>
+                <input type="text" ng-model="filters.size_total_max" ng-model-options="{debounce: {'default': 200}}" ng-blur="update_results()" id="size_total_max" class="form-control form-control-sm">
+              </div>
             </td>
           </tr>
-          <tr ng-class="{'filter-inactive': filters.size_total_min == stats.size_total[0]}">
-            <th><label for="size_total_min">Min size <small style="white-space: nowrap;">(Bo + Bi)</small></label>
-            </th>
-            <td><input type="range" ng-model="filters.size_total_min" class="form-control-range" min="{{stats.size_total[0]}}" max="{{stats.size_total[1]}}" ng-change="update_results()"></td>
-            <td><input type="text" ng-model="filters.size_total_min" ng-model-options="{debounce: {'default': 200}}" ng-blur="update_results()" id="size_total_min" class="form-control form-control-sm" style="width: 80px;"></td>
+          <tr ng-class="{'filter-inactive': filters.size_tomt_min == stats.size_tomt[0] && filters.size_tomt_max == stats.size_tomt[1]}">
+            <th><label for="size_tomt_min">Tomt <small>(m<sup>2</sup>)</small></label></th>
+            <td>
+              <div class="input-group input-group-sm">
+                <div class="input-group-prepend"><span class="input-group-text">Min</span></div>
+                <input type="text" ng-model="filters.size_tomt_min" ng-model-options="{debounce: {'default': 200}}" ng-blur="update_results()" id="size_tomt_min" class="form-control form-control-sm">
+              </div>
+            </td>
+            <td>
+              <div class="input-group input-group-sm">
+                <div class="input-group-prepend"><span class="input-group-text">Max</span></div>
+                <input type="text" ng-model="filters.size_tomt_max" ng-model-options="{debounce: {'default': 200}}" ng-blur="update_results()" id="size_tomt_max" class="form-control form-control-sm">
+              </div>
+            </td>
           </tr>
-          <tr ng-class="{'filter-inactive': filters.size_tomt_min == stats.size_tomt[0]}">
-            <th><label for="size_tomt_min">Min tomt</label></th>
-            <td><input type="range" ng-model="filters.size_tomt_min" class="form-control-range" min="{{stats.size_tomt[0]}}" max="{{stats.size_tomt[1]}}" ng-change="update_results()"></td>
-            <td><input type="text" ng-model="filters.size_tomt_min" ng-model-options="{debounce: {'default': 200}}" ng-blur="update_results()" id="size_tomt_min" class="form-control form-control-sm" style="width: 80px;"></td>
-          </tr>
-          <tr ng-class="{'filter-inactive': filters.days_on_hemnet_max == stats.days_on_hemnet[1]}">
+          <tr ng-class="{'filter-inactive': filters.days_on_hemnet_min == stats.days_on_hemnet[0] && filters.days_on_hemnet_max == stats.days_on_hemnet[1]}">
             <th><label for="days_on_hemnet_max">Days on Hemnet</label></th>
-            <td><input type="range" ng-model="filters.days_on_hemnet_max" class="form-control-range" min="{{stats.days_on_hemnet[0]}}" max="{{stats.days_on_hemnet[1]}}" ng-change="update_results()"></td>
-            <td><input type="text" ng-model="filters.days_on_hemnet_max" ng-model-options="{debounce: {'default': 200}}" ng-blur="update_results()" id="days_on_hemnet_max" class="form-control form-control-sm" style="width: 80px;"></td>
+            <td>
+              <div class="input-group input-group-sm">
+                <div class="input-group-prepend"><span class="input-group-text">Min</span></div>
+                <input type="text" ng-model="filters.days_on_hemnet_min" ng-model-options="{debounce: {'default': 200}}" ng-blur="update_results()" id="days_on_hemnet_min" class="form-control form-control-sm">
+              </div>
+            </td>
+            <td>
+              <div class="input-group input-group-sm">
+                <div class="input-group-prepend"><span class="input-group-text">Max</span></div>
+                <input type="text" ng-model="filters.days_on_hemnet_max" ng-model-options="{debounce: {'default': 200}}" ng-blur="update_results()" id="days_on_hemnet_max" class="form-control form-control-sm">
+              </div>
+            </td>
           </tr>
           <tr ng-class="{'filter-inactive': filters.has_upcoming_open_house == 0}">
             <th><label for="filters_has_upcoming_open_house">Visnings</label></th>
