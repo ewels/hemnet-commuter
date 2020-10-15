@@ -8,7 +8,7 @@
  */
 
 var app = angular.module("hemnetCommuterApp", ['ui-leaflet', 'ngCookies', 'ngAnimate', 'ngTouch', 'ui.bootstrap']);
-app.controller("hemnetCommuterController", ['$scope', '$compile', '$http', '$timeout', '$cookies', function ($scope, $compile, $http, $timeout, $cookies) {
+app.controller("hemnetCommuterController", ['$scope', '$compile', '$http', '$timeout', '$cookies', 'leafletData', function ($scope, $compile, $http, $timeout, $cookies, leafletData) {
 
   // Put some common functions onto the $scope
   $scope.isArray = angular.isArray;
@@ -295,6 +295,15 @@ app.controller("hemnetCommuterController", ['$scope', '$compile', '$http', '$tim
         }),
       ]
     }
+  });
+
+  // Make sure that the map has the right height on the 100% height div
+  // https://stackoverflow.com/a/44132780/713980
+  leafletData.getMap().then(function (map) {
+    setTimeout(function () {
+      map.invalidateSize();
+      map._resetView(map.getCenter(), map.getZoom(), true);
+    }, 200);
   });
 
   // Get the map markers
