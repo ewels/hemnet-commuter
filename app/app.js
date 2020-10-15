@@ -25,6 +25,7 @@ app.controller("hemnetCommuterController", ['$scope', '$compile', '$http', '$tim
   if ($cookies.get('hc_hemnet_api_key')) {
     $scope.hemnet_api_key = $cookies.get('hc_hemnet_api_key');
   }
+  $scope.lantmateriet_api_key = $cookies.get('hc_lantmateriet_api_key');
 
   // Filters
   $scope.filters = {
@@ -245,7 +246,7 @@ app.controller("hemnetCommuterController", ['$scope', '$compile', '$http', '$tim
 
 
   // Set up the map
-  angular.extend($scope, {
+  $scope.map = {
     center: {
       lat: 59.325199,
       lng: 18.071480,
@@ -258,7 +259,25 @@ app.controller("hemnetCommuterController", ['$scope', '$compile', '$http', '$tim
           name: 'OpenStreetMap',
           url: 'http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
           type: 'xyz'
-        }
+        },
+        lmtTopowebb: {
+          name: 'Lantmäteriet',
+          url: 'https://api.lantmateriet.se/open/topowebb-ccby/v1/wmts/token/' + $scope.lantmateriet_api_key + '/?SERVICE=WMTS&REQUEST=GetTile&VERSION=1.0.0&LAYER=topowebb&STYLE=default&TILEMATRIXSET=3857&TILEMATRIX={z}&TILEROW={y}&TILECOL={x}&FORMAT=image%2Fpng',
+          layerOptions: {
+            maxZoom: 15,
+            minZoom: 0
+          },
+          type: 'xyz'
+        },
+        lmtTopowebbNedtonad: {
+          name: 'Lantmäteriet - muted',
+          url: 'https://api.lantmateriet.se/open/topowebb-ccby/v1/wmts/token/' + $scope.lantmateriet_api_key + '/?SERVICE=WMTS&REQUEST=GetTile&VERSION=1.0.0&LAYER=topowebb_nedtonad&STYLE=default&TILEMATRIXSET=3857&TILEMATRIX={z}&TILEROW={y}&TILECOL={x}&FORMAT=image%2Fpng',
+          layerOptions: {
+            maxZoom: 15,
+            minZoom: 0
+          },
+          type: 'xyz'
+        },
       },
       overlays: {}
     },
@@ -290,7 +309,7 @@ app.controller("hemnetCommuterController", ['$scope', '$compile', '$http', '$tim
         }),
       ]
     }
-  });
+  }
 
   // Make sure that the map has the right height on the 100% height div
   // https://stackoverflow.com/a/44132780/713980
@@ -551,10 +570,8 @@ app.controller("hemnetCommuterController", ['$scope', '$compile', '$http', '$tim
       }
 
       // Update the map
-      angular.extend($scope, {
-        bounds: bounds,
-        markers: markers
-      });
+      $scope.map.bounds = bounds;
+      $scope.map.markers = markers;
 
       // Allow function to call again in 1 second
       $timeout(function () {
@@ -637,7 +654,7 @@ app.controller("hemnetCommuterController", ['$scope', '$compile', '$http', '$tim
     $scope.update_markers();
   }
   $scope.update_markers = function () {
-    angular.extend($scope, { markers: $scope.plot_markers() });
+    $scope.map.markers = $scope.plot_markers();
   }
 
   // Get the map markers
@@ -657,7 +674,7 @@ app.controller("hemnetCommuterController", ['$scope', '$compile', '$http', '$tim
       }
 
       // Wipe any existing layers
-      $scope.layers.overlays = {};
+      $scope.map.layers.overlays = {};
 
       // Plot each shape separately
       var colours = ['#3388FF', '#e7298a', '#66a61e', '#d95f02', '#7570b3'];
@@ -686,7 +703,7 @@ app.controller("hemnetCommuterController", ['$scope', '$compile', '$http', '$tim
           };
         }
         // Add to map as new layer
-        angular.extend($scope.layers.overlays, {
+        angular.extend($scope.map.layers.overlays, {
           ["commute_map_" + id]: {
             name: layer_name,
             type: 'geoJSONShape',
@@ -1032,7 +1049,7 @@ app.controller("hemnetCommuterController", ['$scope', '$compile', '$http', '$tim
   $scope.recent_ratings_click = function (house_id) {
     $scope.active_id = house_id;
     $scope.active_house = $scope.results[house_id];
-    $scope.markers[house_id].focus = true;
+    $scope.map.markers[house_id].focus = true;
   }
 
   // Sign in to Hemnet

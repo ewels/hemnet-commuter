@@ -41,8 +41,7 @@
 
   <div class="row mr-0 h-100" style="position:relative;">
     <div ng-class="!sidebar ? 'col-md-8' : 'col-md-4'" class="px-0 h-100 order-2">
-      <leaflet bounds="bounds" lf-center="center" event-broadcast="events" markers="markers" layers="layers"
-        controls="controls" style="position: absolute; top: 0; bottom: 0; width: 100%;"></leaflet>
+      <leaflet bounds="map.bounds" lf-center="map.center" event-broadcast="map.events" markers="map.markers" layers="map.layers" controls="map.controls" style="position: absolute; top: 0; bottom: 0; width: 100%;"></leaflet>
     </div>
     <div class="col-md-4 pr-0 order-1 h-100 overflow-auto">
       <div class="container pt-3">
@@ -263,7 +262,7 @@
               <h6>{{ results[rating.house_id].address }}</h6>
               <div class="row">
                 <div class="col-4">
-                  <img src="{{ results[rating.house_id].image_url }}" class="w-100 mb-2">
+                  <img ng-src="{{ results[rating.house_id].image_url }}" class="w-100 mb-2">
                 </div>
                 <div class="col-8">
                   <p class="small mb-0" ng-show="results[rating.house_id].comments[rating.user_id].length">

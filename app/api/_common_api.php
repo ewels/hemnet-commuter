@@ -51,3 +51,6 @@ $mysqli->set_charset("utf8");
 $postdata = json_decode(file_get_contents("php://input"), true);
 if(is_null($postdata)) $postdata = [];
 $postdata = array_merge($_GET, $postdata);
+
+// Set a browser cookie with the lantmateriet API key
+setcookie("hc_lantmateriet_api_key", $ini_array['lantmateriet_api_key'], time()+365*24*60*60, '/');
