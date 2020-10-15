@@ -93,15 +93,21 @@
 
           <!-- Buttons - first row -->
           <div class="form-row mb-3">
-            <div class="col-4"><a ng-href="{{active_house.listingHemnetUrl}}" target="_blank" class="btn btn-block btn-primary" style="white-space: nowrap; overflow: hidden;">
-              <i class="fa fa-home mr-2"></i> Hemnet
-            </a></div>
-            <div class="col-4"><a ng-href="{{active_house.listingBrokerUrl}}" target="_blank" class="btn btn-block btn-success" style="white-space: nowrap; overflow: hidden;">
-              <i class="fa fa-bookmark mr-2" id="commute_icon"></i> Mäklare
-            </a></div>
-            <div class="col-4"><button ng-click="photos_modal = true" class="btn btn-block btn-secondary" style="white-space: nowrap; overflow: hidden;">
-              <i class="fa fa-picture-o mr-2"></i> Photos
-            </button></div>
+            <div class="col-4">
+              <a ng-href="{{active_house.listingHemnetUrl}}" ng-class="{'disabled': !active_house.listingHemnetUrl}" target="_blank" class="btn btn-block btn-primary" style="white-space: nowrap; overflow: hidden;">
+                <i class="fa fa-home mr-2"></i> Hemnet
+              </a>
+            </div>
+            <div class="col-4">
+              <a ng-href="{{active_house.listingBrokerUrl}}" ng-class="{'disabled': !active_house.listingBrokerUrl}" target="_blank" class="btn btn-block btn-success" style="white-space: nowrap; overflow: hidden;">
+                <i class="fa fa-bookmark mr-2" id="commute_icon"></i> Mäklare
+              </a>
+            </div>
+            <div class="col-4">
+              <button ng-click="photos_modal = true" ng-disabled="active_house.carousel.length == 0" class="btn btn-block btn-secondary" style="white-space: nowrap; overflow: hidden;">
+                <i class="fa fa-picture-o mr-2"></i> Photos
+              </button>
+            </div>
           </div>
 
           <!-- Buttons - maps -->
