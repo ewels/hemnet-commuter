@@ -854,7 +854,7 @@ app.controller("hemnetCommuterController", ['$scope', '$compile', '$http', '$tim
           if (typeof $scope.active_house.upcomingOpenHouses == "string") {
             $scope.active_house.upcomingOpenHouses = $scope.active_house.upcomingOpenHouses.split(',');
           } else {
-            $scope.active_house.upcomingOpenHouses = [$scope.active_house.upcomingOpenHouses];
+            $scope.active_house.upcomingOpenHouses = $scope.active_house.upcomingOpenHouses;
           }
         }
 
