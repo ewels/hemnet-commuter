@@ -67,3 +67,9 @@ footer a {
   max-height: calc(100vh - 14rem);
   overflow-y: auto;
 }
+.photos_modal_body_col img {
+  max-height: 100%;
+  max-width: 100%;
+  margin: 0 auto;
+  display: block;
+}
