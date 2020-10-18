@@ -76,18 +76,29 @@ $ docker start hemnet_commuter
 
 This container will now start up in the background and create a new MySQL database for you in a new `mysql` directory.
 
-If you want to use phpMyAdmin at a later date to view or manage the database, you'll need this to log in
-with the username `admin` and password that is auto-generated on this first run. You can find this info (and note it down)
-by running the `docker logs hemnet_commuter | less` command.
-Look for the log that says something like: `=> Creating MySQL admin user with random password` followed by
-`You can now connect to this MySQL Server with XXXXXXX`.
-
-Next, create a new database and fill it with the required table structures in the supplied SQL file:
+Give the server a few seconds to start, then create a new database and fill it with the required table structures
+in the supplied SQL file:
 
 ```console
 $ docker exec -i hemnet_commuter mysql -uroot -e "CREATE DATABASE hemnet_commuter"
 $ docker exec -i hemnet_commuter mysql -uroot hemnet_commuter < hemnet_commuter.sql
 ```
+
+Go to [http://localhost](http://localhost) in your web browser. Hopefully Hemnet Commuter should load.
+
+On the right hand side of the map there is a toolbar with several buttons. Use the map-marker
+icon to open the _Map Settings_ sidebar. Click _Update Saved Searches_ and enter the
+e-mail address and password that you use to log in to https://www.hemnet.se and click _Sign in to Hemnet_.
+
+If the login works successfully, you should see a list of the names of your saved searches,
+each with a toggle button. Select the searches that you would like to use for Hemnet Commuter
+and click _Update_. Hemnet Commuter will now pull in all houses from Hemnet and hopefully plot
+them on the map. If your saved searches have a lot of houses (> 1000) this can take a long time.
+A maximum of ~500 houses seems to work well.
+
+> Your hemnet.se email and password is not saved to the database and will be forgotten as soon
+> as you close or refresh the web page. Only the saved search IDs and details are logged in the DB.
+> You need to sign and refresh your saved searches each time you update their settings on Hemnet.
 
 #### Continued use
 
@@ -100,8 +111,7 @@ $ docker stop hemnet_commuter
 
 You can check the status of any running Docker containers with the `docker ps` command.
 
-To use Hemnet Commuter, go to `http://localhost` in your browser.
-You can manage the database using phpMyAdmin at `http://localhost/phpmyadmin`
+To use Hemnet Commuter, go to [http://localhost](http://localhost) in your browser.
 
 ### Database credentials
 
@@ -110,6 +120,13 @@ They are used in the Dockerfile to create an empty skeleton database and user.
 
 If you are running Hemnet Commuter anywhere where another (potentially malicious) user could get to it, you should change
 the database credentials. Make a copy of `app/config_defaults.ini` called `app/config.ini` and save them there (this file will be ignored by git).
+
+If you want to use phpMyAdmin to view or manage the database, you'll need the login credentials created
+when you first set up the docker container. The username is always `admin` and password is auto-generated
+on this first run. You can find this info by running the `docker logs hemnet_commuter | less` command.
+Look for the log that says something like: `=> Creating MySQL admin user with random password` followed by
+`You can now connect to this MySQL Server with XXXXXXX`.
+Once you have the çredentials, you can use phpMyAdmin at [http://localhost/phpmyadmin](http://localhost/phpmyadmin).
 
 See the readme from the LAMP docker image for more details: [mattrayner/docker-lamp](https://github.com/mattrayner/docker-lamp#mysql-databases).
 
@@ -121,15 +138,6 @@ It uses TravelTime to fetch a map of all potential commute locations within your
 
 For these features to work, you will need to get API keys for the two services. Make a copy of `app/config_defaults.ini`
 called `app/config.ini` and save them there (this file will be ignored by git).
-
-### First run
-
-In the database, add one or more rows in the `saved_searches` DB table with the numeric IDs for your saved searches.
-
-> `#TODO`: Add a front-end method to do manage these (the error message even suggests this already exists).
-
-Open Hemnet Commuter in your web browser. Hopefully it should load with a big yellow _"Update"_ button
-which you can press to fetch all data.
 
 ## Licence and code use
 
