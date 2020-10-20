@@ -59,8 +59,27 @@ function get_houses($postdata){
     $result->free_result();
   }
 
+  // Build simple WHERE filters
+  $houses_where = [];
+  if(isset($postdata['house_id'])) $houses_where[] = '`id` = '.$mysqli->real_escape_string($postdata['house_id']);
+  if(isset($postdata['kommande']) && $postdata['kommande'] == '1') $houses_where[] = '`isUpcoming` = 1';
+  if(isset($postdata['kommande']) && $postdata['kommande'] == '-1') $houses_where[] = '`isUpcoming` <> 1';
+  if(isset($postdata['bidding']) && $postdata['bidding'] == '1') $houses_where[] = '`isBiddingOngoing` = 1';
+  if(isset($postdata['bidding']) && $postdata['bidding'] == '-1') $houses_where[] = '`isBiddingOngoing` <> 1';
+  if(isset($postdata['price_min'])) $houses_where[] = '`askingPrice` > '.$mysqli->real_escape_string($postdata['price_min']);
+  if(isset($postdata['price_max'])) $houses_where[] = '`askingPrice` < '.$mysqli->real_escape_string($postdata['price_max']);
+  if(isset($postdata['days_on_hemnet_min'])) $houses_where[] = '`daysOnHemnet` > '.$mysqli->real_escape_string($postdata['days_on_hemnet_min']);
+  if(isset($postdata['days_on_hemnet_max'])) $houses_where[] = '`daysOnHemnet` < '.$mysqli->real_escape_string($postdata['days_on_hemnet_max']);
+  if(isset($postdata['size_total_min'])) $houses_where[] = '`size_total` > '.$mysqli->real_escape_string($postdata['size_total_min']);
+  if(isset($postdata['size_total_max'])) $houses_where[] = '`size_total` < '.$mysqli->real_escape_string($postdata['size_total_max']);
+  if(isset($postdata['size_tomt_min'])) $houses_where[] = '`landArea` > '.$mysqli->real_escape_string($postdata['size_tomt_min']);
+  if(isset($postdata['size_tomt_max'])) $houses_where[] = '`landArea` < '.$mysqli->real_escape_string($postdata['size_tomt_max']);
+  if(isset($postdata['has_upcoming_open_house']) && $postdata['has_upcoming_open_house'] == '1') $houses_where[] = '`nextOpenHouse` IS NULL';
+  if(isset($postdata['has_upcoming_open_house']) && $postdata['has_upcoming_open_house'] == '-1') $houses_where[] = '`nextOpenHouse` IS NOT NULL';
+
+
   ///
-  /// NB: I should do all of this in joins but it's late and I'm a bad person.
+  /// NB: I should do the more complicated filters in joins but it's late and I'm a bad person.
   ///
 
   $oldest_fetch = 99999999999999;
@@ -68,6 +87,9 @@ function get_houses($postdata){
   // Get house details
   $house_results = [];
   $sql = 'SELECT * FROM `houses`';
+  if(count($houses_where) > 0){
+    $sql .= ' WHERE '.implode(' AND ', $houses_where);
+  }
   if ($result = $mysqli->query($sql)) {
     while ($row = $result->fetch_assoc()) {
       $house_results[$row['id']] = $row;
@@ -123,19 +145,8 @@ function get_houses($postdata){
   // FILTERS
   foreach($house_results as $house_id => $house){
     $remove = false;
-    if(isset($postdata['house_id']) && $house['id'] != $postdata['house_id']) $remove = true;
-    if(isset($postdata['kommande']) && $postdata['kommande'] == '1' && @$house['isUpcoming'] != '1') $remove = true;
-    if(isset($postdata['kommande']) && $postdata['kommande'] == '-1' && @$house['isUpcoming'] == '1') $remove = true;
-    if(isset($postdata['bidding']) && $postdata['bidding'] == '1' && @$house['isBiddingOngoing'] != '1') $remove = true;
-    if(isset($postdata['bidding']) && $postdata['bidding'] == '-1' && @$house['isBiddingOngoing'] == '1') $remove = true;
-    if(isset($postdata['price_min']) && @$house['askingPrice'] < $postdata['price_min']) $remove = true;
-    if(isset($postdata['price_max']) && @$house['askingPrice'] > $postdata['price_max']) $remove = true;
-    if(isset($postdata['days_on_hemnet_max']) && @$house['daysOnHemnet'] > $postdata['days_on_hemnet_max']) $remove = true;
-    if(isset($postdata['days_on_hemnet_min']) && @$house['daysOnHemnet'] < $postdata['days_on_hemnet_min']) $remove = true;
-    if(isset($postdata['size_total_min']) && $house['size_total'] < $postdata['size_total_min']) $remove = true;
-    if(isset($postdata['size_tomt_min']) && $house['landArea'] < $postdata['size_tomt_min']) $remove = true;
-    if(isset($postdata['has_upcoming_open_house']) && $postdata['has_upcoming_open_house'] == '1' && is_null($house['nextOpenHouse'])) $remove = true;
-    if(isset($postdata['has_upcoming_open_house']) && $postdata['has_upcoming_open_house'] == '-1' && !is_null($house['nextOpenHouse'])) $remove = true;
+
+    // Visning filter times in variable text strings
     if(isset($postdata['open_house_before'])){
       if(is_null($house['nextOpenHouse']) || floatval($house['nextOpenHouse']) == 0) $remove = true;
       else if(floatval($house['nextOpenHouse']) > strtotime($postdata['open_house_before'])) $remove = true;
@@ -150,6 +161,8 @@ function get_houses($postdata){
         if(!$has_oh_after) $remove = true;
       }
     }
+
+    // Filters that should be written as SQL joins
     if(isset($postdata['min_combined_rating_score'])){
       $score = 0;
       foreach($results['users'] as $user_id => $user_name){
