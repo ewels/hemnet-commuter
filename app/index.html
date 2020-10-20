@@ -358,7 +358,7 @@
               </select>
             </td>
           </tr>
-          <tr ng-class="{'filter-inactive': filters.price_min == stats.price[0] && filters.price_max == stats.price[1]}">
+          <tr ng-class="{'filter-inactive': filters.price_min == stats.price_min && filters.price_max == stats.price_max}">
             <th><label for="price_min">Price <small>(kr)</small></label></th>
             <td>
               <div class="input-group input-group-sm">
@@ -373,7 +373,7 @@
               </div>
             </td>
           </tr>
-          <tr ng-class="{'filter-inactive': filters.size_total_min == stats.size_total[0] && filters.size_total_max == stats.size_total[1]}">
+          <tr ng-class="{'filter-inactive': filters.size_total_min == stats.size_total_min && filters.size_total_max == stats.size_total_max}">
             <th><label for="size_total_min">Size <small style="white-space: nowrap;">(Bo + Bi)</small></label></th>
             <td>
               <div class="input-group input-group-sm">
@@ -388,7 +388,7 @@
               </div>
             </td>
           </tr>
-          <tr ng-class="{'filter-inactive': filters.size_tomt_min == stats.size_tomt[0] && filters.size_tomt_max == stats.size_tomt[1]}">
+          <tr ng-class="{'filter-inactive': filters.size_tomt_min == stats.size_tomt_min && filters.size_tomt_max == stats.size_tomt_max}">
             <th><label for="size_tomt_min">Tomt <small>(m<sup>2</sup>)</small></label></th>
             <td>
               <div class="input-group input-group-sm">
@@ -403,7 +403,7 @@
               </div>
             </td>
           </tr>
-          <tr ng-class="{'filter-inactive': filters.days_on_hemnet_min == stats.days_on_hemnet[0] && filters.days_on_hemnet_max == stats.days_on_hemnet[1]}">
+          <tr ng-class="{'filter-inactive': filters.days_on_hemnet_min == stats.days_on_hemnet_min && filters.days_on_hemnet_max == stats.days_on_hemnet_max}">
             <th><label for="days_on_hemnet_max">Days on Hemnet</label></th>
             <td>
               <div class="input-group input-group-sm">

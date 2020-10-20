@@ -52,7 +52,7 @@ I haven't done that. So you'll have to run the web server yourself I'm afraid.
 
 Before you start, you'll need:
 
-* A method of running an Apache / PHP / MySQL web server (eg. [MAMP](https://www.mamp.info/), Docker etc)
+* [Docker](https://www.docker.com/) installed to run the web server locally on your computer _(recommended)_ or an alternative method of running an Apache / PHP / MySQL web server (eg. [MAMP](https://www.mamp.info/)).
 * An API key for Google Maps / Google Translate (costs money, but easy to get loads of free credits for a trial. You won't need loads.)
 * A [developer API key for TravelTime](https://traveltime.com/travel-time-maps?openDialog=true)
 

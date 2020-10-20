@@ -204,7 +204,6 @@ app.controller("hemnetCommuterController", ['$scope', '$compile', '$http', '$tim
   $scope.active_house = false;
   $scope.carousel_idx = 0;
   $scope.num_total_results = 0;
-  $scope.all_results = [];
   $scope.num_results = 0;
   $scope.oldest_fetch = 0;
   $scope.needs_update = false;
@@ -320,8 +319,105 @@ app.controller("hemnetCommuterController", ['$scope', '$compile', '$http', '$tim
     }, 200);
   });
 
+  // Get the initial stats and setup
+  $scope.init_vars = function () {
+
+    // Get the house data from the database
+    $http.get("api/init_stats.php").then(function (response) {
+
+      // Check that this worked
+      if (response.data.status != 'success') {
+        if (response.data.msg) {
+          $scope.error_msg = response.data.msg;
+        } else {
+          $scope.error_msg = "Something went wrong loading the initial setup! Please check the PHP logs.";
+        }
+        console.log(response.data);
+        return;
+      }
+
+      // Init stats and website setup
+      $scope.num_total_results = response.data.stats.num_houses;
+      $scope.tags = response.data.tags;
+      $scope.users = response.data.users;
+      $scope.commute_locations = response.data.commute_locations;
+      $scope.translate_target_language = response.data.translate_target_language;
+      $scope.stats = response.data.stats;
+
+      // Update filter values
+      $scope.filters.price_min = $scope.stats.price_min;
+      $scope.filters.price_max = $scope.stats.price_max;
+      $scope.filters.size_total_min = $scope.stats.size_total_min;
+      $scope.filters.size_total_max = $scope.stats.size_total_max;
+      $scope.filters.size_tomt_min = $scope.stats.size_tomt_min;
+      $scope.filters.size_tomt_max = $scope.stats.size_tomt_max;
+      $scope.filters.days_on_hemnet_min = $scope.stats.days_on_hemnet_min;
+      $scope.filters.days_on_hemnet_max = $scope.stats.days_on_hemnet_max;
+
+      // Build user-filters
+      $scope.num_users = Object.keys($scope.users).length;
+      $scope.filters.min_combined_rating_score = ($scope.num_users * -1).toString();
+      for (let user_id in $scope.users) {
+        $scope.filters.hide_ratings[user_id] = { 'yes': false, 'maybe': false, 'no': false, 'not_set': false };
+      };
+
+      // Build commute-filters
+      for (let commute_id in $scope.commute_locations) {
+        $scope.filters.hide_failed_commutes[commute_id] = "0";
+      }
+
+      // Add extra map settings
+      for (let user_id in $scope.users) {
+        $scope.map_setting_selects.marker_colour_icon.Ratings['rating_' + user_id] = 'Rating: ' + $scope.users[user_id];
+        $scope.map_setting_selects.marker_colour.Ratings['rating_' + user_id] = 'Rating: ' + $scope.users[user_id];
+        $scope.map_setting_selects.marker_icon.Ratings['rating_' + user_id] = 'Rating: ' + $scope.users[user_id];
+        $scope.set_marker_colour['rating_' + user_id] = function (house) {
+          if (house.ratings[user_id] == 'yes') { return '#28a745'; }
+          if (house.ratings[user_id] == 'maybe') { return '#17a2b8'; }
+          if (house.ratings[user_id] == 'no') { return '#dc3545'; }
+          return $scope.base_marker_colour;
+        };
+        $scope.set_marker_icon['rating_' + user_id] = function (house) {
+          if (house.ratings[user_id] == 'yes') { return ['fa-thumbs-up']; }
+          if (house.ratings[user_id] == 'maybe') { return ['fa-question']; }
+          if (house.ratings[user_id] == 'no') { return ['fa-thumbs-down']; }
+          return [$scope.base_marker_icon];
+        };
+      }
+      for (let commute_id in $scope.commute_locations) {
+        $scope.map_setting_selects.marker_colour_icon.Commutes['commute_threshold_' + commute_id] = 'Commute threshold: ' + $scope.commute_locations[commute_id].address;
+        $scope.map_setting_selects.marker_colour.Commutes['commute_threshold_' + commute_id] = 'Commute threshold: ' + $scope.commute_locations[commute_id].address;
+        $scope.map_setting_selects.marker_icon.Commutes['commute_threshold_' + commute_id] = 'Commute threshold: ' + $scope.commute_locations[commute_id].address;
+        $scope.set_marker_colour['commute_threshold_' + commute_id] = function (house) {
+          if (house.commute_times[commute_id].pass_threshold == true) { return '#28a745'; }
+          else if (house.commute_times[commute_id].pass_threshold == false) { return '#dc3545'; }
+          return $scope.base_marker_colour;
+        };
+        $scope.set_marker_icon['commute_threshold_' + commute_id] = function (house) {
+          if (house.commute_times[commute_id].pass_threshold == true) { return ['fa-check']; }
+          else if (house.commute_times[commute_id].pass_threshold == false) { return ['fa-times']; }
+          return ['fa-question'];
+        };
+
+        $scope.map_setting_selects.marker_colour.Commutes['commute_' + commute_id] = 'Commute time: ' + $scope.commute_locations[commute_id].address;
+        $scope.set_marker_colour['commute_' + commute_id] = function (house) {
+          if (house.commute_times[commute_id].status == 'OK') {
+            var duration = parseFloat(house.commute_times[commute_id].duration_value);
+            return $scope.marker_colour_scale_commute(duration).hex();
+          }
+          return $scope.base_marker_colour;
+        };
+      }
+
+      // Fetch houses for the map
+      $scope.update_results();
+      // Fetch the commute time shape
+      $scope.plot_commute_map();
+    });
+  }
+
   // Get the map markers
-  $scope.update_results = function (init_call) {
+  $scope.update_results = function () {
 
     if ($scope.initialising) {
       console.log("Ignoring update_results - still initialising");
@@ -329,14 +425,14 @@ app.controller("hemnetCommuterController", ['$scope', '$compile', '$http', '$tim
     }
 
     // Fill in empty filters
-    if ($scope.filters.price_min == '') { $scope.filters.price_min = $scope.stats.price[0]; }
-    if ($scope.filters.price_max == '') { $scope.filters.price_max = $scope.stats.price[1]; }
-    if ($scope.filters.size_total_min == '') { $scope.filters.size_total_min = $scope.stats.size_total[0]; }
-    if ($scope.filters.size_total_max == '') { $scope.filters.size_total_max = $scope.stats.size_total[1]; }
-    if ($scope.filters.size_tomt_min == '') { $scope.filters.size_tomt_min = $scope.stats.size_tomt[0]; }
-    if ($scope.filters.size_tomt_max == '') { $scope.filters.size_tomt_max = $scope.stats.size_tomt[1]; }
-    if ($scope.filters.days_on_hemnet_min == '') { $scope.filters.days_on_hemnet_min = $scope.stats.days_on_hemnet[0]; }
-    if ($scope.filters.days_on_hemnet_max == '') { $scope.filters.days_on_hemnet_max = $scope.stats.days_on_hemnet[1]; }
+    if ($scope.filters.price_min == '') { $scope.filters.price_min = $scope.stats.price_min; }
+    if ($scope.filters.price_max == '') { $scope.filters.price_max = $scope.stats.price_max; }
+    if ($scope.filters.size_total_min == '') { $scope.filters.size_total_min = $scope.stats.size_total_min; }
+    if ($scope.filters.size_total_max == '') { $scope.filters.size_total_max = $scope.stats.size_total_max; }
+    if ($scope.filters.size_tomt_min == '') { $scope.filters.size_tomt_min = $scope.stats.size_tomt_min; }
+    if ($scope.filters.size_tomt_max == '') { $scope.filters.size_tomt_max = $scope.stats.size_tomt_max; }
+    if ($scope.filters.days_on_hemnet_min == '') { $scope.filters.days_on_hemnet_min = $scope.stats.days_on_hemnet_min; }
+    if ($scope.filters.days_on_hemnet_max == '') { $scope.filters.days_on_hemnet_max = $scope.stats.days_on_hemnet_max; }
 
     // Don't fire too frequently
     if ($scope.update_results_call_active) {
@@ -360,28 +456,28 @@ app.controller("hemnetCommuterController", ['$scope', '$compile', '$http', '$tim
     if ($scope.filters.bidding != "0") {
       postdata.bidding = $scope.filters.bidding;
     }
-    if ($scope.filters.price_min != $scope.stats.price[0]) {
+    if ($scope.filters.price_min != $scope.stats.price_min) {
       postdata.price_min = $scope.filters.price_min;
     }
-    if ($scope.filters.price_max != $scope.stats.price[1]) {
+    if ($scope.filters.price_max != $scope.stats.price_max) {
       postdata.price_max = $scope.filters.price_max;
     }
-    if ($scope.filters.days_on_hemnet_min != $scope.stats.days_on_hemnet[0]) {
+    if ($scope.filters.days_on_hemnet_min != $scope.stats.days_on_hemnet_min) {
       postdata.days_on_hemnet_min = $scope.filters.days_on_hemnet_min;
     }
-    if ($scope.filters.days_on_hemnet_max != $scope.stats.days_on_hemnet[1]) {
+    if ($scope.filters.days_on_hemnet_max != $scope.stats.days_on_hemnet_max) {
       postdata.days_on_hemnet_max = $scope.filters.days_on_hemnet_max;
     }
-    if ($scope.filters.size_total_min != $scope.stats.size_total[0]) {
+    if ($scope.filters.size_total_min != $scope.stats.size_total_min) {
       postdata.size_total_min = $scope.filters.size_total_min;
     }
-    if ($scope.filters.size_total_max != $scope.stats.size_total[1]) {
+    if ($scope.filters.size_total_max != $scope.stats.size_total_max) {
       postdata.size_total_max = $scope.filters.size_total_max;
     }
-    if ($scope.filters.size_tomt_min != $scope.stats.size_tomt[0]) {
+    if ($scope.filters.size_tomt_min != $scope.stats.size_tomt_min) {
       postdata.size_tomt_min = $scope.filters.size_tomt_min;
     }
-    if ($scope.filters.size_tomt_max != $scope.stats.size_tomt[1]) {
+    if ($scope.filters.size_tomt_max != $scope.stats.size_tomt_max) {
       postdata.size_tomt_max = $scope.filters.size_tomt_max;
     }
     if ($scope.filters.has_upcoming_open_house != "0") {
@@ -435,9 +531,6 @@ app.controller("hemnetCommuterController", ['$scope', '$compile', '$http', '$tim
       $scope.oldest_fetch = parseFloat(response.data.oldest_fetch + "000");
       $scope.needs_update = Date.now() - $scope.oldest_fetch > (1000 * 60 * 60 * 12);
       $scope.results = response.data.results;
-      $scope.users = response.data.users;
-      $scope.tags = response.data.tags;
-      $scope.commute_locations = response.data.commute_locations;
       $scope.commute_time_max = response.data.commute_time_max;
       $scope.commute_time_min = response.data.commute_time_min;
       $scope.commute_time_avg = response.data.commute_time_avg;
@@ -463,100 +556,6 @@ app.controller("hemnetCommuterController", ['$scope', '$compile', '$http', '$tim
         var vals_arr = Object.values(results).map(a => parseFloat(a[key]));
         var vals_arr = vals_arr.filter(function (el) { return !isNaN(el); });
         return [Math.min.apply(Math, vals_arr), Math.max.apply(Math, vals_arr)];
-      }
-
-      ////////////////////
-      // First time we have fetched results
-      ////////////////////
-      if (init_call === true) {
-
-        // Don't allow more data calls whilst we're setting the filters
-        $scope.initialising = true;
-
-        $scope.num_total_results = response.data.num_results;
-        $scope.all_results = response.data.results;
-
-        $scope.translate_target_language = response.data.translate_target_language;
-
-        // Get stats
-        $scope.stats.price = get_min_max('askingPrice', response.data.results);
-        $scope.stats.size_total = get_min_max('size_total', response.data.results);
-        $scope.stats.size_tomt = get_min_max('landArea', response.data.results);
-        $scope.stats.days_on_hemnet = get_min_max('daysOnHemnet', response.data.results);
-        $scope.stats.next_visning_timestamps = get_min_max('nextOpenHouse', response.data.results);
-
-        // Update filter values
-        $scope.filters.price_min = $scope.stats.price[0];
-        $scope.filters.price_max = $scope.stats.price[1];
-        $scope.filters.size_total_min = $scope.stats.size_total[0];
-        $scope.filters.size_total_max = $scope.stats.size_total[1];
-        $scope.filters.size_tomt_min = $scope.stats.size_tomt[0];
-        $scope.filters.size_tomt_max = $scope.stats.size_tomt[1];
-        $scope.filters.days_on_hemnet_min = $scope.stats.days_on_hemnet[0];
-        $scope.filters.days_on_hemnet_max = $scope.stats.days_on_hemnet[1];
-
-        // Build user-filters
-        $scope.num_users = Object.keys($scope.users).length;
-        $scope.filters.min_combined_rating_score = ($scope.num_users * -1).toString();
-        for (let user_id in $scope.users) {
-          $scope.filters.hide_ratings[user_id] = { 'yes': false, 'maybe': false, 'no': false, 'not_set': false };
-        };
-
-        // Build commute-filters
-        for (let commute_id in $scope.commute_locations) {
-          $scope.filters.hide_failed_commutes[commute_id] = "0";
-        }
-
-        // Add extra map settings
-        for (let user_id in $scope.users) {
-          $scope.map_setting_selects.marker_colour_icon.Ratings['rating_' + user_id] = 'Rating: ' + $scope.users[user_id];
-          $scope.map_setting_selects.marker_colour.Ratings['rating_' + user_id] = 'Rating: ' + $scope.users[user_id];
-          $scope.map_setting_selects.marker_icon.Ratings['rating_' + user_id] = 'Rating: ' + $scope.users[user_id];
-          $scope.set_marker_colour['rating_' + user_id] = function (house) {
-            if (house.ratings[user_id] == 'yes') { return '#28a745'; }
-            if (house.ratings[user_id] == 'maybe') { return '#17a2b8'; }
-            if (house.ratings[user_id] == 'no') { return '#dc3545'; }
-            return $scope.base_marker_colour;
-          };
-          $scope.set_marker_icon['rating_' + user_id] = function (house) {
-            if (house.ratings[user_id] == 'yes') { return ['fa-thumbs-up']; }
-            if (house.ratings[user_id] == 'maybe') { return ['fa-question']; }
-            if (house.ratings[user_id] == 'no') { return ['fa-thumbs-down']; }
-            return [$scope.base_marker_icon];
-          };
-        }
-        for (let commute_id in $scope.commute_locations) {
-          $scope.map_setting_selects.marker_colour_icon.Commutes['commute_threshold_' + commute_id] = 'Commute threshold: ' + $scope.commute_locations[commute_id].address;
-          $scope.map_setting_selects.marker_colour.Commutes['commute_threshold_' + commute_id] = 'Commute threshold: ' + $scope.commute_locations[commute_id].address;
-          $scope.map_setting_selects.marker_icon.Commutes['commute_threshold_' + commute_id] = 'Commute threshold: ' + $scope.commute_locations[commute_id].address;
-          $scope.set_marker_colour['commute_threshold_' + commute_id] = function (house) {
-            if (house.commute_times[commute_id].pass_threshold == true) { return '#28a745'; }
-            else if (house.commute_times[commute_id].pass_threshold == false) { return '#dc3545'; }
-            return $scope.base_marker_colour;
-          };
-          $scope.set_marker_icon['commute_threshold_' + commute_id] = function (house) {
-            if (house.commute_times[commute_id].pass_threshold == true) { return ['fa-check']; }
-            else if (house.commute_times[commute_id].pass_threshold == false) { return ['fa-times']; }
-            return ['fa-question'];
-          };
-
-          $scope.map_setting_selects.marker_colour.Commutes['commute_' + commute_id] = 'Commute time: ' + $scope.commute_locations[commute_id].address;
-          $scope.set_marker_colour['commute_' + commute_id] = function (house) {
-            if (house.commute_times[commute_id].status == 'OK') {
-              var duration = parseFloat(house.commute_times[commute_id].duration_value);
-              return $scope.marker_colour_scale_commute(duration).hex();
-            }
-            return $scope.base_marker_colour;
-          };
-        }
-
-        // Wait for the page to update, then allow more update calls
-        // This is to stop the page reloading again when the filters are set
-        $timeout(function () {
-          $scope.initialising = false;
-          // Fetch the commute time shape once the marker stuff is done
-          $scope.plot_commute_map();
-        }, 1000);
       }
 
       // Plot markers
@@ -753,8 +752,9 @@ app.controller("hemnetCommuterController", ['$scope', '$compile', '$http', '$tim
     };
   }
 
-  // Initialise the map with markers on load
-  $scope.update_results(true);
+  // START LOAD
+  // Initialise the website, load the houses!
+  $scope.init_vars();
 
   // Leaflet marker clicked
   $scope.$on('leafletDirectiveMarker.click', function (event, args) {
@@ -1027,7 +1027,7 @@ app.controller("hemnetCommuterController", ['$scope', '$compile', '$http', '$tim
           } else {
             $scope.hemnet_results_update_btn_text = 'Update';
             $scope.needs_update = false;
-            $scope.update_results(true);
+            $scope.init_vars();
           }
         });
       }

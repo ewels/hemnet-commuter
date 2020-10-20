@@ -20,14 +20,7 @@ function get_houses($postdata){
   require_once('tags.php');
   require_once('users.php');
 
-  $results = array(
-    "status" => "success",
-    "tags" => get_all_tags(),
-    "users" => get_all_users(),
-    "commute_locations" => get_commute_locations(),
-    "translate_target_language" => $ini_array['translate_target_language'],
-    "stats" => array()
-  );
+  $results = array("status" => "success");
 
   // Filter sanity checks
   if(isset($postdata['open_house_before']) && strtotime($postdata['open_house_before']) == false){
@@ -39,24 +32,6 @@ function get_houses($postdata){
     $results['status'] = 'error';
     $results['msg'] = 'Open house after filter string "'.$postdata['open_house_after'].'" could not be parsed';
     return($results);
-  }
-
-  // Get stats
-  $sql = 'SELECT
-    MIN(askingPrice) as min_price,
-    MAX(askingPrice) as max_price,
-    MIN(size_total) as min_size_total,
-    MAX(size_total) as max_size_total,
-    MIN(landArea) as min_size_tomt,
-    MAX(landArea) as max_size_tomt,
-    MIN(daysOnHemnet) as min_daysOnHemnet,
-    MAX(daysOnHemnet) as max_daysOnHemnet,
-    MIN(nextOpenHouse) as min_nextOpenHouse,
-    MAX(nextOpenHouse) as max_nextOpenHouse
-  FROM `houses`';
-  if ($result = $mysqli->query($sql)) {
-    $results['stats'] = $result->fetch_assoc();
-    $result->free_result();
   }
 
   // Build simple WHERE filters
@@ -100,6 +75,7 @@ function get_houses($postdata){
     $oldest_fetch = 0;
   }
 
+  $commute_locations = get_commute_locations();
 
   // Other database tables
   foreach($house_results as $house_id => $house){
@@ -108,15 +84,15 @@ function get_houses($postdata){
 
     // Get commute times
     $house_results[$house_id]['commute_times'] = [];
-    if(count($results['commute_locations']) > 0){
+    if(count($commute_locations) > 0){
       $sql = 'SELECT * FROM `commute_times` WHERE `house_id` = "'.$mysqli->real_escape_string($house_id).'"';
       if ($result = $mysqli->query($sql)) {
         while ($row = $result->fetch_assoc()) {
-          if(!array_key_exists($row['commute_id'], $results['commute_locations'])) continue;
+          if(!array_key_exists($row['commute_id'], $commute_locations)) continue;
           if($row['duration_value'] == null){
             $passes_threshold = null;
           } else {
-            $passes_threshold = $row['duration_value'] < $results['commute_locations'][ $row['commute_id'] ]['max_time'];
+            $passes_threshold = $row['duration_value'] < $commute_locations[ $row['commute_id'] ]['max_time'];
           }
           $house_results[$house_id]['commute_times'][ $row['commute_id'] ] = array(
             'status' => $row['status'],
@@ -227,13 +203,10 @@ function get_houses($postdata){
 }
 
 
-  /////////
-  // CALLED DIRECTLY - API usage
-  /////////
-  if ( basename(__FILE__) == basename($_SERVER["SCRIPT_FILENAME"]) ) {
-
-    require_once('_common_api.php');
-
-    echo json_encode(get_houses($postdata), JSON_PRETTY_PRINT);
-
-  }
+/////////
+// CALLED DIRECTLY - API usage
+/////////
+if ( basename(__FILE__) == basename($_SERVER["SCRIPT_FILENAME"]) ) {
+  require_once('_common_api.php');
+  echo json_encode(get_houses($postdata), JSON_PRETTY_PRINT);
+}

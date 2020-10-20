@@ -13,7 +13,9 @@ function update_commute_times($only_house_id=false, $only_commute_id=false, $db_
 
   // Pull required info from the DB
   require_once('houses.php');
+  require_once('commute_locations.php');
   $houses = get_houses([]);
+  $commute_locations = get_commute_locations();
 
   // Get origins and destinations
   $origins = [];
@@ -26,7 +28,7 @@ function update_commute_times($only_house_id=false, $only_commute_id=false, $db_
     if($only_house_id && $only_house_id != $house_id){
       continue;
     }
-    foreach($houses['commute_locations'] as $commute_id => $commute_loc){
+    foreach($commute_locations as $commute_id => $commute_loc){
       if($only_commute_id && $only_commute_id != $commute_id) continue;
       // Only look up if we don't already have this commute location
       if(array_key_exists($commute_id, $house['commute_times'])){
