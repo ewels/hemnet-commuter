@@ -409,6 +409,13 @@ app.controller("hemnetCommuterController", ['$scope', '$compile', '$http', '$tim
         };
       }
 
+      // Check for filters cookie and set if found
+      var house_filters = $cookies.getObject('hc_house_filters');
+      if (house_filters) {
+        Object.assign($scope.filters, house_filters);
+      }
+      console.log("House filters found in a cookie: ", house_filters);
+
       // Fetch houses for the map
       $scope.update_results();
       // Fetch the commute time shape
@@ -511,6 +518,7 @@ app.controller("hemnetCommuterController", ['$scope', '$compile', '$http', '$tim
       }
     }
     console.log("Filters:", postdata);
+    $cookies.putObject('hc_house_filters', postdata);
 
     // Get the house data from the database
     $http.post("api/houses.php", postdata).then(function (response) {
