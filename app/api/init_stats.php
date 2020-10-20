@@ -38,8 +38,8 @@ function get_init_stats(){
     MAX(size_total) as size_total_max,
     MIN(landArea) as size_tomt_min,
     MAX(landArea) as size_tomt_max,
-    MIN(daysOnHemnet) as daysOnHemnet_min,
-    MAX(daysOnHemnet) as daysOnHemnet_max,
+    MIN(daysOnHemnet) as days_on_hemnet_min,
+    MAX(daysOnHemnet) as days_on_hemnet_max,
     MIN(nextOpenHouse) as nextOpenHouse_min,
     MAX(nextOpenHouse) as nextOpenHouse_max
   FROM `houses`';
