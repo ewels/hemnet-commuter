@@ -25,7 +25,8 @@ function get_houses($postdata){
     "tags" => get_all_tags(),
     "users" => get_all_users(),
     "commute_locations" => get_commute_locations(),
-    "translate_target_language" => $ini_array['translate_target_language']
+    "translate_target_language" => $ini_array['translate_target_language'],
+    "stats" => array()
   );
 
   // Filter sanity checks
@@ -38,6 +39,24 @@ function get_houses($postdata){
     $results['status'] = 'error';
     $results['msg'] = 'Open house after filter string "'.$postdata['open_house_after'].'" could not be parsed';
     return($results);
+  }
+
+  // Get stats
+  $sql = 'SELECT
+    MIN(askingPrice) as min_price,
+    MAX(askingPrice) as max_price,
+    MIN(size_total) as min_size_total,
+    MAX(size_total) as max_size_total,
+    MIN(landArea) as min_size_tomt,
+    MAX(landArea) as max_size_tomt,
+    MIN(daysOnHemnet) as min_daysOnHemnet,
+    MAX(daysOnHemnet) as max_daysOnHemnet,
+    MIN(nextOpenHouse) as min_nextOpenHouse,
+    MAX(nextOpenHouse) as max_nextOpenHouse
+  FROM `houses`';
+  if ($result = $mysqli->query($sql)) {
+    $results['stats'] = $result->fetch_assoc();
+    $result->free_result();
   }
 
   ///
