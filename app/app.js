@@ -518,7 +518,11 @@ app.controller("hemnetCommuterController", ['$scope', '$compile', '$http', '$tim
       }
     }
     console.log("Filters:", postdata);
-    $cookies.putObject('hc_house_filters', postdata);
+
+    // Save filters for next time - user hide_ratings has different structure but rest is the same.
+    var cookie_filters = JSON.parse(JSON.stringify(postdata));
+    cookie_filters.hide_ratings = $scope.filters.hide_ratings;
+    $cookies.putObject('hc_house_filters', cookie_filters);
 
     // Get the house data from the database
     $http.post("api/houses.php", postdata).then(function (response) {
