@@ -38,9 +38,9 @@ function get_houses($postdata){
   $houses_where = [];
   if(isset($postdata['house_id'])) $houses_where[] = '`id` = '.$mysqli->real_escape_string($postdata['house_id']);
   if(isset($postdata['kommande']) && $postdata['kommande'] == '1') $houses_where[] = '`isUpcoming` = 1';
-  if(isset($postdata['kommande']) && $postdata['kommande'] == '-1') $houses_where[] = '`isUpcoming` <> 1';
+  if(isset($postdata['kommande']) && $postdata['kommande'] == '-1') $houses_where[] = '`isUpcoming` = 0';
   if(isset($postdata['bidding']) && $postdata['bidding'] == '1') $houses_where[] = '`isBiddingOngoing` = 1';
-  if(isset($postdata['bidding']) && $postdata['bidding'] == '-1') $houses_where[] = '`isBiddingOngoing` <> 1';
+  if(isset($postdata['bidding']) && $postdata['bidding'] == '-1') $houses_where[] = '`isBiddingOngoing` = 0';
   if(isset($postdata['price_min'])) $houses_where[] = '`askingPrice` > '.$mysqli->real_escape_string($postdata['price_min']);
   if(isset($postdata['price_max'])) $houses_where[] = '`askingPrice` < '.$mysqli->real_escape_string($postdata['price_max']);
   if(isset($postdata['days_on_hemnet_min'])) $houses_where[] = '`daysOnHemnet` > '.$mysqli->real_escape_string($postdata['days_on_hemnet_min']);
@@ -49,8 +49,8 @@ function get_houses($postdata){
   if(isset($postdata['size_total_max'])) $houses_where[] = '`size_total` < '.$mysqli->real_escape_string($postdata['size_total_max']);
   if(isset($postdata['size_tomt_min'])) $houses_where[] = '`landArea` > '.$mysqli->real_escape_string($postdata['size_tomt_min']);
   if(isset($postdata['size_tomt_max'])) $houses_where[] = '`landArea` < '.$mysqli->real_escape_string($postdata['size_tomt_max']);
-  if(isset($postdata['has_upcoming_open_house']) && $postdata['has_upcoming_open_house'] == '1') $houses_where[] = '`nextOpenHouse` IS NULL';
-  if(isset($postdata['has_upcoming_open_house']) && $postdata['has_upcoming_open_house'] == '-1') $houses_where[] = '`nextOpenHouse` IS NOT NULL';
+  if(isset($postdata['has_upcoming_open_house']) && $postdata['has_upcoming_open_house'] == '1') $houses_where[] = '`nextOpenHouse` IS NOT NULL';
+  if(isset($postdata['has_upcoming_open_house']) && $postdata['has_upcoming_open_house'] == '-1') $houses_where[] = '`nextOpenHouse` IS NULL';
 
 
   ///
