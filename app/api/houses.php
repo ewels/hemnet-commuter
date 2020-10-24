@@ -139,9 +139,10 @@ function get_houses($postdata){
     }
 
     // Filters that should be written as SQL joins
+    $users = get_all_users();
     if(isset($postdata['min_combined_rating_score'])){
       $score = 0;
-      foreach($results['users'] as $user_id => $user_name){
+      foreach($users as $user_id => $user_name){
         if ($house['ratings'][$user_id] == 'yes') $score += 1;
         if ($house['ratings'][$user_id] == 'no') $score += -1;
       }
@@ -149,7 +150,7 @@ function get_houses($postdata){
     }
     if(isset($postdata['min_num_ratings'])){
       $num_ratings = 0;
-      foreach($results['users'] as $user_id => $user_name){
+      foreach($users as $user_id => $user_name){
         if ($house['ratings'][$user_id] != 'not_set') $num_ratings++;
       }
       if($num_ratings < $postdata['min_num_ratings']) $remove = true;
