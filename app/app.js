@@ -361,9 +361,16 @@ app.controller("hemnetCommuterController", ['$scope', '$compile', '$http', '$tim
         $scope.filters.hide_ratings[user_id] = { 'yes': false, 'maybe': false, 'no': false, 'not_set': false };
       };
 
-      // Build commute-filters
+      // Build commute-filters and commute settings
       for (let commute_id in $scope.commute_locations) {
+        // Filters
         $scope.filters.hide_failed_commutes[commute_id] = "0";
+
+        // Vars for Commute settings sidebar
+        var dateobj = new Date();
+        dateobj.setHours(0, 0, 0, 0);
+        dateobj.setSeconds(parseFloat($scope.commute_locations[commute_id].max_time));
+        $scope.commute_locations[commute_id].max_time = dateobj;
       }
 
       // Add extra map settings
@@ -543,27 +550,30 @@ app.controller("hemnetCommuterController", ['$scope', '$compile', '$http', '$tim
       $scope.oldest_fetch = parseFloat(response.data.oldest_fetch + "000");
       $scope.needs_update = Date.now() - $scope.oldest_fetch > (1000 * 60 * 60 * 12);
       $scope.results = response.data.results;
+
+      // Stats of *returned* results for marker colour ranges
+      // Commute times
       $scope.commute_time_max = response.data.commute_time_max;
       $scope.commute_time_min = response.data.commute_time_min;
       $scope.commute_time_avg = response.data.commute_time_avg;
       $scope.marker_colour_scale_commute = chroma.scale('RdYlGn').domain([$scope.commute_time_max, $scope.commute_time_min]);
+      // Price
       var stats_price = get_min_max('askingPrice', response.data.results);
       $scope.marker_colour_scale_price = chroma.scale('RdYlGn').domain([stats_price[1], stats_price[0]]);
+      // Size
       var stats_size_total = get_min_max('size_total', response.data.results);
       $scope.marker_colour_scale_size_total = chroma.scale('RdYlGn').domain([stats_size_total[0], stats_size_total[1]]);
+      // Tomt
       $scope.marker_colour_scale_size_tomt = chroma.scale('RdYlGn').domain([500, 4000]);
+      // Rooms
       $scope.marker_colour_scale_rooms = chroma.scale('RdYlGn').domain([1, 8]);
+      // Days on hemnet
       var stats_days_on_hemnet = get_min_max('daysOnHemnet', response.data.results);
       $scope.marker_colour_scale_age = chroma.scale('BuGn').domain([Math.min(30, stats_days_on_hemnet[1] + 2), 0]);
+      // Visning
       var stats_next_visning_timestamps = get_min_max('nextOpenHouse', response.data.results);
       $scope.marker_colour_scale_next_visning = chroma.scale('PRGn').domain([stats_next_visning_timestamps[0], stats_next_visning_timestamps[1]]);
-      for (let id in $scope.commute_locations) {
-        var dateobj = new Date();
-        dateobj.setHours(0, 0, 0, 0);
-        dateobj.setSeconds(parseFloat($scope.commute_locations[id].max_time));
-        $scope.commute_locations[id].max_time = dateobj;
-      }
-
+      // Helper function
       function get_min_max(key, results) {
         var vals_arr = Object.values(results).map(a => parseFloat(a[key]));
         var vals_arr = vals_arr.filter(function (el) { return !isNaN(el); });
