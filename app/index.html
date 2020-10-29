@@ -207,7 +207,7 @@
                 <button ng-click="save_rating(user_id, 'maybe')" ng-class="{'active': active_house.ratings[user_id] == 'maybe'}" class="btn w-100 btn-outline-info"><i class="fa fa-question"></i></button>
                 <button ng-click="save_rating(user_id, 'no')" ng-class="{'active': active_house.ratings[user_id] == 'no'}" class="btn w-100 btn-outline-danger"><i class="fa fa-thumbs-down"></i></button>
               </div>
-              <textarea ng-model="active_house.comments[user_id]" ng-change="save_comment(user_id)" ng-model-options="{ updateOn: 'default blur', debounce: {'default': 500, 'blur': 0} }" class="form-control form-control-sm my-2" placeholder="Comment" rows="5"></textarea>
+              <textarea ng-model="active_house.comments[user_id]" ng-change="save_comment(user_id)" ng-model-options="{ updateOn: 'default blur', debounce: {'default': 500, 'blur': 0} }" class="form-control form-control-sm my-2" placeholder="Comment" rows="15"></textarea>
             </div>
             <div class="col-12">
               <h6>
