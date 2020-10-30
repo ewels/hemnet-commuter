@@ -596,7 +596,9 @@
               <img class="border mb-3" ng-src="{{slide.original}}" ng-repeat="slide in active_house.allImages" id="!#modal_photo_{{$index}}">
             </div>
             <div ng-show="photos_modal_planritning" class="col-auto photos_modal_body_col">
-              <img ng-show="slide.labels.indexOf('FLOOR_PLAN') !== -1" ng-src="{{slide.original}}" ng-repeat="slide in active_house.allImages" class="mx-auto border mb-3 d-block"  style="width: {{photos_modal_planritning_width}}px">
+              <a ng-repeat="slide in active_house.allImages" ng-href="#modal_photo_{{$index}}">
+                <img ng-show="slide.labels.indexOf('FLOOR_PLAN') !== -1" ng-src="{{slide.original}}" class="mx-auto border mb-3 d-block"  style="width: {{photos_modal_planritning_width}}px">
+              </a>
             </div>
           </div>
         </div>
