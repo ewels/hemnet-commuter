@@ -164,6 +164,7 @@ function get_houses($postdata){
     }
     if(isset($postdata['hide_failed_commutes'])){
       foreach($postdata['hide_failed_commutes'] as $commute_id){
+        if ($commute_id == 'undefined') continue;
         if(!$house_results[$house_id]['commute_times'][$commute_id]['pass_threshold']) $remove = true;
       }
     }

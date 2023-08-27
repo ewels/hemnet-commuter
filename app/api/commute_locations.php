@@ -36,8 +36,8 @@ function add_commute_location($address){
   // Get location with Google Maps geocoding
   $google_url = 'https://maps.googleapis.com/maps/api/geocode/json?key='.$ini_array['gmap_api_key'].'&address='.urlencode($address);
   $results = @json_decode(@file_get_contents($google_url));
-  if(!isset($results->results)) return array("status"=>"error", "msg" => "Error: Empty result for search $address");
-  if(count($results->results) == 0) return array("status"=>"error", "msg" => "Error: Empty result for search $address");
+  if(!isset($results->results)) return array("status"=>"error", "msg" => "Error: Empty result for search $address", "data"=>$results);
+  if(count($results->results) == 0) return array("status"=>"error", "msg" => "Error: Empty result for search $address", "data"=>$results);
   $lat = $results->results[0]->geometry->location->lat;
   $lng = $results->results[0]->geometry->location->lng;
 

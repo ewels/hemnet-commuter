@@ -69,19 +69,40 @@ First, clone this repository and move to the local repository root directory.
 Now create a new Docker container using the `mattrayner/lamp` image. This comes with a full _LAMP_ stack
 (Linux, Apache, MySQL, PHP). See [https://github.com/mattrayner/docker-lamp](https://github.com/mattrayner/docker-lamp) for more details.
 
-```console
-$ docker create --name hemnet_commuter -t -p "80:80" -v ${PWD}/app:/app -v ${PWD}/mysql:/var/lib/mysql mattrayner/lamp:latest
-$ docker start hemnet_commuter
+```bash
+docker create --name hemnet_commuter -t -p "80:80" -v ${PWD}/app:/app -v ${PWD}/mysql:/var/lib/mysql mattrayner/lamp:latest
+```
+
+```bash
+docker start hemnet_commuter
 ```
 
 This container will now start up in the background and create a new MySQL database for you in a new `mysql` directory.
 
-Give the server a few seconds to start, then create a new database and fill it with the required table structures
+Give the server a few seconds to start, you can tail the logs with the following command:
+```bash
+docker logs hemnet_commuter -f
+```
+
+Next, create a new database and fill it with the required table structures
 in the supplied SQL file:
 
-```console
-$ docker exec -i hemnet_commuter mysql -uroot -e "CREATE DATABASE hemnet_commuter"
-$ docker exec -i hemnet_commuter mysql -uroot hemnet_commuter < hemnet_commuter.sql
+```bash
+docker exec -i hemnet_commuter mysql -uroot -e "CREATE DATABASE hemnet_commuter"
+```
+
+```bash
+docker exec -i hemnet_commuter mysql -uroot hemnet_commuter < hemnet_commuter.sql
+```
+
+You can read the server logs by going into the container and tailing the apache log (which gets the PHP logs):
+
+```bash
+docker exec -it hemnet_commuter
+```
+
+```bash
+tail -f /var/log/apache2/error.log
 ```
 
 Go to [http://localhost](http://localhost) in your web browser. Hopefully Hemnet Commuter should load.
@@ -104,9 +125,12 @@ A maximum of ~500 houses seems to work well.
 
 Once the Docker container is set up, you can use the following commands to start and stop the server:
 
-```console
-$ docker start hemnet_commuter
-$ docker stop hemnet_commuter
+```bash
+docker start hemnet_commuter
+```
+
+```bash
+docker stop hemnet_commuter
 ```
 
 You can check the status of any running Docker containers with the `docker ps` command.

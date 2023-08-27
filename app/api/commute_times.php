@@ -146,7 +146,7 @@ function fetch_distance_matrix_results($origins, $destinations){
     }
     return array("status"=>"success", "msg" => "$num_results commute results found", "num_results" => $num_results);
   } else {
-    return array("status"=>"error", "msg" => "Error with google API result:\n".json_encode($api_result, JSON_PRETTY_PRINT));
+    return array("status"=>"error", "msg" => "Error with google API result", "data" => $api_result);
   }
 }
 
