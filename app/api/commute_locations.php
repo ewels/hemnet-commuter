@@ -29,7 +29,7 @@ function get_commute_locations($id=false){
   return $results;
 }
 
-function add_commute_location($address){
+function add_commute_location($address, $nickname){
   global $mysqli;
   global $ini_array;
 
@@ -44,7 +44,8 @@ function add_commute_location($address){
   // Insert
   $sql = '
     INSERT INTO `commute_locations`
-    SET `address` = "'.$mysqli->real_escape_string($address).'",
+    SET `nickname` = "'.$mysqli->real_escape_string($nickname).'",
+        `address` = "'.$mysqli->real_escape_string($address).'",
         `max_time` = "3600",
         `lat` = "'.$mysqli->real_escape_string($lat).'",
         `lng` = "'.$mysqli->real_escape_string($lng).'"
@@ -56,7 +57,7 @@ function add_commute_location($address){
   // Fetch commute times
   $commute_times = update_commute_times(false, $new_commute_id);
   if($commute_times['status'] != 'success') return $commute_times;
-  else return array('status' => 'success', 'msg' => 'Added new commute address, with ID '.$new_commute_id, 'new_commute_id' => $new_commute_id, 'commute_times' => $commute_times);
+  else return array('status' => 'success', 'msg' => 'Added new commute '.$nickname.', with ID '.$new_commute_id, 'new_commute_id' => $new_commute_id, 'commute_times' => $commute_times);
 
 }
 
@@ -96,8 +97,8 @@ if ( basename(__FILE__) == basename($_SERVER["SCRIPT_FILENAME"]) ) {
   require_once('_common_api.php');
 
   // Save a new commute location
-  if(isset($postdata['add_address'])){
-    echo json_encode( add_commute_location($postdata['add_address']), JSON_PRETTY_PRINT);
+  if(isset($postdata['add_address']) && isset($postdata['nickname'])){
+    echo json_encode( add_commute_location($postdata['add_address'], $postdata['nickname']), JSON_PRETTY_PRINT);
   }
   // Update a commute max-time
   else if(isset($postdata['id']) && isset($postdata['max_time'])){

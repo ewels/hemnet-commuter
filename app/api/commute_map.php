@@ -6,7 +6,7 @@
 //////////////////////////////////////////////
 
 /**
- * Calculate commute times using the Google Maps API
+ * Calculate commute times using the TravelTime API
  */
 
 function get_traveltime_maps(){
@@ -38,7 +38,7 @@ function get_traveltime_maps(){
         'lat' => floatval($loc['lat']),
         'lng' => floatval($loc['lng']),
       ),
-      'transportation' => array('type' => 'public_transport'),
+      'transportation' => array('type' => $ini_array['traveltime_transportation_type']),
       'arrival_time' => date('c', strtotime('next friday, 9am CET')),
       'range' => array(
         'enabled' => true,
@@ -102,7 +102,8 @@ function get_traveltime_maps(){
       'curl_errno' => curl_errno($curl),
       'url' => $tt_api_url,
       'result' => @json_decode($result_raw, true),
-      'result_raw' => $result_raw
+      'result_raw' => $result_raw,
+      'postdata' => $postdata
     );
   }
   curl_close($curl);

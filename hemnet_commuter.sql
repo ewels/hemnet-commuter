@@ -29,6 +29,7 @@ SET time_zone = "+00:00";
 
 CREATE TABLE `commute_locations` (
   `id` int(12) NOT NULL,
+  `nickname` varchar(255) NOT NULL,
   `address` varchar(255) NOT NULL,
   `max_time` int(12) NOT NULL,
   `lat` double NOT NULL,

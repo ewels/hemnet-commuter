@@ -458,16 +458,18 @@
         <button ng-click="add_commute_location()" class="my-3 btn btn-sm btn-secondary">Add new location</button>
         <div class="form-row mb-2" ng-repeat="(commute_id, commute) in commute_locations">
           <div class="col-auto">
-            <button ng-click="delete_commute_address(commute_id)" class="btn btn-sm btn-link text-muted border"><i class="fa fa-trash" aria-hidden="true"></i></button>
+            <button ng-click="delete_commute_address(commute_id)" class="btn btn-sm btn-outline-danger"><i class="fa fa-trash" aria-hidden="true"></i></button>
           </div>
           <div class="col">
-            <p ng-bind="commute.address" class="small my-1"></p>
+            <p ng-bind="commute.nickname" class=" my-1"></p>
+            <p ng-bind="commute.address" class="small text-muted text-italic my-1"></p>
           </div>
           <div class="col-3">
-            <input type="time" class="form-control form-control-sm" placeholder="hh:mm" ng-model="commute.max_time" ng-change="update_commute_time(commute_id)" ng-model-options="{updateOn: 'blur'}">
+            <input type="number" class="form-control form-control-sm" placeholder="minutes" ng-model="commute.max_time" ng-change="update_commute_time(commute_id)" ng-model-options="{updateOn: 'blur'}">
+            <p class="small text-muted text-italic my-1">(minutes)</p>
           </div>
         </div>
-        <p class="small text-muted my-0">Time is max commute time, hh:mm</p>
+        <p class="small text-muted my-0">Time is max commute time, in minutes</p>
       </div>
 
       <!-- MAP SETTINGS -->

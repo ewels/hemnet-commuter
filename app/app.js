@@ -367,10 +367,7 @@ app.controller("hemnetCommuterController", ['$scope', '$compile', '$http', '$tim
         $scope.filters.hide_failed_commutes[commute_id] = "0";
 
         // Vars for Commute settings sidebar
-        var dateobj = new Date();
-        dateobj.setHours(0, 0, 0, 0);
-        dateobj.setSeconds(parseFloat($scope.commute_locations[commute_id].max_time));
-        $scope.commute_locations[commute_id].max_time = dateobj;
+        $scope.commute_locations[commute_id].max_time = $scope.commute_locations[commute_id].max_time / 60;
       }
 
       // Add extra map settings
@@ -392,9 +389,9 @@ app.controller("hemnetCommuterController", ['$scope', '$compile', '$http', '$tim
         };
       }
       for (let commute_id in $scope.commute_locations) {
-        $scope.map_setting_selects.marker_colour_icon.Commutes['commute_threshold_' + commute_id] = 'Commute threshold: ' + $scope.commute_locations[commute_id].address;
-        $scope.map_setting_selects.marker_colour.Commutes['commute_threshold_' + commute_id] = 'Commute threshold: ' + $scope.commute_locations[commute_id].address;
-        $scope.map_setting_selects.marker_icon.Commutes['commute_threshold_' + commute_id] = 'Commute threshold: ' + $scope.commute_locations[commute_id].address;
+        $scope.map_setting_selects.marker_colour_icon.Commutes['commute_threshold_' + commute_id] = 'Commute threshold: ' + $scope.commute_locations[commute_id].nickname;
+        $scope.map_setting_selects.marker_colour.Commutes['commute_threshold_' + commute_id] = 'Commute threshold: ' + $scope.commute_locations[commute_id].nickname;
+        $scope.map_setting_selects.marker_icon.Commutes['commute_threshold_' + commute_id] = 'Commute threshold: ' + $scope.commute_locations[commute_id].nickname;
         $scope.set_marker_colour['commute_threshold_' + commute_id] = function (house) {
           if (house.commute_times[commute_id].pass_threshold == true) { return '#28a745'; }
           else if (house.commute_times[commute_id].pass_threshold == false) { return '#dc3545'; }
@@ -406,7 +403,7 @@ app.controller("hemnetCommuterController", ['$scope', '$compile', '$http', '$tim
           return ['fa-question'];
         };
 
-        $scope.map_setting_selects.marker_colour.Commutes['commute_' + commute_id] = 'Commute time: ' + $scope.commute_locations[commute_id].address;
+        $scope.map_setting_selects.marker_colour.Commutes['commute_' + commute_id] = 'Commute time: ' + $scope.commute_locations[commute_id].nickname;
         $scope.set_marker_colour['commute_' + commute_id] = function (house) {
           if (house.commute_times[commute_id].status == 'OK') {
             var duration = parseFloat(house.commute_times[commute_id].duration_value);
@@ -652,7 +649,7 @@ app.controller("hemnetCommuterController", ['$scope', '$compile', '$http', '$tim
         markers['commute_' + commute_id] = {
           lat: lat,
           lng: lng,
-          message: '<h6>Commute location</h6><p class="my-0">' + commute.address + '</p>',
+          message: '<h6>'+commute.nickname+'</h6><p class="my-0">' + commute.address + '</p>',
           icon: {
             type: 'extraMarker',
             markerColor: 'blue-dark',
@@ -976,9 +973,7 @@ app.controller("hemnetCommuterController", ['$scope', '$compile', '$http', '$tim
 
   // Update commute time
   $scope.update_commute_time = function (commute_id) {
-    var dateobj = new Date();
-    dateobj.setHours(0, 0, 0, 0);
-    var max_time = ($scope.commute_locations[commute_id].max_time - dateobj) / 1000;
+    var max_time = $scope.commute_locations[commute_id].max_time * 60;
     // Build post data and send to API
     var post_data = {
       'id': commute_id,
@@ -992,15 +987,20 @@ app.controller("hemnetCommuterController", ['$scope', '$compile', '$http', '$tim
 
   // Add commute location button clicked
   $scope.add_commute_location = function () {
+    var nickname = prompt('Nickname:');
+    if (!nickname || nickname.trim().length == 0) {
+      return;
+    }
     var address = prompt('Address:');
     if (!address || address.trim().length == 0) {
       return;
     }
     // Build post data and send to API
-    var post_data = { 'add_address': address.trim() };
+    var post_data = { 'add_address': address.trim(), 'nickname': nickname.trim() };
     $http.post("api/commute_locations.php", JSON.stringify(post_data)).then(function (response) {
       console.log(response.data);
       $scope.commute_locations[response.data.new_commute_id] = {
+        nickname: nickname.trim(),
         address: address.trim(),
         max_time: 3600
       }

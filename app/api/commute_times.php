@@ -102,7 +102,8 @@ function fetch_distance_matrix_results($origins, $destinations){
   }
 
   // Get results
-  $google_url = 'https://maps.googleapis.com/maps/api/distancematrix/json?key='.$ini_array['gmap_api_key'].'&mode=transit&arrival_time='.$arrival_time.'&origins='.implode('|', $origin_latlngs).'&destinations='.implode('|', $destination_latlngs);
+  // $travel_mode = 'transit';
+  $google_url = 'https://maps.googleapis.com/maps/api/distancematrix/json?key='.$ini_array['gmap_api_key'].'&mode='.$ini_array['gmap_travel_mode'].'&arrival_time='.$arrival_time.'&origins='.implode('|', $origin_latlngs).'&destinations='.implode('|', $destination_latlngs);
   $api_result = @json_decode(@file_get_contents($google_url));
   $results = [];
   $num_results = 0;
