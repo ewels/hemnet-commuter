@@ -568,6 +568,19 @@
         </div>
         <p class="small text-muted my-0">Time is max commute time, in minutes</p>
 
+        <h5 class="mt-4">
+          <i class="fa fa-user mr-2"></i> Users
+        </h5>
+        <button ng-click="add_user()" class="my-3 btn btn-sm btn-secondary">Add new user</button>
+        <div class="form-row mb-2" ng-repeat="(user_id, user_name) in users">
+          <div class="col-auto">
+            <button ng-click="delete_user(user_id)" class="btn btn-sm btn-outline-danger"><i class="fa fa-trash" aria-hidden="true"></i></button>
+          </div>
+          <div class="col">
+            <p ng-bind="user_name" class="my-1"></p>
+          </div>
+        </div>
+
       </div>
     </div>
   </div>

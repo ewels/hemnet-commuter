@@ -496,15 +496,17 @@ app.controller("hemnetCommuterController", ['$scope', '$compile', '$http', '$tim
     }
     for (var user_id in $scope.users) {
       var ratings = [];
-      if ($scope.filters.hide_ratings[user_id]['yes']) { ratings.push('yes'); }
-      if ($scope.filters.hide_ratings[user_id]['maybe']) { ratings.push('maybe'); }
-      if ($scope.filters.hide_ratings[user_id]['no']) { ratings.push('no'); }
-      if ($scope.filters.hide_ratings[user_id]['not_set']) { ratings.push('not_set'); }
-      if (ratings.length > 0) {
-        if (!postdata.hasOwnProperty('hide_ratings')) {
-          postdata.hide_ratings = {};
+      if ($scope.filters.hide_ratings.hasOwnProperty(user_id)) {
+        if ($scope.filters.hide_ratings[user_id]['yes']) { ratings.push('yes'); }
+        if ($scope.filters.hide_ratings[user_id]['maybe']) { ratings.push('maybe'); }
+        if ($scope.filters.hide_ratings[user_id]['no']) { ratings.push('no'); }
+        if ($scope.filters.hide_ratings[user_id]['not_set']) { ratings.push('not_set'); }
+        if (ratings.length > 0) {
+          if (!postdata.hasOwnProperty('hide_ratings')) {
+            postdata.hide_ratings = {};
+          }
+          postdata.hide_ratings[user_id] = ratings;
         }
-        postdata.hide_ratings[user_id] = ratings;
       }
     }
     for (let commute_id in $scope.commute_locations) {
@@ -1007,6 +1009,30 @@ app.controller("hemnetCommuterController", ['$scope', '$compile', '$http', '$tim
     if (confirm('Delete ' + $scope.commute_locations[commute_id].address + '?')) {
       $http.post("api/commute_locations.php", JSON.stringify({ 'delete': commute_id })).then(function (response) {
         delete $scope.commute_locations[commute_id];
+        $scope.update_results();
+      });
+    }
+  }
+
+  // Add user button clicked
+  $scope.add_user = function () {
+    var name = prompt('Name:');
+    if (!name || name.trim().length == 0) {
+      return;
+    }
+    // Build post data and send to API
+    var post_data = { 'add_user_name': name.trim() };
+    $http.post("api/users.php", JSON.stringify(post_data)).then(function (response) {
+      console.log(response.data);
+      $scope.update_results();
+    });
+  }
+
+  // Delete user button clicked
+  $scope.delete_user = function (user_id) {
+    if (confirm('Delete ' + $scope.users[user_id].address + '?')) {
+      $http.post("api/users.php", JSON.stringify({ 'delete_id': user_id })).then(function (response) {
+        delete $scope.users[user_id];
         $scope.update_results();
       });
     }
