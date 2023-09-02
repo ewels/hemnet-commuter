@@ -289,22 +289,16 @@ app.controller("hemnetCommuterController", ['$scope', '$compile', '$http', '$tim
           'icon_class': 'fa-clock-o'
         }),
         new L.Control.HncBtn({
-          'title': 'Map Settings',
-          'ngclick': `sidebar = sidebar == 'map' ? false : 'map'`,
-          'ngclass': `sidebar == 'map' ? 'btn-info' : 'btn-outline-info'`,
-          'icon_class': 'fa-map-marker'
-        }),
-        new L.Control.HncBtn({
           'title': 'Filters',
           'ngclick': `sidebar = sidebar == 'filters' ? false : 'filters'`,
-          'ngclass': `sidebar == 'filters' ? 'btn-secondary' : 'btn-outline-secondary'`,
+          'ngclass': `sidebar == 'filters' ? 'btn-secondary' : 'btn-outline-info'`,
           'icon_class': 'fa-filter'
         }),
         new L.Control.HncBtn({
-          'title': 'Commutes',
-          'ngclick': `sidebar = sidebar == 'commute' ? false : 'commute'`,
-          'ngclass': `sidebar == 'commute' ? 'btn-primary' : 'btn-outline-primary'`,
-          'icon_class': 'fa-bus'
+          'title': 'Settings',
+          'ngclick': `sidebar = sidebar == 'map' ? false : 'map'`,
+          'ngclass': `sidebar == 'map' ? 'btn-secondary' : 'btn-outline-secondary'`,
+          'icon_class': 'fa-cog'
         }),
       ]
     }
