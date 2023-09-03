@@ -172,7 +172,7 @@
               <td>{{ active_house.runningCosts | number:0 }} kr/year <small>( <span ng-bind="active_house.runningCosts / 12 | number:0"></span> kr/month)</small></td>
             </tr>
             <tr ng-repeat="(commute_id, commute) in commute_locations">
-              <th ng-bind="commute.address"></th>
+              <th ng-bind="commute.nickname"></th>
               <td>
                 <a ng-href="https://www.google.se/maps/preview?saddr={{active_house.lat}},{{active_house.lng}}&daddr={{commute.lat}},{{commute.lng}}&dirflg=r" target="_blank" ng-class="['badge', {'badge-success': active_house.commute_times[commute_id].pass_threshold, 'badge-danger': !active_house.commute_times[commute_id].pass_threshold}]">
                   <span ng-if="active_house.commute_times[commute_id].status == 'OK'">{{active_house.commute_times[commute_id].duration_text}}</span>
