@@ -693,7 +693,7 @@ app.controller("hemnetCommuterController", ['$scope', '$compile', '$http', '$tim
       $scope.map.layers.overlays = {};
 
       // Plot each shape separately
-      var colours = ['#3388FF', '#e7298a', '#7570b3', '#d95f02', '#e6ab02'];
+      var colours = ['#3388FF', '#e7298a', '#7570b3'];
       var colour_idx = 0;
       for (let id in response.data.results) {
         // Convert TravelTime response data to geoJSON
@@ -709,7 +709,7 @@ app.controller("hemnetCommuterController", ['$scope', '$compile', '$http', '$tim
         };
         if (layer_name !== 'Intersection of commutes') {
           is_visible = false;
-          colour_idx++;
+          colour_idx = (colour_idx + 1) % colours.length;
           style = {
             color: colours[colour_idx],
             fillColor: colours[colour_idx],
