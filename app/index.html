@@ -55,7 +55,7 @@
     </div>
   </nav>
   <div class="row mr-0 flex-fill" style="position:relative;">
-    <div ng-hide="show_detail" ng-class="!sidebar ? 'col-lg-8' : 'd-none d-lg-block col-lg-4'" class="px-0 order-2">
+    <div ng-class="show_detail ? 'd-none d-lg-block' : ''; !sidebar ? 'col-lg-8' : 'd-none d-lg-block col-lg-4'" class="px-0 order-2">
       <leaflet bounds="map.bounds" lf-center="map.center" event-broadcast="map.events" markers="map.markers" layers="map.layers" controls="map.controls" style="position: absolute; top: 0; bottom: 0; width: 100%;"></leaflet>
     </div>
     <div ng-class="show_detail ? 'd-block' : 'd-none d-lg-block'" class="col-lg-4 pr-0 order-1 h-100 overflow-auto">
