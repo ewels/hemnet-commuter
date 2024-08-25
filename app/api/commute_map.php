@@ -31,23 +31,26 @@ function get_traveltime_maps(){
   );
 
   // Add each commute location
+  # https://docs.traveltime.com/api/reference/isochrones#departure_searches-transportation-type
   foreach($commute_locations as $commute_id => $loc){
-    $postdata['arrival_searches'][] = array(
-      'id' => $loc['address'],
-      'coords' => array(
-        'lat' => floatval($loc['lat']),
-        'lng' => floatval($loc['lng']),
-      ),
-      'transportation' => array('type' => $ini_array['traveltime_transportation_type']),
-      'arrival_time' => date('c', strtotime('next friday, 9am CET')),
-      'range' => array(
-        'enabled' => true,
-        'width' => 3600 // allow arrival between 8 and 9
-      ),
-      'travel_time' => floatval($loc['max_time'])
-    );
-    $postdata['intersections'][0]['search_ids'][] = $loc['address'];
-    $request_hash_strs[] = $loc['lat'].','.$loc['lng'].','.$loc['max_time'];
+    foreach($ini_array['traveltime_transportation_types'] as $t_type){
+      $postdata['arrival_searches'][] = array(
+        'id' => $loc['address'].' - '.$t_type,
+        'coords' => array(
+          'lat' => floatval($loc['lat']),
+          'lng' => floatval($loc['lng']),
+        ),
+        'transportation' => array('type' => $t_type),
+        'arrival_time' => date('c', strtotime('next friday, 9am CET')),
+        'range' => array(
+          'enabled' => true,
+          'width' => 3600 // allow arrival between 8 and 9
+        ),
+        'travel_time' => floatval($loc['max_time'])
+      );
+      $postdata['intersections'][0]['search_ids'][] = $loc['address'].' - '.$t_type;
+      $request_hash_strs[] = $loc['lat'].','.$loc['lng'].','.$loc['max_time'].','.$t_type;
+    }
   }
 
   if(count($postdata['arrival_searches']) == 0){
@@ -125,11 +128,13 @@ function get_traveltime_maps(){
     $commute_id = null;
     $layer_name = 'Intersection of commutes';
     foreach($commute_locations as $c_id => $loc){
-      if($loc['address'] == $result['search_id']){
-        $commute_id = $c_id;
-        $hrs = floor($loc['max_time'] / 3600);
-        $mins = floor(($loc['max_time'] / 60) % 60);
-        $layer_name = $hrs.'hr '.$mins.' commute to "'.$loc['address'].'"';
+      foreach($ini_array['traveltime_transportation_types'] as $t_idx => $t_type){
+        if($loc['address'].' - '.$t_type == $result['search_id']){
+          $commute_id = ($c_id * 10) + $t_idx;
+          $hrs = floor($loc['max_time'] / 3600);
+          $mins = floor(($loc['max_time'] / 60) % 60);
+          $layer_name = $loc['nickname'].': '.$t_type;
+        }
       }
     }
     // Insert
