@@ -26,9 +26,8 @@ h2, h3, h4, h5, h6 {
 .nav, .pagination, .carousel, .panel-title a { cursor: pointer; }
 
 footer {
-  margin-top: 60px;
   border-top: 1px solid #ccc;
-  padding: 15px;
+  padding: 5px;
   font-size: 0.7rem;
   background-color: #ededed;
   color: #999;
@@ -36,6 +35,11 @@ footer {
 footer a {
   color: #999;
   text-decoration: underline;
+}
+@media screen and (max-width: 768px) {
+  .no-mobile-border {
+    border-top: none !important;
+  }
 }
 
 
@@ -64,12 +68,19 @@ footer a {
 }
 
 .photos_modal_body_col {
-  max-height: calc(100vh - 14rem);
+  max-height: calc(100vh - 7.5rem);
   overflow-y: auto;
 }
 .photos_modal_body_col img {
-  max-height: 100%;
   max-width: 100%;
   margin: 0 auto;
   display: block;
+}
+@media screen and (min-width: 992px) {
+  .photos_modal_body_col {
+    max-height: calc(100vh - 14rem);
+  }
+  .photos_modal_body_col img {
+    max-height: 100%;
+  }
 }

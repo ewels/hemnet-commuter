@@ -56,7 +56,9 @@ app.controller("hemnetCommuterController", ['$scope', '$compile', '$http', '$tim
     next_visning_timestamps: [0, 999999999],
   }
   $scope.initialising = false;
+  $scope.show_detail = false; // mobile only
   $scope.sidebar = false;
+  $scope.show_footer = true;
   $scope.photos_modal = false;
   $scope.photos_modal_thumbs = true;
   $scope.photos_modal_planritning = true;
@@ -783,6 +785,7 @@ app.controller("hemnetCommuterController", ['$scope', '$compile', '$http', '$tim
       $scope.active_house.description_translatedText = '';
       $scope.active_house.carousel = [];
       $scope.carousel_idx = 0;
+      $scope.show_detail = true;
       console.log("House clicked:", $scope.active_house);
       // Fetch the images for the carousel and the mäklare URL
       var graphQL_query = `
@@ -965,6 +968,11 @@ app.controller("hemnetCommuterController", ['$scope', '$compile', '$http', '$tim
         house.tags[new_tag_id] = false;
       });
     });
+  }
+
+  // Hide footer button clicked
+  $scope.hide_footer = function () {
+    $scope.show_footer = false;
   }
 
   // Update commute time

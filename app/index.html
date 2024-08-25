@@ -40,15 +40,29 @@
 
 <body ng-controller="hemnetCommuterController" style="padding:0;" ng-class="{'modal-open': photos_modal}">
 
-  <div class="row mr-0 h-100" style="position:relative;">
-    <div ng-class="!sidebar ? 'col-md-8' : 'col-md-4'" class="px-0 h-100 order-2">
+<div class="d-flex flex-column h-100">
+  <nav class="navbar navbar-light bg-light border-bottom d-lg-none">
+    <button ng-click="show_detail = true" ng-hide="sidebar || show_detail" class="navbar-toggler" type="button">
+      <i  class="fa fa-map-marker"></i>
+    </button>
+    <button ng-click="sidebar = false; show_detail = false" ng-show="sidebar || show_detail" class="navbar-toggler" type="button">
+      <i class="fa fa-map-o"></i>
+    </button>
+    <div class="navbar-brand mr-0">
+      <i ng-show="update_results_call_active || commute_map_call_active" class="fa fa-spinner fa-pulse fa-fw text-success"></i>
+      Hemnet Commuter
+      <img src="hemnet_commuter.svg" class="d-inline ml-2" style="width: 30px; margin-top:-5px;">
+    </div>
+  </nav>
+  <div class="row mr-0 flex-fill" style="position:relative;">
+    <div ng-hide="show_detail" ng-class="!sidebar ? 'col-lg-8' : 'd-none d-lg-block col-lg-4'" class="px-0 order-2">
       <leaflet bounds="map.bounds" lf-center="map.center" event-broadcast="map.events" markers="map.markers" layers="map.layers" controls="map.controls" style="position: absolute; top: 0; bottom: 0; width: 100%;"></leaflet>
     </div>
-    <div class="col-md-4 pr-0 order-1 h-100 overflow-auto">
-      <div class="container pt-3">
-        <h1 class="h2">
+    <div ng-class="show_detail ? 'd-block' : 'd-none d-lg-block'" class="col-lg-4 pr-0 order-1 h-100 overflow-auto">
+      <div class="container pt-md-3">
+        <h1 class="h2 d-none d-md-inline">
           <img ng-hide="update_results_call_active || commute_map_call_active" src="hemnet_commuter.svg" class="float-right" style="width: 40px; margin-top:-5px;">
-          <i ng-show="update_results_call_active || commute_map_call_active" class="fa fa-spinner fa-pulse fa-fw float-right text-success"></i>
+          <i ng-show="update_results_call_active || commute_map_call_active" class="fa fa-spinner fa-pulse fa-fw float-right text-success"></i>
           Hemnet Commuter
         </h1>
         <p ng-show="missing_geo.length > 0" class="small text-danger">Missing location for {{missing_geo.length}} houses! Fix on the <a href="update.php">update page</a>.</p>
@@ -66,7 +80,7 @@
         <p class="small text-muted my-2">
           <span ng-show="update_results_call_active">Loading houses..</span>
           <span ng-show="commute_map_call_active">Loading commute map..</span>
-          <span ng-show="!update_results_call_active && !commute_map_call_active">
+          <span ng-show="!update_results_call_active && !commute_map_call_active" ng-class="active_id == false ? 'd-inline' : 'd-none d-md-inline'">
             Showing <span ng-bind="num_results" class="badge badge-secondary"></span> out of <span ng-bind="num_total_results" class="badge badge-secondary"></span> houses.
             &nbsp; <a title="Click to toggle update button" href="#" ng-click="needs_update = !needs_update" class="text-muted">Last updated {{ oldest_fetch | date: 'EEE d MMM HH:mm' }}.</a>
           </span>
@@ -76,8 +90,8 @@
         <div ng-show="active_id == false" class="text-muted pt-3 mt-3 border-top">Click a house marker on the map to see more information here.</div>
 
         <!-- ACTIVE HOUSE DETAILS -->
-        <div ng-hide="active_id == false" class="pt-3 mt-3 border-top">
-          <h3 class="mb-4">
+        <div ng-hide="active_id == false" class="pt-md-3 mt-md-3 border-top no-mobile-border">
+          <h3 class="mb-4 clearfix">
             <span ng-bind="active_house.title"></span>
             <span class="float-right">
               <span class="badge" ng-class="{'badge-success': active_house.askingPrice < 4000000, 'badge-primary': active_house.askingPrice > 4000000 && active_house.askingPrice < 5700000, 'badge-danger': active_house.askingPrice > 5700000}">
@@ -220,16 +234,10 @@
           <p class="p-3 mb-2 bg-success text-white" style="display:none;" id="saving_ratings_notification">Saving ratings..</p>
         </div>
         </div>
-        <footer>
-          Hemnet-Commuter was written by <a href="http://phil.ewels.co.uk">Phil Ewels</a>.
-          It is in no way connected with, or endorsed by, <a href="https://www.hemnet.se">hemnet.se</a>.<br>
-          The code for this website is released with the MIT open-source licence and can be viewed on GitHub:
-          <a href="https://github.com/ewels/hemnet-commuter">https://github.com/ewels/hemnet-commuter</a>.
-        </footer>
       </div>
 
     <!-- RIGHT SIDEBAR -->
-    <div ng-class="!sidebar ? 'd-none' : 'col-md-4'" class="order-3 h-100 overflow-auto">
+    <div ng-class="!sidebar ? 'd-none' : 'col-lg-4'" class="order-3 h-100 overflow-auto d-none d-lg-block">
 
       <!-- RECENT RATINGS -->
       <div ng-show="sidebar == 'recent_ratings'" class="pt-3">
@@ -584,24 +592,36 @@
       </div>
     </div>
   </div>
+  <footer ng-show="show_footer" class="d-flex">
+    <div class="flex-fill">
+      Hemnet-Commuter was written by <a href="http://phil.ewels.co.uk">Phil Ewels</a>.
+      It is in no way connected with, or endorsed by, <a href="https://www.hemnet.se">hemnet.se</a>.
+      The code for this website is released with the MIT open-source licence and can be viewed on GitHub:
+      <a href="https://github.com/ewels/hemnet-commuter">https://github.com/ewels/hemnet-commuter</a>.
+    </div>
+    <button ng-click="hide_footer()" class="btn btn-sm btn-outline-secondary py-0" style="opacity:0.6;">
+      <i class="fa fa-times"></i>
+    </button>
+  </footer>
+</div>
 
 <!-- Photos modal -->
-<div ng-show="photos_modal" class="modal fade show d-block" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+<div ng-show="photos_modal" class="modal fade show d-block" id="photos_modal" tabindex="-1" aria-labelledby="photos_modalLabel" aria-hidden="true">
   <div class="modal-dialog modal-xl" style="max-width: 95%;">
     <div class="modal-content">
-      <div class="modal-header">
-        <h2 class="modal-title" id="exampleModalLabel">
-          {{ active_house.title }}
-          <small class="text-muted ml-4"><small>{{ active_house.area }} / {{ active_house.legacyPrimaryLocation }}</small></small>
+      <div class="modal-header d-none d-lg-block">
+        <h2 class="modal-title" id="photos_modalLabel">
+          {{ active_house.title }} <br class="d-md-none">
+          <small class="text-muted ml-md-4"><small>{{ active_house.area }} / {{ active_house.legacyPrimaryLocation }}</small></small>
         </h2>
         <button ng-click="photos_modal = false" type="button" class="close" aria-label="Close">
           <span aria-hidden="true">&times;</span>
         </button>
       </div>
-      <div class="modal-body" style="max-height: calc(100vh - 12rem);">
+      <div class="modal-body" style="max-height: calc(100vh - 6rem);">
         <div class="container-fluid">
           <div class="row">
-            <div ng-show="photos_modal_thumbs" class="col-auto photos_modal_body_col">
+            <div ng-show="photos_modal_thumbs" class="d-none d-lg-block col-auto photos_modal_body_col">
               <a ng-repeat="slide in active_house.allImages" ng-href="#modal_photo_{{$index}}">
                 <img class="border mb-3 d-block" ng-src="{{slide.original}}" style="width: {{photos_modal_thumbs_width}}px">
               </a>
@@ -610,7 +630,7 @@
               <!-- AngularJS does fancy routing stuff with #links, so hack around it by just calling the id !#whatever -->
               <img class="border mb-3" ng-src="{{slide.original}}" ng-repeat="slide in active_house.allImages" id="!#modal_photo_{{$index}}">
             </div>
-            <div ng-show="photos_modal_planritning" class="col-auto photos_modal_body_col">
+            <div ng-show="photos_modal_planritning" class="d-none d-md-block col-auto photos_modal_body_col">
               <a ng-repeat="slide in active_house.allImages" ng-href="#modal_photo_{{$index}}">
                 <img ng-show="slide.labels.indexOf('FLOOR_PLAN') !== -1" ng-src="{{slide.original}}" class="mx-auto border mb-3 d-block"  style="width: {{photos_modal_planritning_width}}px">
               </a>
@@ -618,10 +638,10 @@
           </div>
         </div>
       </div>
-      <div class="modal-footer">
+      <div class="d-none d-md-block modal-footer py-0 py-lg-2">
 
-        <div class="mr-auto">
-          <button ng-click="photos_modal_thumbs = !photos_modal_thumbs" class="btn btn-outline-info mr-2" style="white-space: nowrap; overflow: hidden;">
+        <div class="d-none d-lg-block mr-auto">
+          <button ng-click="photos_modal_thumbs = !photos_modal_thumbs" class="btn btn-sm btn-outline-info mr-2" style="white-space: nowrap; overflow: hidden;">
             <i class="fa fa-th mr-2" aria-hidden="true"></i>
             Toggle Thumbnails
           </button>
@@ -630,13 +650,13 @@
         </div>
 
         <label class="small text-muted" for="modal_planritning_width_slider">Planritning size</label>
-        <input ng-model="photos_modal_planritning_width" ng-disabled="!photos_modal_planritning" type="range" id="modal_planritning_width_slider" min="300" max="1200">
-        <button ng-click="photos_modal_planritning = !photos_modal_planritning" class="btn btn-outline-secondary" style="white-space: nowrap; overflow: hidden;">
+        <input ng-model="photos_modal_planritning_width" ng-disabled="!photos_modal_planritning" type="range" id="modal_planritning_width_slider" min="100" max="1200">
+        <button ng-click="photos_modal_planritning = !photos_modal_planritning" class="btn btn-sm btn-outline-secondary" style="white-space: nowrap; overflow: hidden;">
           <img style="width:20px;" class="mr-2" src="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzEiIGhlaWdodD0iMjQiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PHRpdGxlPlBsYW5yaXRuaW5nPC90aXRsZT48cGF0aCBkPSJNMjkgMGEyIDIgMCAwMTIgMnYyMGEyIDIgMCAwMS0yIDJIMmEyIDIgMCAwMS0yLTJWMmEyIDIgMCAwMTItMmgyN3pNMTEuNzEgMjJINS45OTlMNiAyNGg3LjVsLS4wMDEtLjE4NC0uMDE0LjAxNUwxMS43MSAyMnpNMjkgMkgydjIwaDRsNS43MDktLjAwMS01LjE2My01LjMyNyAxLjM3LTEuNDE1TDE0LjQ1MSAyMkgyOXYtOGgtOS42MjV2NGgtMS45Mzh2LTZIMjlWMnptLTkuNjI1IDB2OGgtMS45MzhWMmgxLjkzOHoiIGZpbGw9IiMzMzMiIGZpbGwtcnVsZT0iZXZlbm9kZCIvPjwvc3ZnPg==" alt="">
           Toggle Planritning
         </button>
 
-        <button ng-click="photos_modal = false" type="button" class="btn btn-secondary">Close</button>
+        <button ng-click="photos_modal = false" type="button" class="btn btn-sm btn-secondary">Close</button>
       </div>
     </div>
   </div>
