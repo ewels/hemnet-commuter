@@ -80,7 +80,7 @@ footer a {
   .photos_modal_body_col {
     max-height: calc(100vh - 14rem);
   }
-  .photos_modal_body_col img {
+  .photos_modal_body_col:not(.photos_modal_planritning) img {
     max-height: 100%;
   }
 }

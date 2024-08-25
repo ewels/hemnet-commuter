@@ -630,7 +630,7 @@
               <!-- AngularJS does fancy routing stuff with #links, so hack around it by just calling the id !#whatever -->
               <img class="border mb-3" ng-src="{{slide.original}}" ng-repeat="slide in active_house.allImages" id="!#modal_photo_{{$index}}">
             </div>
-            <div ng-show="photos_modal_planritning" class="d-none d-md-block col-auto photos_modal_body_col">
+            <div ng-show="photos_modal_planritning" class="d-none d-md-block col-auto photos_modal_body_col photos_modal_planritning">
               <a ng-repeat="slide in active_house.allImages" ng-href="#modal_photo_{{$index}}">
                 <img ng-show="slide.labels.indexOf('FLOOR_PLAN') !== -1" ng-src="{{slide.original}}" class="mx-auto border mb-3 d-block"  style="width: {{photos_modal_planritning_width}}px">
               </a>
@@ -638,9 +638,9 @@
           </div>
         </div>
       </div>
-      <div class="d-none d-md-block modal-footer py-0 py-lg-2">
+      <div class="d-none d-md-flex justify-content-between modal-footer py-0 py-lg-2">
 
-        <div class="d-none d-lg-block mr-auto">
+        <div class="d-none d-lg-block m-0">
           <button ng-click="photos_modal_thumbs = !photos_modal_thumbs" class="btn btn-sm btn-outline-info mr-2" style="white-space: nowrap; overflow: hidden;">
             <i class="fa fa-th mr-2" aria-hidden="true"></i>
             Toggle Thumbnails
@@ -649,12 +649,14 @@
           <input ng-model="photos_modal_thumbs_width" ng-disabled="!photos_modal_thumbs" type="range" id="modal_thumb_size_slider" min="50" max="800">
         </div>
 
-        <label class="small text-muted" for="modal_planritning_width_slider">Planritning size</label>
-        <input ng-model="photos_modal_planritning_width" ng-disabled="!photos_modal_planritning" type="range" id="modal_planritning_width_slider" min="100" max="1200">
-        <button ng-click="photos_modal_planritning = !photos_modal_planritning" class="btn btn-sm btn-outline-secondary" style="white-space: nowrap; overflow: hidden;">
-          <img style="width:20px;" class="mr-2" src="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzEiIGhlaWdodD0iMjQiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PHRpdGxlPlBsYW5yaXRuaW5nPC90aXRsZT48cGF0aCBkPSJNMjkgMGEyIDIgMCAwMTIgMnYyMGEyIDIgMCAwMS0yIDJIMmEyIDIgMCAwMS0yLTJWMmEyIDIgMCAwMTItMmgyN3pNMTEuNzEgMjJINS45OTlMNiAyNGg3LjVsLS4wMDEtLjE4NC0uMDE0LjAxNUwxMS43MSAyMnpNMjkgMkgydjIwaDRsNS43MDktLjAwMS01LjE2My01LjMyNyAxLjM3LTEuNDE1TDE0LjQ1MSAyMkgyOXYtOGgtOS42MjV2NGgtMS45Mzh2LTZIMjlWMnptLTkuNjI1IDB2OGgtMS45MzhWMmgxLjkzOHoiIGZpbGw9IiMzMzMiIGZpbGwtcnVsZT0iZXZlbm9kZCIvPjwvc3ZnPg==" alt="">
-          Toggle Planritning
-        </button>
+        <div>
+          <label class="small text-muted" for="modal_planritning_width_slider">Planritning size</label>
+          <input ng-model="photos_modal_planritning_width" ng-disabled="!photos_modal_planritning" type="range" id="modal_planritning_width_slider" min="100" max="1200">
+          <button ng-click="photos_modal_planritning = !photos_modal_planritning" class="btn btn-sm btn-outline-secondary" style="white-space: nowrap; overflow: hidden;">
+            <img style="width:20px;" class="mr-2" src="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzEiIGhlaWdodD0iMjQiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PHRpdGxlPlBsYW5yaXRuaW5nPC90aXRsZT48cGF0aCBkPSJNMjkgMGEyIDIgMCAwMTIgMnYyMGEyIDIgMCAwMS0yIDJIMmEyIDIgMCAwMS0yLTJWMmEyIDIgMCAwMTItMmgyN3pNMTEuNzEgMjJINS45OTlMNiAyNGg3LjVsLS4wMDEtLjE4NC0uMDE0LjAxNUwxMS43MSAyMnpNMjkgMkgydjIwaDRsNS43MDktLjAwMS01LjE2My01LjMyNyAxLjM3LTEuNDE1TDE0LjQ1MSAyMkgyOXYtOGgtOS42MjV2NGgtMS45Mzh2LTZIMjlWMnptLTkuNjI1IDB2OGgtMS45MzhWMmgxLjkzOHoiIGZpbGw9IiMzMzMiIGZpbGwtcnVsZT0iZXZlbm9kZCIvPjwvc3ZnPg==" alt="">
+            Toggle Planritning
+          </button>
+        </div>
 
         <button ng-click="photos_modal = false" type="button" class="btn btn-sm btn-secondary">Close</button>
       </div>
