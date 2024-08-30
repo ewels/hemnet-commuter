@@ -181,6 +181,10 @@
               <th>Rooms:</th>
               <td>{{ active_house.numberOfRooms }}</td>
             </tr>
+            <tr>
+              <th>Floor:</th>
+              <td>{{ active_house.floor }} of {{ active_house.storeys }}</td>
+            </tr>
             <tr ng-show="active_house.runningCosts > 0">
               <th>Operating cost:</th>
               <td>{{ active_house.runningCosts | number:0 }} kr/year <small>( <span ng-bind="active_house.runningCosts / 12 | number:0"></span> kr/month)</small></td>
