@@ -8,7 +8,7 @@
  */
 
 var app = angular.module("hemnetCommuterApp", ['ui-leaflet', 'ngCookies', 'ngAnimate', 'ngTouch', 'ui.bootstrap']);
-app.controller("hemnetCommuterController", ['$scope', '$compile', '$http', '$timeout', '$cookies', 'leafletData', function ($scope, $compile, $http, $timeout, $cookies, leafletData) {
+app.controller("hemnetCommuterController", ['$scope', '$location', '$compile', '$http', '$timeout', '$cookies', 'leafletData', function ($scope, $location, $compile, $http, $timeout, $cookies, leafletData) {
 
   // Put some common functions onto the $scope
   $scope.isArray = angular.isArray;
@@ -601,6 +601,19 @@ app.controller("hemnetCommuterController", ['$scope', '$compile', '$http', '$tim
         }
       }, 1000);
 
+
+      // Check for `active_house_id` in URL query parameters on page load
+      const active_house_id = $location.search().active_house_id;
+
+      if (active_house_id) {
+        // If `active_house_id` exists, simulate a marker click
+
+        // Assuming we have a method to programmatically trigger the event
+        $timeout(function () {
+          $scope.$broadcast('leafletDirectiveMarker.click', { model: { id: active_house_id } });
+        }, 200);
+      }
+
     });
   };
 
@@ -780,12 +793,14 @@ app.controller("hemnetCommuterController", ['$scope', '$compile', '$http', '$tim
   // Leaflet marker clicked
   $scope.$on('leafletDirectiveMarker.click', function (event, args) {
     // Get house details
+    debugger
     if (args.model.id !== undefined) {
       // Clear any active error message
       $scope.error_msg = false;
 
       $scope.active_id = args.model.id;
       $scope.active_house = $scope.results[$scope.active_id];
+      $location.search('active_house_id', $scope.active_id);
       $scope.active_house.description_translatedText = '';
       $scope.active_house.carousel = [];
       $scope.carousel_idx = 0;
@@ -906,6 +921,7 @@ app.controller("hemnetCommuterController", ['$scope', '$compile', '$http', '$tim
       });
     }
   });
+  
 
   // Ratings button clicked
   $scope.save_rating = function (r_user_id, rating) {
