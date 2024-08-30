@@ -46,6 +46,7 @@ app.controller("hemnetCommuterController", ['$scope', '$compile', '$http', '$tim
     open_house_before: '',
     open_house_after: '',
     hide_failed_commutes: [],
+    tags: []
   }
 
   $scope.stats = {
@@ -451,6 +452,9 @@ app.controller("hemnetCommuterController", ['$scope', '$compile', '$http', '$tim
 
     // Build filters POST data
     var postdata = {};
+    if($scope.filters.tags.length > 0){
+      postdata.tags = $scope.filters.tags;
+    }
     if ($scope.filters.min_combined_rating_score != ($scope.num_users * -1).toString()) {
       postdata.min_combined_rating_score = $scope.filters.min_combined_rating_score;
     }
@@ -949,6 +953,22 @@ app.controller("hemnetCommuterController", ['$scope', '$compile', '$http', '$tim
       $scope.active_house.tags[tag_id] = selected;
     });
   }
+  // add tag on filter
+  $scope.toggle_tag_filter = function (tag_id) {
+    // Check if the tag_id exists in the filters.tags array
+    if ($scope.filters.tags.includes(tag_id)) {
+      // If it exists, remove it
+      const index = $scope.filters.tags.indexOf(tag_id);
+      if (index > -1) {
+        $scope.filters.tags.splice(index, 1);
+      }
+    } else {
+      // If it does not exist, add it
+      $scope.filters.tags.push(tag_id);
+    }
+
+    $scope.update_results();
+  };
 
   // Add tag button clicked
   $scope.add_tag = function () {

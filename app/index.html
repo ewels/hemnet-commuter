@@ -334,6 +334,20 @@
               <label class="form-check-label" for="rating_not_set_{{user_id}}">Not set</label>
             </td>
           </tr>
+          <tr>
+            <th>has tag: </th>
+            <td class="px-2" ng-repeat="(tag_id, _) in tags">
+              <button 
+                class="btn btn-outline-secondary p-1 mr-2 mb-2" 
+                style="font-size: .7rem;"
+                ng-click="toggle_tag_filter(tag_id)" 
+                ng-class="{'active': filters.tags.includes(tag_id)}"
+              >
+                  {{tags[tag_id]}}
+                </button>
+            </td>
+          </tr>
+          
         </table>
 
         <h6>Commute time thresholds</h6>
