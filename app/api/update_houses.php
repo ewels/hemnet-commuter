@@ -39,6 +39,8 @@ function fetch_hemnet_houses(){
   $num_keys = [
     'livingArea',
     'landArea',
+    'floor',
+    'storeys',
     'supplementalArea',
     'daysOnHemnet',
     'numberOfRooms'
@@ -96,6 +98,7 @@ function fetch_hemnet_houses(){
       curl_setopt($curl, CURLOPT_POST, true);
       curl_setopt($curl, CURLOPT_POSTFIELDS, json_encode($postdata));
 
+      error_log("My variable value: " . json_encode($postdata));;
       // Fetch cURL API response
       $result_raw = curl_exec($curl);
       $status = curl_getinfo($curl, CURLINFO_HTTP_CODE);
@@ -283,6 +286,8 @@ function graphql_iOSSearchQuery(){
           }
 
           livingArea
+          floor
+          storeys
           landArea
           supplementalArea
           daysOnHemnet
