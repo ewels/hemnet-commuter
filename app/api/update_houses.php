@@ -119,6 +119,8 @@ function fetch_hemnet_houses(){
       // Parse the response
       $results_json = @json_decode($result_raw, true);
       $num_results = $results_json['data']['searchListings']['total'];
+      
+      $all_lat_lng = [];
 
       foreach($results_json['data']['searchListings']['listings'] as $listing){
 
@@ -149,6 +151,21 @@ function fetch_hemnet_houses(){
         // Array keys two-deep
         $this_house['lat'] = $listing['coordinates']['lat'];
         $this_house['lng'] = $listing['coordinates']['long'];
+
+        // Check if the coordinates already exist in the $houses array
+        $lat_lng_key = $this_house['lat'] . ',' . $this_house['lng'];
+        if (isset($all_lat_lng[$lat_lng_key])) {
+            // Coordinates already exist, adjust them slightly to move the house 5 meters away
+
+            $newCoordinates = moveHouseCoordinates($this_house['lat'], $this_house['lng'], 5); // 5 meters
+
+            $this_house['lat'] = $newCoordinates['lat'];
+            $this_house['lng'] = $newCoordinates['lng'];
+        }
+        $lat_lng_key = $this_house['lat'] . ',' . $this_house['lng'];  // Update key with possibly new coordinates
+        $all_lat_lng[$lat_lng_key] = $this_house;
+
+
         $this_house['askingPrice'] = 0;
         if(array_key_exists('askingPrice', $listing) && !is_null($listing['askingPrice'])) $this_house['askingPrice'] = $listing['askingPrice']['amount'];
         $this_house['runningCosts'] = 0;
@@ -204,7 +221,27 @@ function fetch_hemnet_houses(){
   return array("status"=>"success", "msg" => "Found ".count($houses)." houses");
 }
 
+/**
+ * Function to move coordinates a specified distance in meters
+ * @param float $lat Latitude of the original location
+ * @param float $lng Longitude of the original location
+ * @param float $distance Distance in meters to move
+ * @return array New latitude and longitude
+ */
+function moveHouseCoordinates($lat, $lng, $distance) {
+  // Earth’s radius, sphere
+  $earthRadius = 6378137; // Radius in meters
 
+  // Coordinate offsets in radians
+  $dLat = $distance / $earthRadius;
+  $dLng = $distance / ($earthRadius * cos(pi() * $lat / 180));
+
+  // OffsetPosition, decimal degrees
+  $newLat = $lat + ($dLat * 180 / pi());
+  $newLng = $lng + ($dLng * 180 / pi());
+
+  return ['lat' => $newLat, 'lng' => $newLng];
+}
 
 /////////
 // CALLED DIRECTLY - API usage
