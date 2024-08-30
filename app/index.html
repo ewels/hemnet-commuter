@@ -215,7 +215,7 @@
             <button type="button" ng-class="{'active': translate_description}" ng-click="translate_description = true" class="btn btn-light">{{ translate_target_language }}</button>
           </div>
           <p ng-show="!translate_description" class="small text-muted" style="white-space: pre-wrap;">{{ active_house.description }}</p>
-          <p ng-show="translate_description" class="small text-muted" style="white-space: pre-wrap;">{{ active_house.description_translatedText }}</p>
+          <p ng-show="translate_description" class="small text-muted" style="white-space: pre-wrap;">{{ active_house.description_translatedText || active_house.description }}</p>
 
           <div class="row my-5 house_ratings">
             <div ng-repeat="(user_id, user_name) in users" class="col-6">
