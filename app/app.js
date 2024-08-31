@@ -15,6 +15,7 @@ app.controller("hemnetCommuterController", ['$scope', '$location', '$compile', '
   $scope.console = console;
 
   // Saved search credentials
+  $scope.upcoming_visitings_houses = [];
   $scope.saved_searches = [];
   $scope.update_saved_searches = false;
   $scope.hemnet_api_key = false;
@@ -303,6 +304,12 @@ app.controller("hemnetCommuterController", ['$scope', '$location', '$compile', '
           'ngclass': `sidebar == 'map' ? 'btn-secondary' : 'btn-outline-secondary'`,
           'icon_class': 'fa-cog'
         }),
+        new L.Control.HncBtn({
+          'title': 'Visiting',
+          'ngclick': `sidebar = sidebar == 'visiting' ? false : 'visiting'`,
+          'ngclass': `sidebar == 'visiting' ? 'btn-secondary' : 'btn-outline-secondary'`,
+          'icon_class': 'fa-solid fa-street-view'
+        })
       ]
     }
   }
@@ -549,7 +556,6 @@ app.controller("hemnetCommuterController", ['$scope', '$location', '$compile', '
       $scope.oldest_fetch = parseFloat(response.data.oldest_fetch + "000");
       $scope.needs_update = Date.now() - $scope.oldest_fetch > (1000 * 60 * 60 * 12);
       $scope.results = response.data.results;
-
       // Stats of *returned* results for marker colour ranges
       // Commute times
       $scope.commute_time_max = response.data.commute_time_max;
@@ -607,15 +613,68 @@ app.controller("hemnetCommuterController", ['$scope', '$location', '$compile', '
 
       if (active_house_id) {
         // If `active_house_id` exists, simulate a marker click
-
         // Assuming we have a method to programmatically trigger the event
-        $timeout(function () {
-          $scope.$broadcast('leafletDirectiveMarker.click', { model: { id: active_house_id } });
-        }, 200);
+        $scope.simulateClickOnMarker(active_house_id)
       }
 
     });
   };
+
+  $scope.$watch(
+    'map.markers', 
+    (newMarkers, oldMarkers)  => {
+      const markers = Object.values(newMarkers)
+      $scope.update_visitings(markers)
+    },
+    true // Set to true for deep watching
+  );
+
+  $scope.getIconClasses = function (icon) {
+    let classes = [];
+    if (icon.prefix) {
+      classes.push(icon.prefix); // e.g., 'fa'
+    }
+    if (icon.icon) {
+      classes.push(icon.icon); // e.g., 'fa-circle'
+    }
+    classes.push('fa-3x');
+    return classes;
+  }
+
+  $scope.getIconStyles = function (icon) {
+    // Apply color or any other styles dynamically
+    return {
+      color: icon.markerColor || '#000'
+    };
+  };
+
+  $scope.update_visitings = function (markers) {
+    
+    if(markers.length == 0){
+      $scope.upcoming_visitings_houses = []
+      return
+    }
+    const visitings = markers.filter((marker) => {
+      const house = $scope.results[marker.id]
+      return house.nextOpenHouse != null
+    })
+    .map(marker => ({...$scope.results[marker.id], marker}))
+    .sort((houseA, houseB) => {
+      // Extract the first upcomingOpenHouse epoch time for each house
+      const firstOpenHouseA = houseA.nextOpenHouse;
+      const firstOpenHouseB = houseB.nextOpenHouse;
+  
+      // Sort by the earliest upcomingOpenHouses epoch number
+      return firstOpenHouseA - firstOpenHouseB;
+    }).map(house => ({...house, upcomingOpenHouses: house.upcomingOpenHouses.split(",")}));
+    $scope.upcoming_visitings_houses = visitings
+  };
+
+  $scope.simulateClickOnMarker = function (houseId) {
+    $timeout(function () {
+      $scope.$broadcast('leafletDirectiveMarker.click', { model: { id: houseId } });
+    }, 200);
+  }
 
   $scope.plot_markers = function () {
     // Make nice object of map markers
@@ -793,7 +852,6 @@ app.controller("hemnetCommuterController", ['$scope', '$location', '$compile', '
   // Leaflet marker clicked
   $scope.$on('leafletDirectiveMarker.click', function (event, args) {
     // Get house details
-    debugger
     if (args.model.id !== undefined) {
       // Clear any active error message
       $scope.error_msg = false;
