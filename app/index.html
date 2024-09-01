@@ -638,7 +638,7 @@
           </div>
         </div>
       </div>
-      <div class="d-none d-md-flex justify-content-between modal-footer py-0 py-lg-2">
+      <div class="flex justify-content-between modal-footer py-0 py-lg-2">
 
         <div class="d-none d-lg-block m-0">
           <button ng-click="photos_modal_thumbs = !photos_modal_thumbs" class="btn btn-sm btn-outline-info mr-2" style="white-space: nowrap; overflow: hidden;">
@@ -649,7 +649,8 @@
           <input ng-model="photos_modal_thumbs_width" ng-disabled="!photos_modal_thumbs" type="range" id="modal_thumb_size_slider" min="50" max="800">
         </div>
 
-        <div>
+        <div class="d-md-none"></div> <!-- Flex Spacer -->
+        <div class="d-none d-md-block">
           <label class="small text-muted" for="modal_planritning_width_slider">Planritning size</label>
           <input ng-model="photos_modal_planritning_width" ng-disabled="!photos_modal_planritning" type="range" id="modal_planritning_width_slider" min="100" max="1200">
           <button ng-click="photos_modal_planritning = !photos_modal_planritning" class="btn btn-sm btn-outline-secondary" style="white-space: nowrap; overflow: hidden;">
