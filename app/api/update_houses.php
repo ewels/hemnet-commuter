@@ -151,15 +151,15 @@ function fetch_hemnet_houses(){
 
         // Check if the coordinates already exist in the $houses array
         $lat_lng_key = $this_house['lat'] . ',' . $this_house['lng'];
-        if (isset($all_lat_lng[$lat_lng_key])) {
+        while (isset($all_lat_lng[$lat_lng_key])) {
             // Coordinates already exist, adjust them slightly to move the house 5 meters away
 
             $newCoordinates = moveHouseCoordinates($this_house['lat'], $this_house['lng'], 5); // 5 meters
 
             $this_house['lat'] = $newCoordinates['lat'];
             $this_house['lng'] = $newCoordinates['lng'];
+            $lat_lng_key = $this_house['lat'] . ',' . $this_house['lng'];  // Update key with possibly new coordinates
         }
-        $lat_lng_key = $this_house['lat'] . ',' . $this_house['lng'];  // Update key with possibly new coordinates
         $all_lat_lng[$lat_lng_key] = $this_house;
 
 
