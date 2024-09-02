@@ -858,7 +858,7 @@ app.controller("hemnetCommuterController", ['$scope', '$location', '$compile', '
 
       $scope.active_id = args.model.id;
       $scope.active_house = $scope.results[$scope.active_id];
-      $location.search('active_house_id', $scope.active_id);
+      // $location.search('active_house_id', $scope.active_id);
       $scope.active_house.description_translatedText = '';
       $scope.active_house.carousel = [];
       $scope.carousel_idx = 0;
