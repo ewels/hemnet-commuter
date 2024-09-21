@@ -1,4 +1,4 @@
 .DS_Store
 mysql
 app/config.ini
-app/api/cache/schools.json
+app/api/cache/*.json

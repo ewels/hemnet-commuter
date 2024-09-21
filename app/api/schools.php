@@ -21,14 +21,6 @@ function get_schools_list(){
         return array('status'=>'error', 'msg'=>'No school kommun names found in config.ini');
     }
 
-    // Load cache if it exists
-    if(file_exists('cache/schools.json')){
-        $cache = json_decode(file_get_contents('cache/schools.json'));
-        if($ini_array['school_kommuns'] == $cache->school_kommuns && time() - $cache->timestamp < (60*60*24*30)){
-            return ($cache->schools);
-        }
-    }
-
     // Get county IDs
     $kommun_ids = [];
     $kommun_api = 'https://api.skolverket.se/skolenhetsregistret/v1/kommun';
@@ -38,35 +30,46 @@ function get_schools_list(){
             $kommun_ids[] = $kommun->Kommunkod;
     }
 
-    // Get school IDs
-    $kommun_api = 'https://api.skolverket.se/skolenhetsregistret/v1/skolenhet';
-    $results = @json_decode(@file_get_contents($kommun_api));
-    // Filter out schools that aren't in the right kommun
-    $school_ids = [];
-    foreach($results->Skolenheter as $skola){
-        if(in_array($skola->Kommunkod, $kommun_ids) && $skola->Status == 'Aktiv'){
-            $school_ids[] = $skola;
-        }
-    }
-
-    // Get detailed info for every school
+    // Get schools for each kommun
     $schools = [];
-    foreach($school_ids as $school){
-        $school_api = 'https://api.skolverket.se/skolenhetsregistret/v1/skolenhet/'.$school->Skolenhetskod;
-        $results = @json_decode(@file_get_contents($school_api));
-        $schools[] = $results;
+    foreach($kommun_ids as $kommun_id){
+        // Load cache if it exists
+        if(file_exists('cache/schools_'.$kommun_id.'.json')){
+            $cache = json_decode(file_get_contents('cache/schools_'.$kommun_id.'.json'));
+            if(time() - $cache->timestamp < (60*60*24*30)){
+                $schools = array_merge($schools, $cache->schools);
+                continue;
+            }
+        }
+
+        // Get school IDs
+        $kommun_api = 'https://api.skolverket.se/skolenhetsregistret/v1/kommun/'.$kommun_id;
+        $results = @json_decode(@file_get_contents($kommun_api));$school_ids = [];
+        $school_ids = [];
+        foreach($results->Skolenheter as $skola){
+            if($skola->Status == 'Aktiv'){
+                $school_ids[] = $skola->Skolenhetskod;
+            }
+        }
+
+        // Get detailed info for every school
+        foreach($school_ids as $school_id){
+            $school_api = 'https://api.skolverket.se/skolenhetsregistret/v1/skolenhet/'.$school_id;
+            $results = @json_decode(@file_get_contents($school_api));
+            $schools[] = $results;
+        }
+
+        // TODO - Filter by type of school, available years etc.
+
+        // Save cache
+        // TODO - Save to DB instead
+        $cache = [
+            'timestamp' => time(),
+            'school_kommun' => $kommun_id,
+            'schools' => $schools
+        ];
+        file_put_contents('cache/schools_'.$kommun_id.'.json', json_encode($cache, JSON_PRETTY_PRINT));
     }
-
-    // TODO - Filter by type of school, available years etc.
-
-    // Save cache
-    // TODO - Save to DB instead
-    $cache = [
-        'timestamp' => time(),
-        'school_kommuns' => $ini_array['school_kommuns'],
-        'schools' => $schools
-    ];
-    file_put_contents('cache/schools.json', json_encode($cache, JSON_PRETTY_PRINT));
 
     return $schools;
 }
@@ -75,6 +78,9 @@ function get_school_markers(){
     $schools = get_schools_list();
     $markers = [];
     foreach($schools as $school){
+        if(!$school){
+            continue;
+        }
         $school_types = [];
         foreach($school->SkolenhetInfo->Skolformer as $skolform){
             $school_types[] = $skolform->Benamning;
