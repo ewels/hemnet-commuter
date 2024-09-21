@@ -686,6 +686,9 @@ app.controller("hemnetCommuterController", ['$scope', '$location', '$compile', '
   $scope.simulateClickOnMarker = function (houseId) {
     $timeout(function () {
       $scope.$broadcast('leafletDirectiveMarker.click', { model: { id: houseId } });
+      leafletData.getMap().then(function (map) {
+        map.flyTo(new L.LatLng($scope.active_house.lat, $scope.active_house.lng), 13);
+      });
     }, 200);
   }
 
