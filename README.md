@@ -137,6 +137,20 @@ You can check the status of any running Docker containers with the `docker ps` c
 
 To use Hemnet Commuter, go to [http://localhost](http://localhost) in your browser.
 
+### Password / auth token
+
+Hemnet Commuter comes with a _very_ basic auth system. You can set a password in `config.ini` and it'll validate it.
+It's the `auth_token` value - please change it so that it's not `EXAMPLE` 🙄
+Note that I've really not spent any time making this secure. So don't trust it. I'd recommend running offline (eg. with docker - see below), or using an additional layer of protection such as `.htpasswd` or something.
+
+### Schools
+
+Hemnet Commuter will fetch location and information about schools, from the Skolverket API.
+To avoid hitting the API too hard (there are over 10k schools at time of writing), you have to specify the Kommuns that you're interested in using the `config.ini`. Set `school_kommuns` - the example config file has `Stockholm` and `Ekerö`.
+You can find the complete list of available Kommun names [here](https://api.skolverket.se/skolenhetsregistret/v1/kommun).
+
+You can also limit the schools shown by setting `school_types`. Leave unset to show all schools.
+
 ### Database credentials
 
 The default database credentials are public on GitHub, so anyone will be able to log in to your database if it's on the web.
