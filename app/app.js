@@ -61,6 +61,9 @@ app.controller("hemnetCommuterController", ['$scope', '$location', '$compile', '
   $scope.show_detail = false; // mobile only
   $scope.sidebar = false;
   $scope.show_footer = true;
+  if ($cookies.get('hc_hide_footer')) {
+    $scope.show_footer = false;
+  }
   $scope.photos_modal = false;
   $scope.photos_modal_thumbs = true;
   $scope.photos_modal_planritning = true;
@@ -1076,6 +1079,7 @@ app.controller("hemnetCommuterController", ['$scope', '$location', '$compile', '
   // Hide footer button clicked
   $scope.hide_footer = function () {
     $scope.show_footer = false;
+    $cookies.put('hc_hide_footer', true);
   }
 
   // Update commute time
