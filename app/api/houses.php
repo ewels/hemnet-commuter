@@ -169,6 +169,19 @@ function get_houses($postdata){
       }
     }
 
+    if(isset($postdata['tags'])){
+      $hasAllTags = true;
+      foreach($postdata['tags'] as $tag_id){
+        if($house_results[$house_id]['tags'][$tag_id] == false){
+          $hasAllTags = false;
+        }
+      }
+
+      if($hasAllTags == false){
+        $remove = true;
+      }
+    }
+
     if($remove) unset($house_results[$house_id]);
   }
 

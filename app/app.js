@@ -8,13 +8,14 @@
  */
 
 var app = angular.module("hemnetCommuterApp", ['ui-leaflet', 'ngCookies', 'ngAnimate', 'ngTouch', 'ui.bootstrap']);
-app.controller("hemnetCommuterController", ['$scope', '$compile', '$http', '$timeout', '$cookies', 'leafletData', function ($scope, $compile, $http, $timeout, $cookies, leafletData) {
+app.controller("hemnetCommuterController", ['$scope', '$location', '$compile', '$http', '$timeout', '$cookies', 'leafletData', function ($scope, $location, $compile, $http, $timeout, $cookies, leafletData) {
 
   // Put some common functions onto the $scope
   $scope.isArray = angular.isArray;
   $scope.console = console;
 
   // Saved search credentials
+  $scope.upcoming_viewings_houses = [];
   $scope.saved_searches = [];
   $scope.update_saved_searches = false;
   $scope.hemnet_api_key = false;
@@ -46,6 +47,7 @@ app.controller("hemnetCommuterController", ['$scope', '$compile', '$http', '$tim
     open_house_before: '',
     open_house_after: '',
     hide_failed_commutes: [],
+    tags: []
   }
 
   $scope.stats = {
@@ -222,7 +224,7 @@ app.controller("hemnetCommuterController", ['$scope', '$compile', '$http', '$tim
   $scope.hemnet_results_updating = false;
   $scope.hemnet_results_update_btn_text = 'Update';
   $scope.translate_target_language = '';
-  $scope.translate_description = true;
+  $scope.translate_description = false;
 
   // Build custom leaflet buttons for map settings
   L.Control.HncBtn = L.Control.extend({
@@ -302,6 +304,12 @@ app.controller("hemnetCommuterController", ['$scope', '$compile', '$http', '$tim
           'ngclass': `sidebar == 'map' ? 'btn-secondary' : 'btn-outline-secondary'`,
           'icon_class': 'fa-cog'
         }),
+        new L.Control.HncBtn({
+          'title': 'Viewing',
+          'ngclick': `sidebar = sidebar == 'viewing' ? false : 'viewing'`,
+          'ngclass': `sidebar == 'viewing' ? 'btn-secondary' : 'btn-outline-secondary'`,
+          'icon_class': 'fa-solid fa-street-view'
+        })
       ]
     }
   }
@@ -451,6 +459,9 @@ app.controller("hemnetCommuterController", ['$scope', '$compile', '$http', '$tim
 
     // Build filters POST data
     var postdata = {};
+    if($scope.filters.tags.length > 0){
+      postdata.tags = $scope.filters.tags;
+    }
     if ($scope.filters.min_combined_rating_score != ($scope.num_users * -1).toString()) {
       postdata.min_combined_rating_score = $scope.filters.min_combined_rating_score;
     }
@@ -545,7 +556,6 @@ app.controller("hemnetCommuterController", ['$scope', '$compile', '$http', '$tim
       $scope.oldest_fetch = parseFloat(response.data.oldest_fetch + "000");
       $scope.needs_update = Date.now() - $scope.oldest_fetch > (1000 * 60 * 60 * 12);
       $scope.results = response.data.results;
-
       // Stats of *returned* results for marker colour ranges
       // Commute times
       $scope.commute_time_max = response.data.commute_time_max;
@@ -597,8 +607,74 @@ app.controller("hemnetCommuterController", ['$scope', '$compile', '$http', '$tim
         }
       }, 1000);
 
+
+      // Check for `active_house_id` in URL query parameters on page load
+      const active_house_id = $location.search().active_house_id;
+
+      if (active_house_id) {
+        // If `active_house_id` exists, simulate a marker click
+        // Assuming we have a method to programmatically trigger the event
+        $scope.simulateClickOnMarker(active_house_id)
+      }
+
     });
   };
+
+  $scope.$watch(
+    'map.markers',
+    (newMarkers, oldMarkers)  => {
+      const markers = Object.values(newMarkers)
+      $scope.update_viewings(markers)
+    },
+    true // Set to true for deep watching
+  );
+
+  $scope.getIconClasses = function (icon) {
+    let classes = [];
+    if (icon.prefix) {
+      classes.push(icon.prefix); // e.g., 'fa'
+    }
+    if (icon.icon) {
+      classes.push(icon.icon); // e.g., 'fa-circle'
+    }
+    classes.push('fa-3x');
+    return classes;
+  }
+
+  $scope.getIconStyles = function (icon) {
+    // Apply color or any other styles dynamically
+    return {
+      color: icon.markerColor || '#000'
+    };
+  };
+
+  $scope.update_viewings = function (markers) {
+
+    if(markers.length == 0){
+      $scope.upcoming_viewings_houses = []
+      return
+    }
+    const viewings = markers.filter((marker) => {
+      const house = $scope.results[marker.id]
+      return house?.nextOpenHouse != null
+    })
+    .map(marker => ({...$scope.results[marker.id], marker}))
+    .sort((houseA, houseB) => {
+      // Extract the first upcomingOpenHouse epoch time for each house
+      const firstOpenHouseA = houseA.nextOpenHouse;
+      const firstOpenHouseB = houseB.nextOpenHouse;
+
+      // Sort by the earliest upcomingOpenHouses epoch number
+      return firstOpenHouseA - firstOpenHouseB;
+    }).map(house => ({...house, upcomingOpenHouses: house.upcomingOpenHouses.split(",")}));
+    $scope.upcoming_viewings_houses = viewings
+  };
+
+  $scope.simulateClickOnMarker = function (houseId) {
+    $timeout(function () {
+      $scope.$broadcast('leafletDirectiveMarker.click', { model: { id: houseId } });
+    }, 200);
+  }
 
   $scope.plot_markers = function () {
     // Make nice object of map markers
@@ -903,6 +979,7 @@ app.controller("hemnetCommuterController", ['$scope', '$compile', '$http', '$tim
     }
   });
 
+
   // Ratings button clicked
   $scope.save_rating = function (r_user_id, rating) {
     // Deselect ratings
@@ -949,6 +1026,22 @@ app.controller("hemnetCommuterController", ['$scope', '$compile', '$http', '$tim
       $scope.active_house.tags[tag_id] = selected;
     });
   }
+  // add tag on filter
+  $scope.toggle_tag_filter = function (tag_id) {
+    // Check if the tag_id exists in the filters.tags array
+    if ($scope.filters.tags.includes(tag_id)) {
+      // If it exists, remove it
+      const index = $scope.filters.tags.indexOf(tag_id);
+      if (index > -1) {
+        $scope.filters.tags.splice(index, 1);
+      }
+    } else {
+      // If it does not exist, add it
+      $scope.filters.tags.push(tag_id);
+    }
+
+    $scope.update_results();
+  };
 
   // Add tag button clicked
   $scope.add_tag = function () {
@@ -1303,3 +1396,8 @@ app.controller("hemnetCommuterController", ['$scope', '$compile', '$http', '$tim
   $scope.fetch_saved_searches();
 
 }]);
+app.filter('stripZeros', function () {
+  return function(text) {
+      return text.replace(', 00:00', '');
+  }
+});

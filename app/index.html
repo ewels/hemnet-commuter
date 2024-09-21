@@ -103,9 +103,9 @@
             </span>
           </h3>
           <h4 ng-show="active_house.isNewConstruction == 1 || active_house.isUpcoming == 1 || active_house.isBiddingOngoing == 1" class="clearfix">
-            <span ng-show="active_house.isNewConstruction == 1" class="badge badge-light border text-secondary"><i class="fa fa-certificate mr-2" aria-hidden="true"></i>Nyproduktion</span>
+            <span ng-show="active_house.isNewConstruction == 1" class="badge badge-light border text-secondary"><i class="fa fa-certificate mr-2" aria-hidden="true"></i>New production</span>
             <span ng-show="active_house.isUpcoming == 1" class="badge badge-success"><i class="fa fa-bolt mr-2" aria-hidden="true"></i>Kommande</span>
-            <span ng-show="active_house.isBiddingOngoing == 1" class="badge badge-info" style="background-color: #67458c;"><i class="fa fa-gavel mr-2" aria-hidden="true"></i> Budgivning pågår</span>
+            <span ng-show="active_house.isBiddingOngoing == 1" class="badge badge-info" style="background-color: #67458c;"><i class="fa fa-gavel mr-2" aria-hidden="true"></i> Bidding is ongoing</span>
           </h4>
 
           <!-- Buttons - first row -->
@@ -117,7 +117,7 @@
             </div>
             <div class="col-4">
               <a ng-href="{{active_house.listingBrokerUrl}}" ng-class="{'disabled': !active_house.listingBrokerUrl}" target="_blank" class="btn btn-block btn-success" style="white-space: nowrap; overflow: hidden;">
-                <i class="fa fa-bookmark mr-2" id="commute_icon"></i> Mäklare
+                <i class="fa fa-bookmark mr-2" id="commute_icon"></i> Broker
               </a>
             </div>
             <div class="col-4">
@@ -177,15 +177,19 @@
               </td>
             </tr>
             <tr>
-              <th>Tomt:</th>
+              <th>Plot:</th>
               <td>{{ active_house.formattedLandArea }}</td>
             </tr>
             <tr>
               <th>Rooms:</th>
               <td>{{ active_house.numberOfRooms }}</td>
             </tr>
+            <tr ng-show="active_house.storeys">
+              <th>Floor:</th>
+              <td>{{ active_house.floor }} of {{ active_house.storeys }}</td>
+            </tr>
             <tr ng-show="active_house.runningCosts > 0">
-              <th>Driftkostnad:</th>
+              <th>Operating cost:</th>
               <td>{{ active_house.runningCosts | number:0 }} kr/year <small>( <span ng-bind="active_house.runningCosts / 12 | number:0"></span> kr/month)</small></td>
             </tr>
             <tr ng-repeat="(commute_id, commute) in commute_locations">
@@ -214,7 +218,7 @@
             <button type="button" ng-class="{'active': translate_description}" ng-click="translate_description = true" class="btn btn-light">{{ translate_target_language }}</button>
           </div>
           <p ng-show="!translate_description" class="small text-muted" style="white-space: pre-wrap;">{{ active_house.description }}</p>
-          <p ng-show="translate_description" class="small text-muted" style="white-space: pre-wrap;">{{ active_house.description_translatedText }}</p>
+          <p ng-show="translate_description" class="small text-muted" style="white-space: pre-wrap;">{{ active_house.description_translatedText || active_house.description }}</p>
 
           <div class="row my-5 house_ratings">
             <div ng-repeat="(user_id, user_name) in users" class="col-6">
@@ -334,6 +338,20 @@
             </td>
           </tr>
         </table>
+
+        <h6>Tags</h6>
+        <p>
+          <span ng-repeat="(tag_id, _) in tags">
+            <button
+              class="btn btn-outline-secondary p-1 mr-1 mb-2"
+              style="font-size: .7rem;"
+              ng-click="toggle_tag_filter(tag_id)"
+              ng-class="{'active': filters.tags.includes(tag_id)}"
+            >
+              {{tags[tag_id]}}
+            </button>
+          </span>
+        </p>
 
         <h6>Commute time thresholds</h6>
         <table class="table table-sm">
@@ -592,6 +610,31 @@
           </div>
         </div>
 
+      </div>
+
+      <!-- Visting -->
+      <div ng-show="sidebar == 'viewing'" class="pt-3">
+        <h3 class="text-success"><i class="fa fa-street-view mr-1"></i> Visting</h3>
+        <div ng-repeat="viewing in upcoming_viewings_houses" class="border-bottom mb-2" ng-click="simulateClickOnMarker(viewing.id)">
+          <div class="row">
+            <div class="col-2 text-center d-flex justify-content-center align-items-center">
+              <i ng-class="getIconClasses(viewing.marker.icon)" ng-style="getIconStyles(viewing.marker.icon)"></i>
+            </div>
+            <div class="col-6">
+              <h6>{{ viewing.title }}</h6>
+              <p>
+                <span
+                  ng-repeat="open_house in viewing.upcomingOpenHouses track by $index"
+                  class="badge badge-pill mb-0 mr-1 badge-secondary">
+                  {{ open_house * 1000.00 | date: 'EEE d MMM, HH:mm' | stripZeros }}
+                </span>
+              </p>
+            </div>
+            <div class="col-4">
+              <img ng-src="{{ viewing.image_url }}" class="w-100 mb-2">
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   </div>

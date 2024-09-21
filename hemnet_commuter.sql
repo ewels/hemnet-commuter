@@ -83,6 +83,8 @@ CREATE TABLE `houses` (
   `isForeclosure` int(1) NOT NULL DEFAULT '0',
   `isBiddingOngoing` int(1) NOT NULL DEFAULT '0',
   `livingArea` double NOT NULL,
+  `floor` double NOT NULL,
+  `storeys` double NOT NULL DEFAULT '0',
   `landArea` double NOT NULL,
   `supplementalArea` double NOT NULL,
   `daysOnHemnet` int(30) NOT NULL,
