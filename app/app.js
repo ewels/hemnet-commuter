@@ -15,7 +15,7 @@ app.controller("hemnetCommuterController", ['$scope', '$location', '$compile', '
   $scope.console = console;
 
   // Saved search credentials
-  $scope.upcoming_visitings_houses = [];
+  $scope.upcoming_viewings_houses = [];
   $scope.saved_searches = [];
   $scope.update_saved_searches = false;
   $scope.hemnet_api_key = false;
@@ -305,9 +305,9 @@ app.controller("hemnetCommuterController", ['$scope', '$location', '$compile', '
           'icon_class': 'fa-cog'
         }),
         new L.Control.HncBtn({
-          'title': 'Visiting',
-          'ngclick': `sidebar = sidebar == 'visiting' ? false : 'visiting'`,
-          'ngclass': `sidebar == 'visiting' ? 'btn-secondary' : 'btn-outline-secondary'`,
+          'title': 'Viewing',
+          'ngclick': `sidebar = sidebar == 'viewing' ? false : 'viewing'`,
+          'ngclass': `sidebar == 'viewing' ? 'btn-secondary' : 'btn-outline-secondary'`,
           'icon_class': 'fa-solid fa-street-view'
         })
       ]
@@ -624,7 +624,7 @@ app.controller("hemnetCommuterController", ['$scope', '$location', '$compile', '
     'map.markers',
     (newMarkers, oldMarkers)  => {
       const markers = Object.values(newMarkers)
-      $scope.update_visitings(markers)
+      $scope.update_viewings(markers)
     },
     true // Set to true for deep watching
   );
@@ -648,13 +648,13 @@ app.controller("hemnetCommuterController", ['$scope', '$location', '$compile', '
     };
   };
 
-  $scope.update_visitings = function (markers) {
+  $scope.update_viewings = function (markers) {
 
     if(markers.length == 0){
-      $scope.upcoming_visitings_houses = []
+      $scope.upcoming_viewings_houses = []
       return
     }
-    const visitings = markers.filter((marker) => {
+    const viewings = markers.filter((marker) => {
       const house = $scope.results[marker.id]
       return house.nextOpenHouse != null
     })
@@ -667,7 +667,7 @@ app.controller("hemnetCommuterController", ['$scope', '$location', '$compile', '
       // Sort by the earliest upcomingOpenHouses epoch number
       return firstOpenHouseA - firstOpenHouseB;
     }).map(house => ({...house, upcomingOpenHouses: house.upcomingOpenHouses.split(",")}));
-    $scope.upcoming_visitings_houses = visitings
+    $scope.upcoming_viewings_houses = viewings
   };
 
   $scope.simulateClickOnMarker = function (houseId) {

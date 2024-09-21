@@ -610,27 +610,27 @@
       </div>
 
       <!-- Visting -->
-      <div ng-show="sidebar == 'visiting'" class="pt-3">
+      <div ng-show="sidebar == 'viewing'" class="pt-3">
         <h3 class="text-success"><i class="fa fa-street-view mr-1"></i> Visting</h3>
-        <div ng-repeat="visiting in upcoming_visitings_houses" class="border-bottom mb-2" ng-click="simulateClickOnMarker(visiting.id)">
+        <div ng-repeat="viewing in upcoming_viewings_houses" class="border-bottom mb-2" ng-click="simulateClickOnMarker(viewing.id)">
           <div class="row">
             <div class="col-2 text-center d-flex justify-content-center align-items-center"
             >
-              <i ng-class="getIconClasses(visiting.marker.icon)" ng-style="getIconStyles(visiting.marker.icon)"></i>
+              <i ng-class="getIconClasses(viewing.marker.icon)" ng-style="getIconStyles(viewing.marker.icon)"></i>
             </div>
             <div class="col-10 d-flex justify-content-around">
               <div class="row flex-column">
-                <h6>{{ visiting.title }}</h6>
+                <h6>{{ viewing.title }}</h6>
                 <p>
-                  Next Visiting:
+                  Next Viewing:
                   <span class="mb-0 ml-2">
-                    {{ visiting.nextOpenHouse * 1000.00 | date: 'EEE d MMM, HH:mm' }}
+                    {{ viewing.nextOpenHouse * 1000.00 | date: 'EEE d MMM, HH:mm' }}
                   </span>
                 </p>
                 <p>
-                  All visitings:
+                  All viewings:
                   <span
-                    ng-repeat="open_house in visiting.upcomingOpenHouses track by $index" class="mb-0 ml-2">
+                    ng-repeat="open_house in viewing.upcomingOpenHouses track by $index" class="mb-0 ml-2">
                     {{ open_house * 1000.00 | date: 'EEE d MMM, HH:mm' }}
                   </span>
                 </p>
@@ -639,7 +639,7 @@
               <!-- <div class="row"> -->
                 <div class="col-4">
 
-                  <img ng-src="{{ visiting.image_url }}" class="w-100 mb-2">
+                  <img ng-src="{{ viewing.image_url }}" class="w-100 mb-2">
 
                 </div>
               <!-- </div> -->
