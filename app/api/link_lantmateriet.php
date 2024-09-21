@@ -13,6 +13,6 @@ $rtPos = new SWEREF99Position($wgsPos, SWEREFProjection::sweref_99_tm);
 $sweref99_lat = $rtPos->getLatitude();
 $sweref99_lng = $rtPos->getLongitude();
 
-header("Location: https://kso.etjanster.lantmateriet.se/?e={$sweref99_lng}&n={$sweref99_lat}&z={$zoom}&profile=default_orto_granser");
+header("Location: https://minkarta.lantmateriet.se/?e={$sweref99_lng}&n={$sweref99_lat}&z={$zoom}&mapprofile=flygbild&layers=%5B%5B%227%22%5D%2C%5B%225%22%2C1%2C%225o%22%5D%2C%5B%226%22%2C1%2C%226o%22%5D%5D");
 
 exit;
