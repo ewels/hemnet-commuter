@@ -130,7 +130,7 @@
           <!-- Buttons - maps -->
           <div class="form-row mb-3">
             <!-- Have to use the old style URLs to get satellite + a marker -->
-            <div class="col-3"><a ng-href="http://maps.google.com/maps?t=k&q=loc:{{active_house.lat}}+{{active_house.lng}}&z=23" target="_blank" class="btn btn-sm btn-block btn-outline-primary" style="overflow:hidden;">
+            <div class="col-3"><a ng-href="http://maps.google.com/maps?t=k&q={{active_house.lat}}+{{active_house.lng}}&z=23" target="_blank" class="btn btn-sm btn-block btn-outline-primary" style="overflow:hidden;">
               <small style="white-space: nowrap;"><i class="fa fa-google mr-1"></i> Maps</a></small>
             </div>
             <div class="col-3"><a ng-href="http://maps.google.com/maps?layer=c&cbll={{active_house.lat}},{{active_house.lng}}" target="_blank" class="btn btn-sm btn-block btn-outline-info" style="overflow:hidden;">
