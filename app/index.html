@@ -181,7 +181,7 @@
               <th>Rooms:</th>
               <td>{{ active_house.numberOfRooms }}</td>
             </tr>
-            <tr>
+            <tr ng-show="active_house.storeys">
               <th>Floor:</th>
               <td>{{ active_house.floor }} of {{ active_house.storeys }}</td>
             </tr>
