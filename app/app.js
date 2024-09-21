@@ -656,7 +656,7 @@ app.controller("hemnetCommuterController", ['$scope', '$location', '$compile', '
     }
     const viewings = markers.filter((marker) => {
       const house = $scope.results[marker.id]
-      return house.nextOpenHouse != null
+      return house?.nextOpenHouse != null
     })
     .map(marker => ({...$scope.results[marker.id], marker}))
     .sort((houseA, houseB) => {
