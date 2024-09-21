@@ -10,6 +10,22 @@
 var app = angular.module("hemnetCommuterApp", ['ui-leaflet', 'ngCookies', 'ngAnimate', 'ngTouch', 'ui.bootstrap']);
 app.controller("hemnetCommuterController", ['$scope', '$location', '$compile', '$http', '$timeout', '$cookies', 'leafletData', function ($scope, $location, $compile, $http, $timeout, $cookies, leafletData) {
 
+  // First - check if we have an auth token cookie
+  $scope.hasAuth = false;
+  $scope.hc_auth_token = '';
+  $http.get("api/auth.php").then(function (response) {
+    if (response.data.has_auth === true) {
+      $scope.hasAuth = true;
+    }
+  });
+  // Login form submitted
+  $scope.login = function () {
+    // Save hc_auth_token cookie
+    $cookies.put('hc_auth_token', $scope.hc_auth_token);
+    // reload page
+    location.reload();
+  }
+
   // Put some common functions onto the $scope
   $scope.isArray = angular.isArray;
   $scope.console = console;

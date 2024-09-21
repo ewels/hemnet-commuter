@@ -76,8 +76,11 @@ function update_saved_searches($postdata){
 if ( basename(__FILE__) == basename($_SERVER["SCRIPT_FILENAME"]) ) {
 
   require_once('_common_api.php');
+  if(!check_auth_token()){
+    echo json_encode(array("status"=>"error", "msg" => "Error: Invalid authentication"), JSON_PRETTY_PRINT);
+  }
 
-  if(array_key_exists('savedSearches', $postdata)){
+  else if(array_key_exists('savedSearches', $postdata)){
     echo json_encode(update_saved_searches($postdata), JSON_PRETTY_PRINT);
   } else {
     echo json_encode(fetch_saved_searches($postdata), JSON_PRETTY_PRINT);

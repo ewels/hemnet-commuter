@@ -65,9 +65,12 @@ function delete_user($id){
 if ( basename(__FILE__) == basename($_SERVER["SCRIPT_FILENAME"]) ) {
 
   require_once('_common_api.php');
+  if(!check_auth_token()){
+    echo json_encode(array("status"=>"error", "msg" => "Error: Invalid authentication"), JSON_PRETTY_PRINT);
+  }
 
   // Save a new user
-  if(isset($postdata['add_user_name'])){
+  else if(isset($postdata['add_user_name'])){
     echo json_encode( add_user($postdata['add_user_name']), JSON_PRETTY_PRINT);
   }
   // Update a user

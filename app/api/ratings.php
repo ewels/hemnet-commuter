@@ -88,9 +88,12 @@ function get_recent_ratings($user_id=false, $rating_type=false, $num_items=10){
 if ( basename(__FILE__) == basename($_SERVER["SCRIPT_FILENAME"]) ) {
 
   require_once('_common_api.php');
+  if(!check_auth_token()){
+    echo json_encode(array("status"=>"error", "msg" => "Error: Invalid authentication"), JSON_PRETTY_PRINT);
+  }
 
   // Return ratings results
-  if(isset($_GET['house_id']) && strlen($_GET['house_id']) > 0){
+  else if(isset($_GET['house_id']) && strlen($_GET['house_id']) > 0){
     echo json_encode(get_house_ratings($_GET['house_id']), JSON_PRETTY_PRINT);
   }
   // Save ratings results

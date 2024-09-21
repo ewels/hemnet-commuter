@@ -58,5 +58,9 @@ function get_init_stats(){
 /////////
 if ( basename(__FILE__) == basename($_SERVER["SCRIPT_FILENAME"]) ) {
   require_once('_common_api.php');
-  echo json_encode(get_init_stats(), JSON_PRETTY_PRINT);
+  if(!check_auth_token()){
+    echo json_encode(array("status"=>"error", "msg" => "Error: Invalid authentication"), JSON_PRETTY_PRINT);
+  } else {
+    echo json_encode(get_init_stats(), JSON_PRETTY_PRINT);
+  }
 }

@@ -77,9 +77,13 @@ function fetch_google_transation($query, $target){
 if ( basename(__FILE__) == basename($_SERVER["SCRIPT_FILENAME"]) ) {
 
   require_once('_common_api.php');
+  if(!check_auth_token()){
+    echo json_encode(array("status"=>"error", "msg" => "Error: Invalid authentication"), JSON_PRETTY_PRINT);
+  } else {
 
-  $db_only = isset($postdata['db_only']) && $postdata['db_only'] ? true : false;
+    $db_only = isset($postdata['db_only']) && $postdata['db_only'] ? true : false;
 
-  echo json_encode(translate_text($postdata['query'], $db_only), JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES);
+    echo json_encode(translate_text($postdata['query'], $db_only), JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES);
+  }
 
 }

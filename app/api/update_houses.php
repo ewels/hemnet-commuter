@@ -119,7 +119,7 @@ function fetch_hemnet_houses(){
       // Parse the response
       $results_json = @json_decode($result_raw, true);
       $num_results = $results_json['data']['searchListings']['total'];
-      
+
       $all_lat_lng = [];
 
       foreach($results_json['data']['searchListings']['listings'] as $listing){
@@ -249,12 +249,16 @@ function moveHouseCoordinates($lat, $lng, $distance) {
 if ( basename(__FILE__) == basename($_SERVER["SCRIPT_FILENAME"]) ) {
 
   require_once('_common_api.php');
+  if(!check_auth_token()){
+    echo json_encode(array("status"=>"error", "msg" => "Error: Invalid authentication"), JSON_PRETTY_PRINT);
+  } else {
 
-  // Search ID given?
-  $search_id = false;
-  if(isset($_REQUEST['s_id']) && is_numeric($_REQUEST['s_id'])) $search_id = $_REQUEST['s_id'];
+    // Search ID given?
+    $search_id = false;
+    if(isset($_REQUEST['s_id']) && is_numeric($_REQUEST['s_id'])) $search_id = $_REQUEST['s_id'];
 
-  echo json_encode(fetch_hemnet_houses($search_id), JSON_PRETTY_PRINT);
+    echo json_encode(fetch_hemnet_houses($search_id), JSON_PRETTY_PRINT);
+  }
 
 }
 

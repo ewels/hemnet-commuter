@@ -1,4 +1,8 @@
 <?php
+require_once('_common_api.php');
+if(!check_auth_token()){
+    exit;
+}
 
 require_once dirname(__FILE__) . '/../lib/CoordinateTransformationLibrary/src/coordinatetransformation/positions/SWEREF99Position.php';
 require_once dirname(__FILE__) . '/../lib/CoordinateTransformationLibrary/src/coordinatetransformation/positions/WGS84Position.php';

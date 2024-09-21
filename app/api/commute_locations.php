@@ -95,9 +95,12 @@ function delete_commute_location($id){
 if ( basename(__FILE__) == basename($_SERVER["SCRIPT_FILENAME"]) ) {
 
   require_once('_common_api.php');
+  if(!check_auth_token()){
+    echo json_encode(array("status"=>"error", "msg" => "Error: Invalid authentication"), JSON_PRETTY_PRINT);
+  }
 
   // Save a new commute location
-  if(isset($postdata['add_address']) && isset($postdata['nickname'])){
+  else if(isset($postdata['add_address']) && isset($postdata['nickname'])){
     echo json_encode( add_commute_location($postdata['add_address'], $postdata['nickname']), JSON_PRETTY_PRINT);
   }
   // Update a commute max-time

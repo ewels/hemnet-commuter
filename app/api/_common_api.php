@@ -54,3 +54,8 @@ $postdata = array_merge($_GET, $postdata);
 
 // Set a browser cookie with the lantmateriet API key
 setcookie("hc_lantmateriet_api_key", $ini_array['lantmateriet_api_key'], time()+365*24*60*60, '/');
+
+function check_auth_token(){
+  global $ini_array;
+  return (array_key_exists("hc_auth_token", $_COOKIE) && $_COOKIE["hc_auth_token"] == $ini_array['auth_token']);
+}

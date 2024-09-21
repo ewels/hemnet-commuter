@@ -158,10 +158,15 @@ function fetch_distance_matrix_results($origins, $destinations){
 if ( basename(__FILE__) == basename($_SERVER["SCRIPT_FILENAME"]) ) {
 
   require_once('_common_api.php');
+  if(!check_auth_token()){
+    echo json_encode(array("status"=>"error", "msg" => "Error: Invalid authentication"), JSON_PRETTY_PRINT);
+  }
 
-  $only_house_id = isset($_GET['house_id']) ? $_GET['house_id'] : false;
-  $only_commute_id = isset($_GET['commute_id']) ? $_GET['commute_id'] : false;
+  else {
+    $only_house_id = isset($_GET['house_id']) ? $_GET['house_id'] : false;
+    $only_commute_id = isset($_GET['commute_id']) ? $_GET['commute_id'] : false;
 
-  echo json_encode(update_commute_times($only_house_id, $only_commute_id), JSON_PRETTY_PRINT);
+    echo json_encode(update_commute_times($only_house_id, $only_commute_id), JSON_PRETTY_PRINT);
+  }
 
 }
