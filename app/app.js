@@ -228,6 +228,7 @@ app.controller("hemnetCommuterController", ['$scope', '$location', '$compile', '
   $scope.hemnet_results_update_btn_text = 'Update';
   $scope.translate_target_language = '';
   $scope.translate_description = false;
+  $scope.base_overlays = { schools: { name: 'Schools', type: 'group', visible: false } };
 
   // Build custom leaflet buttons for map settings
   L.Control.HncBtn = L.Control.extend({
@@ -285,7 +286,7 @@ app.controller("hemnetCommuterController", ['$scope', '$location', '$compile', '
           type: 'xyz'
         },
       },
-      overlays: {}
+      overlays: $scope.base_overlays,
     },
     controls: {
       custom: [
@@ -762,6 +763,7 @@ app.controller("hemnetCommuterController", ['$scope', '$location', '$compile', '
         console.error("NaN for lat/lng!", lat, lng, school);
       } else {
         markers['school_' + school['id']] = {
+          layer: 'schools',
           lat: lat,
           lng: lng,
           message: '<h6>'+school['name']+'</h6><p class="my-0">' + school['type'] + '</p>',
@@ -807,7 +809,7 @@ app.controller("hemnetCommuterController", ['$scope', '$location', '$compile', '
       }
 
       // Wipe any existing layers
-      $scope.map.layers.overlays = {};
+      $scope.map.layers.overlays = $scope.base_overlays;
 
       // Plot each shape separately
       var colours = ['#3388FF', '#e7298a', '#7570b3'];
