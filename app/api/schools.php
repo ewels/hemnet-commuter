@@ -9,6 +9,10 @@
  * Get School information from skolverket.se
  *  - https://www.skolverket.se/om-oss/oppna-data/api-for-skolenhetsregistre
  *  - https://api.skolverket.se/skolenhetsregistret/swagger-ui/index.html#/
+ *
+ * TODO: Get more statistics?
+ * - https://www.skolverket.se/om-oss/oppna-data/uppgifter-om-skolenheter-studievagar-och-statistik
+ * - https://api.skolverket.se/planned-educations/swagger-ui/
  */
 
 // Fetch search results from Hemnet
