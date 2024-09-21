@@ -23,7 +23,10 @@ function get_schools_list(){
 
     // Load cache if it exists
     if(file_exists('cache/schools.json')){
-        return json_decode(file_get_contents('cache/schools.json'));
+        $cache = json_decode(file_get_contents('cache/schools.json'));
+        if($ini_array['school_kommuns'] == $cache->school_kommuns && time() - $cache->timestamp < (60*60*24*30)){
+            return ($cache->schools);
+        }
     }
 
     // Get county IDs
@@ -58,9 +61,33 @@ function get_schools_list(){
 
     // Save cache
     // TODO - Save to DB instead
-    file_put_contents('cache/schools.json', json_encode($schools, JSON_PRETTY_PRINT));
+    $cache = [
+        'timestamp' => time(),
+        'school_kommuns' => $ini_array['school_kommuns'],
+        'schools' => $schools
+    ];
+    file_put_contents('cache/schools.json', json_encode($cache, JSON_PRETTY_PRINT));
 
     return $schools;
+}
+
+function get_school_markers(){
+    $schools = get_schools_list();
+    $markers = [];
+    foreach($schools as $school){
+        $school_types = [];
+        foreach($school->SkolenhetInfo->Skolformer as $skolform){
+            $school_types[] = $skolform->Benamning;
+        }
+        $markers[] = array(
+            'lat' => $school->SkolenhetInfo->Besoksadress->GeoData->Koordinat_WGS84_Lat,
+            'lng' => $school->SkolenhetInfo->Besoksadress->GeoData->Koordinat_WGS84_Lng,
+            'name' => $school->SkolenhetInfo->Namn,
+            'type' => implode(', ', $school_types),
+            'id' => $school->SkolenhetInfo->Skolenhetskod
+        );
+    }
+    return $markers;
 }
 
 
@@ -71,6 +98,7 @@ function get_schools_list(){
 if ( basename(__FILE__) == basename($_SERVER["SCRIPT_FILENAME"]) ) {
 
     require_once('_common_api.php');
-    echo json_encode(get_schools_list(), JSON_PRETTY_PRINT);
+    echo json_encode(get_school_markers(), JSON_PRETTY_PRINT);
+    // echo json_encode(get_schools_list(), JSON_PRETTY_PRINT);
 
 }

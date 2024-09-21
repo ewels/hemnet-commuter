@@ -358,6 +358,7 @@ app.controller("hemnetCommuterController", ['$scope', '$location', '$compile', '
       $scope.tags = response.data.tags;
       $scope.users = response.data.users;
       $scope.commute_locations = response.data.commute_locations;
+      $scope.school_locations = response.data.school_locations;
       $scope.translate_target_language = response.data.translate_target_language;
       $scope.stats = response.data.stats;
 
@@ -744,6 +745,30 @@ app.controller("hemnetCommuterController", ['$scope', '$location', '$compile', '
             type: 'extraMarker',
             markerColor: 'blue-dark',
             icon: 'fa-building',
+            prefix: 'fa',
+            shape: 'square',
+            svg: true
+          }
+        }
+      }
+    });
+
+    // Markers for schools
+    angular.forEach($scope.school_locations, function (school) {
+      // Lat / Lng
+      var lat = parseFloat(school['lat']);
+      var lng = parseFloat(school['lng']);
+      if (isNaN(lat) || isNaN(lng)) {
+        console.error("NaN for lat/lng!", lat, lng, school);
+      } else {
+        markers['school_' + school['id']] = {
+          lat: lat,
+          lng: lng,
+          message: '<h6>'+school['name']+'</h6><p class="my-0">' + school['type'] + '</p>',
+          icon: {
+            type: 'extraMarker',
+            markerColor: 'cyan',
+            icon: 'fa-graduation-cap',
             prefix: 'fa',
             shape: 'square',
             svg: true
