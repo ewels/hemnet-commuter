@@ -305,7 +305,7 @@ app.controller("hemnetCommuterController", ['$scope', '$location', '$compile', '
           'icon_class': 'fa-cog'
         }),
         new L.Control.HncBtn({
-          'title': 'Viewing',
+          'title': 'Viewings',
           'ngclick': `sidebar = sidebar == 'viewing' ? false : 'viewing'`,
           'ngclass': `sidebar == 'viewing' ? 'btn-secondary' : 'btn-outline-secondary'`,
           'icon_class': 'fa-solid fa-street-view'
