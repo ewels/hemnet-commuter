@@ -59,10 +59,8 @@ function get_schools_list(){
             $schools[] = $results;
         }
 
-        // TODO - Filter by type of school, available years etc.
-
         // Save cache
-        // TODO - Save to DB instead
+        // TODO - Save to DB instead?
         $cache = [
             'timestamp' => time(),
             'school_kommun' => $kommun_id,
@@ -75,6 +73,8 @@ function get_schools_list(){
 }
 
 function get_school_markers(){
+    global $ini_array;
+
     $schools = get_schools_list();
     $markers = [];
     foreach($schools as $school){
@@ -82,8 +82,21 @@ function get_school_markers(){
             continue;
         }
         $school_types = [];
+        $check_school_type = array_key_exists('school_types', $ini_array) && count($ini_array['school_types']) > 0;
+        $show_school_type = false;
         foreach($school->SkolenhetInfo->Skolformer as $skolform){
             $school_types[] = $skolform->Benamning;
+            if($check_school_type && in_array($skolform->Benamning, $ini_array['school_types'])){
+                $show_school_type = true;
+            }
+        }
+        // Ignore if not in the list of school types
+        if($check_school_type && !$show_school_type){
+            continue;
+        }
+        // Ignore if not lat/lng
+        if(!isset($school->SkolenhetInfo->Besoksadress->GeoData->Koordinat_WGS84_Lat) || !isset($school->SkolenhetInfo->Besoksadress->GeoData->Koordinat_WGS84_Lng)){
+            continue;
         }
         $markers[] = array(
             'lat' => $school->SkolenhetInfo->Besoksadress->GeoData->Koordinat_WGS84_Lat,
