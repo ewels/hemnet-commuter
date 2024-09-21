@@ -621,7 +621,7 @@ app.controller("hemnetCommuterController", ['$scope', '$location', '$compile', '
   };
 
   $scope.$watch(
-    'map.markers', 
+    'map.markers',
     (newMarkers, oldMarkers)  => {
       const markers = Object.values(newMarkers)
       $scope.update_visitings(markers)
@@ -649,7 +649,7 @@ app.controller("hemnetCommuterController", ['$scope', '$location', '$compile', '
   };
 
   $scope.update_visitings = function (markers) {
-    
+
     if(markers.length == 0){
       $scope.upcoming_visitings_houses = []
       return
@@ -663,7 +663,7 @@ app.controller("hemnetCommuterController", ['$scope', '$location', '$compile', '
       // Extract the first upcomingOpenHouse epoch time for each house
       const firstOpenHouseA = houseA.nextOpenHouse;
       const firstOpenHouseB = houseB.nextOpenHouse;
-  
+
       // Sort by the earliest upcomingOpenHouses epoch number
       return firstOpenHouseA - firstOpenHouseB;
     }).map(house => ({...house, upcomingOpenHouses: house.upcomingOpenHouses.split(",")}));
@@ -858,7 +858,6 @@ app.controller("hemnetCommuterController", ['$scope', '$location', '$compile', '
 
       $scope.active_id = args.model.id;
       $scope.active_house = $scope.results[$scope.active_id];
-      // $location.search('active_house_id', $scope.active_id);
       $scope.active_house.description_translatedText = '';
       $scope.active_house.carousel = [];
       $scope.carousel_idx = 0;
@@ -979,7 +978,7 @@ app.controller("hemnetCommuterController", ['$scope', '$location', '$compile', '
       });
     }
   });
-  
+
 
   // Ratings button clicked
   $scope.save_rating = function (r_user_id, rating) {

@@ -337,17 +337,17 @@
           <tr>
             <th>has tag: </th>
             <td class="px-2" ng-repeat="(tag_id, _) in tags">
-              <button 
-                class="btn btn-outline-secondary p-1 mr-2 mb-2" 
+              <button
+                class="btn btn-outline-secondary p-1 mr-2 mb-2"
                 style="font-size: .7rem;"
-                ng-click="toggle_tag_filter(tag_id)" 
+                ng-click="toggle_tag_filter(tag_id)"
                 ng-class="{'active': filters.tags.includes(tag_id)}"
               >
                   {{tags[tag_id]}}
                 </button>
             </td>
           </tr>
-          
+
         </table>
 
         <h6>Commute time thresholds</h6>
@@ -612,22 +612,6 @@
       <!-- Visting -->
       <div ng-show="sidebar == 'visiting'" class="pt-3">
         <h3 class="text-success"><i class="fa fa-street-view mr-1"></i> Visting</h3>
-        <!-- <div class="row border-bottom pb-2 mb-2">
-          <div class="col-6">
-            <select class="custom-select" ng-model="recent_ratings_filter_user" ng-change="update_recent_ratings()">
-              <option value="">Everyone</option>
-              <option ng-repeat="(user_id, user_name) in users" value="{{ user_id }}">{{ user_name }}</option>
-            </select>
-          </div>
-          <div class="col-6">
-            <select class="custom-select" ng-model="recent_ratings_filter_type" ng-change="update_recent_ratings()">
-              <option value="">All rating types</option>
-              <option value="yes">Yes</option>
-              <option value="maybe">Maybe</option>
-              <option value="no">No</option>
-            </select>
-          </div>
-        </div> -->
         <div ng-repeat="visiting in upcoming_visitings_houses" class="border-bottom mb-2" ng-click="simulateClickOnMarker(visiting.id)">
           <div class="row">
             <div class="col-2 text-center d-flex justify-content-center align-items-center"
@@ -644,19 +628,19 @@
                   </span>
                 </p>
                 <p>
-                  All visitings: 
+                  All visitings:
                   <span
                     ng-repeat="open_house in visiting.upcomingOpenHouses track by $index" class="mb-0 ml-2">
                     {{ open_house * 1000.00 | date: 'EEE d MMM, HH:mm' }}
                   </span>
                 </p>
               </div>
-              
+
               <!-- <div class="row"> -->
                 <div class="col-4">
-                  
+
                   <img ng-src="{{ visiting.image_url }}" class="w-100 mb-2">
-                  
+
                 </div>
               <!-- </div> -->
             </div>
