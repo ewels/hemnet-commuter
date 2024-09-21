@@ -614,35 +614,21 @@
         <h3 class="text-success"><i class="fa fa-street-view mr-1"></i> Visting</h3>
         <div ng-repeat="viewing in upcoming_viewings_houses" class="border-bottom mb-2" ng-click="simulateClickOnMarker(viewing.id)">
           <div class="row">
-            <div class="col-2 text-center d-flex justify-content-center align-items-center"
-            >
+            <div class="col-2 text-center d-flex justify-content-center align-items-center">
               <i ng-class="getIconClasses(viewing.marker.icon)" ng-style="getIconStyles(viewing.marker.icon)"></i>
             </div>
-            <div class="col-10 d-flex justify-content-around">
-              <div class="row flex-column">
-                <h6>{{ viewing.title }}</h6>
-                <p>
-                  Next Viewing:
-                  <span class="mb-0 ml-2">
-                    {{ viewing.nextOpenHouse * 1000.00 | date: 'EEE d MMM, HH:mm' }}
-                  </span>
-                </p>
-                <p>
-                  All viewings:
-                  <span
-                    ng-repeat="open_house in viewing.upcomingOpenHouses track by $index" class="mb-0 ml-2">
-                    {{ open_house * 1000.00 | date: 'EEE d MMM, HH:mm' }}
-                  </span>
-                </p>
-              </div>
-
-              <!-- <div class="row"> -->
-                <div class="col-4">
-
-                  <img ng-src="{{ viewing.image_url }}" class="w-100 mb-2">
-
-                </div>
-              <!-- </div> -->
+            <div class="col-6">
+              <h6>{{ viewing.title }}</h6>
+              <p>
+                <span
+                  ng-repeat="open_house in viewing.upcomingOpenHouses track by $index"
+                  class="badge badge-pill mb-0 mr-1 badge-secondary">
+                  {{ open_house * 1000.00 | date: 'EEE d MMM, HH:mm' | stripZeros }}
+                </span>
+              </p>
+            </div>
+            <div class="col-4">
+              <img ng-src="{{ viewing.image_url }}" class="w-100 mb-2">
             </div>
           </div>
         </div>

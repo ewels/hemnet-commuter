@@ -1396,3 +1396,8 @@ app.controller("hemnetCommuterController", ['$scope', '$location', '$compile', '
   $scope.fetch_saved_searches();
 
 }]);
+app.filter('stripZeros', function () {
+  return function(text) {
+      return text.replace(', 00:00', '');
+  }
+});
