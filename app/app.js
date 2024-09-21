@@ -316,11 +316,21 @@ app.controller("hemnetCommuterController", ['$scope', '$location', '$compile', '
 
   // Make sure that the map has the right height on the 100% height div
   // https://stackoverflow.com/a/44132780/713980
-  leafletData.getMap().then(function (map) {
-    setTimeout(function () {
-      map.invalidateSize();
-      map._resetView(map.getCenter(), map.getZoom(), true);
-    }, 200);
+  function updateMapSize(timeout=0){
+    leafletData.getMap().then(function (map) {
+      setTimeout(function () {
+        map.invalidateSize();
+        map._resetView(map.getCenter(), map.getZoom(), true);
+      }, timeout);
+    });
+  }
+  updateMapSize(200);
+  // Force LeafletJS to updat map when sidebar is toggled
+  $scope.$watch('sidebar', function () {
+    updateMapSize();
+  });
+  $scope.$watch('show_detail', function () {
+    updateMapSize();
   });
 
   // Get the initial stats and setup
