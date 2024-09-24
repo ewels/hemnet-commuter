@@ -282,7 +282,7 @@
             </thead>
             <tbody>
               <tr ng-repeat="school in school_locations" ng-if="active_schools.includes(school.id)">
-                <td>{{ school.name }}</td>
+                <td><a href="https://utbildningsguiden.skolverket.se/skolenhet?schoolUnitID={{ school.id }}" target="_blank">{{ school.name }}</a></td>
                 <td>{{ schools_data[school.id].stats.totalNumberOfPupils }}</td>
                 <td>{{ schools_data[school.id].stats.studentsPerTeacherQuota }}</td>
                 <td>{{ schools_data[school.id].stats.certifiedTeachersQuota }}</td>
