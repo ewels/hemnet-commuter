@@ -618,7 +618,6 @@ app.controller("hemnetCommuterController", ['$scope', '$location', '$compile', '
 
       // Plot markers
       var markers = $scope.plot_markers();
-
       // Get new map bounds
       var l_bounds = L.latLngBounds(Object.values(markers));
       var bounds = {
@@ -627,11 +626,12 @@ app.controller("hemnetCommuterController", ['$scope', '$location', '$compile', '
       }
 
       // Update the map
-      $scope.map.bounds = bounds;
+      
       $scope.map.markers = markers;
-
+      
       // Allow function to call again in 1 second
       $timeout(function () {
+        $scope.map.bounds = bounds;
         $scope.update_results_call_active = false;
         if ($scope.update_results_call_requested) {
           $scope.update_results();
