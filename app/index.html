@@ -262,6 +262,12 @@
 
         <!-- ACTIVE SCHOOL DETAILS -->
         <div ng-hide="active_schools.length < 1" class="pt-md-3 mt-md-3 border-top no-mobile-border">
+          <h3 class="mb-4 clearfix">
+            <button ng-click="clear_active_schools()" class="float-right btn btn-sm btn-outline-secondary">
+              <i class="fa fa-trash mr-1" aria-hidden="true"></i> Clear all
+            </button>
+            Schools
+          </h3>
           <div ng-repeat="school in school_locations" ng-if="active_schools.includes(school.id)">
             <p>{{ school.name }}</p>
           </div>
