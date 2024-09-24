@@ -79,7 +79,11 @@ function get_schools_list(){
 function school_year_badges($years){
     $badges = '';
     foreach($years as $year){
-        $badges .= '<span class="border border-warning rounded-circle p-1 text-center mr-1" style="display: inline-block; width:25px;">'.$year.'</span>';
+        $bcol = 'warning';
+        if($year == 'F'){
+            $bcol = 'primary';
+        }
+        $badges .= '<span class="border border-'.$bcol.' rounded-circle p-1 text-center mr-1" style="display: inline-block; width:25px;">'.$year.'</span>';
     }
     return $badges;
 }
@@ -130,12 +134,16 @@ function get_school_markers(){
             continue;
         }
         $school_id = $school->SkolenhetInfo->Skolenhetskod;
+        $school_typ = $school->SkolenhetInfo->Huvudman->Typ;
 
         $description =
             '<p class="mt-0 mb-1">'.
+                '<span class="badge badge-'.($school_typ == 'Kommun' ? 'secondary' : 'primary').'">'.$school_typ.'</span>'.
+            '</p>'.
+            '<p class="mt-0 mb-1">'.
                 implode(', ', $school_types).
             '</p>'.
-            '<p>'.school_year_badges($school_years).'</p>'.
+            '<p class="mt-0 mb-1">'.school_year_badges($school_years).'</p>'.
             '<p class="my-0"><a href="https://utbildningsguiden.skolverket.se/skolenhet?schoolUnitID='.$school_id.'" target="_blank">[ View details ]</a></p>';
         $markers[] = array(
             'lat' => $school->SkolenhetInfo->Besoksadress->GeoData->Koordinat_WGS84_Lat,
