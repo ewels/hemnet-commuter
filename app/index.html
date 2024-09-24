@@ -268,9 +268,32 @@
             </button>
             Schools
           </h3>
-          <div ng-repeat="school in school_locations" ng-if="active_schools.includes(school.id)">
-            <p>{{ school.name }}</p>
-          </div>
+          <p>Grundskola results:</p>
+          <table class="table table-sm">
+            <thead>
+              <tr>
+                <th>School</th>
+                <th><i uib-tooltip="Number of Pupils" title="Number of Pupils" class="fa fa-users" aria-hidden="true"></i></th>
+                <th><i uib-tooltip="Students per teacher (average 12.0)" title="Students per teacher (average 12.0)" class="fa fa-sort-numeric-asc" aria-hidden="true"></i></th>
+                <th><i uib-tooltip="% Licensed and authorized teachers (average 71.5%)" title="% Licensed and authorized teachers (average 71.5%)" class="fa fa-address-card-o" aria-hidden="true"></i></th>
+                <th><i uib-tooltip="hasLibrary" title="hasLibrary" class="fa fa-book" aria-hidden="true"></i></th>
+                <th><i uib-tooltip="Year 6: Proportion of students with passing grades in all subjects (average 71.2%)" title="Year 6: Proportion of students with passing grades in all subjects (average 71.2%)" class="fa fa-check-square-o" aria-hidden="true"></i></th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr ng-repeat="school in school_locations" ng-if="active_schools.includes(school.id)">
+                <td>{{ school.name }}</td>
+                <td>{{ schools_data[school.id].stats.totalNumberOfPupils }}</td>
+                <td>{{ schools_data[school.id].stats.studentsPerTeacherQuota }}</td>
+                <td>{{ schools_data[school.id].stats.certifiedTeachersQuota }}</td>
+                <td>
+                  <i ng-if="schools_data[school.id].stats.hasLibrary" class="fa fa-check" aria-hidden="true"></i>
+                  <i ng-if="!schools_data[school.id].stats.hasLibrary" class="fa fa-close" aria-hidden="true"></i>
+                </td>
+                <td>{{ schools_data[school.id].stats.ratioOfPupilsIn6thGradeWithAllSubjectsPassed }}</td>
+              </tr>
+            </tbody>
+          </table>
         </div>
 
         </div>

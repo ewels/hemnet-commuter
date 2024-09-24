@@ -9,10 +9,6 @@
  * Get School information from skolverket.se
  *  - https://www.skolverket.se/om-oss/oppna-data/api-for-skolenhetsregistre
  *  - https://api.skolverket.se/skolenhetsregistret/swagger-ui/index.html#/
- *
- * TODO: Get more statistics?
- * - https://www.skolverket.se/om-oss/oppna-data/uppgifter-om-skolenheter-studievagar-och-statistik
- * - https://api.skolverket.se/planned-educations/swagger-ui/
  */
 
 // Fetch search results from Hemnet
@@ -48,7 +44,7 @@ function get_schools_list(){
 
         // Get school IDs
         $kommun_api = 'https://api.skolverket.se/skolenhetsregistret/v1/kommun/'.$kommun_id;
-        $results = @json_decode(@file_get_contents($kommun_api));$school_ids = [];
+        $results = @json_decode(@file_get_contents($kommun_api));
         $school_ids = [];
         foreach($results->Skolenheter as $skola){
             if($skola->Status == 'Aktiv'){
@@ -168,8 +164,8 @@ if ( basename(__FILE__) == basename($_SERVER["SCRIPT_FILENAME"]) ) {
         echo json_encode(array("status"=>"error", "msg" => "Error: Invalid authentication"), JSON_PRETTY_PRINT);
     }
     else {
-        echo json_encode(get_schools_list(), JSON_PRETTY_PRINT);
-        // echo json_encode(get_school_markers(), JSON_PRETTY_PRINT);
+        // echo json_encode(get_schools_list(), JSON_PRETTY_PRINT);
+        echo json_encode(get_school_markers(), JSON_PRETTY_PRINT);
     }
 
 }

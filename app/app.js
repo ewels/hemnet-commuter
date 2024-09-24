@@ -249,6 +249,7 @@ app.controller("hemnetCommuterController", ['$scope', '$location', '$compile', '
   $scope.base_overlays = { schools: { name: 'Schools', type: 'group', visible: true } };
   $scope.active_schools = [];
   $scope.active_school_leaflet_ids = [];
+  $scope.schools_data = {};
 
   // Build custom leaflet buttons for map settings
   L.Control.HncBtn = L.Control.extend({
@@ -1053,6 +1054,7 @@ app.controller("hemnetCommuterController", ['$scope', '$location', '$compile', '
     // Get school details
     if (args.model.school_id !== undefined) {
       console.log("School clicked:", args);
+      $id = args.model.school_id;
 
       // Clear any active error message
       $scope.error_msg = false;
@@ -1061,9 +1063,20 @@ app.controller("hemnetCommuterController", ['$scope', '$location', '$compile', '
       $scope.active_house = false;
 
       // Add to active schools and update side panel
-      $scope.active_schools.push(args.model.school_id);
+      $scope.active_schools.push($id);
       $scope.active_school_leaflet_ids.push(args.leafletObject._leaflet_id);
-      $scope.update_schools_panel();
+
+      // Fetch detailed info about the schoole
+      if(!($id in $scope.schools_data)){
+        $http.get("api/school_details.php?school_id="+$id).then(function (response) {
+          if (response.status != 200) {
+            console.error("Could not fetch school details: ", $id);
+            console.log(response);
+          } else {
+            $scope.schools_data[$id] = response.data;
+          }
+        });
+      }
     }
   });
 
@@ -1077,6 +1090,7 @@ app.controller("hemnetCommuterController", ['$scope', '$location', '$compile', '
   // Function to fetch school data for sidebar
   $scope.update_schools_panel = function () {
     //
+    // console.log("data", $scope.schools_data);
   }
 
   // Clear active schools
