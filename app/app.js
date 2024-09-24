@@ -705,7 +705,15 @@ app.controller("hemnetCommuterController", ['$scope', '$location', '$compile', '
     $timeout(function () {
       $scope.$broadcast('leafletDirectiveMarker.click', { model: { id: houseId } });
       leafletData.getMap().then(function (map) {
-        map.flyTo(new L.LatLng($scope.active_house.lat, $scope.active_house.lng), 13);
+        // Locate the marker by its houseId (model id)
+        leafletData.getMarkers().then(function (markers) {
+          let targetMarker = markers[houseId]; // Assuming markers are keyed by houseId
+          if (!targetMarker) return;
+          // Fly to the marker's location
+          map.flyTo(targetMarker.getLatLng(), 13);
+          // Open the marker's popup
+          targetMarker.openPopup();
+        });
       });
     }, 200);
   }
