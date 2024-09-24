@@ -76,16 +76,26 @@ function get_schools_list(){
     return $schools;
 }
 
+function school_year_badges($years){
+    $badges = '';
+    foreach($years as $year){
+        $badges .= '<span class="border border-warning rounded-circle p-1 text-center mr-1" style="display: inline-block; width:25px;">'.$year.'</span>';
+    }
+    return $badges;
+}
+
 function get_school_markers(){
     global $ini_array;
 
     $schools = get_schools_list();
     $markers = [];
+    $relevant_school_years = ['Ak1', 'Ak2', 'Ak3', 'Ak4', 'Ak5', 'Ak6', 'Ak7', 'Ak8', 'Ak9'];
     foreach($schools as $school){
         if(!$school){
             continue;
         }
         $school_types = [];
+        $school_years = [];
         $check_school_type = array_key_exists('school_types', $ini_array) && count($ini_array['school_types']) > 0;
         $show_school_type = false;
         foreach($school->SkolenhetInfo->Skolformer as $skolform){
@@ -93,7 +103,24 @@ function get_school_markers(){
             if($check_school_type && in_array($skolform->Benamning, $ini_array['school_types'])){
                 $show_school_type = true;
             }
+            if($skolform->type == "Forskoleklass"){
+                $school_years[] = 'F';
+            }
+            foreach($relevant_school_years as $year){
+                if(property_exists($skolform, $year)){
+                    $school_years[] = str_replace('Ak', '', $year);
+                }
+            }
         }
+        // Sort school years
+        $school_years = array_unique($school_years);
+        sort($school_years);
+        // Move F to start of array for $school_years
+        if(($key = array_search('F', $school_years)) !== false) {
+            unset($school_years[$key]);
+            array_unshift($school_years, 'F');
+        }
+
         // Ignore if not in the list of school types
         if($check_school_type && !$show_school_type){
             continue;
@@ -102,12 +129,20 @@ function get_school_markers(){
         if(!isset($school->SkolenhetInfo->Besoksadress->GeoData->Koordinat_WGS84_Lat) || !isset($school->SkolenhetInfo->Besoksadress->GeoData->Koordinat_WGS84_Lng)){
             continue;
         }
+        $school_id = $school->SkolenhetInfo->Skolenhetskod;
+
+        $description =
+            '<p class="mt-0 mb-1">'.
+                implode(', ', $school_types).
+            '</p>'.
+            '<p>'.school_year_badges($school_years).'</p>'.
+            '<p class="my-0"><a href="https://utbildningsguiden.skolverket.se/skolenhet?schoolUnitID='.$school_id.'" target="_blank">[ View details ]</a></p>';
         $markers[] = array(
             'lat' => $school->SkolenhetInfo->Besoksadress->GeoData->Koordinat_WGS84_Lat,
             'lng' => $school->SkolenhetInfo->Besoksadress->GeoData->Koordinat_WGS84_Lng,
             'name' => $school->SkolenhetInfo->Namn,
-            'type' => implode(', ', $school_types),
-            'id' => $school->SkolenhetInfo->Skolenhetskod
+            'description' => $description,
+            'id' => $school_id
         );
     }
     return $markers;
@@ -125,8 +160,8 @@ if ( basename(__FILE__) == basename($_SERVER["SCRIPT_FILENAME"]) ) {
         echo json_encode(array("status"=>"error", "msg" => "Error: Invalid authentication"), JSON_PRETTY_PRINT);
     }
     else {
-        echo json_encode(get_school_markers(), JSON_PRETTY_PRINT);
         // echo json_encode(get_schools_list(), JSON_PRETTY_PRINT);
+        echo json_encode(get_school_markers(), JSON_PRETTY_PRINT);
     }
 
 }
