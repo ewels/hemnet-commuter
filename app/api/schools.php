@@ -111,7 +111,7 @@ function get_school_markers(){
                 $school_years[] = 'F';
             }
             foreach($relevant_school_years as $year){
-                if(property_exists($skolform, $year)){
+                if(property_exists($skolform, $year) && $skolform->$year == true){
                     $school_years[] = str_replace('Ak', '', $year);
                 }
             }
