@@ -41,7 +41,7 @@ function get_schools_list(){
         if(file_exists('cache/schools_'.$kommun_id.'.json')){
             $cache = json_decode(file_get_contents('cache/schools_'.$kommun_id.'.json'));
             if(time() - $cache->timestamp < (60*60*24*30)){
-                $schools = array_merge($schools, $cache->schools);
+                $schools = array_merge($schools, (array) $cache->schools);
                 continue;
             }
         }
@@ -60,7 +60,7 @@ function get_schools_list(){
         foreach($school_ids as $school_id){
             $school_api = 'https://api.skolverket.se/skolenhetsregistret/v1/skolenhet/'.$school_id;
             $results = @json_decode(@file_get_contents($school_api));
-            $schools[] = $results;
+            $schools['school_'.$school_id] = $results;
         }
 
         // Save cache
@@ -94,7 +94,7 @@ function get_school_markers(){
     $schools = get_schools_list();
     $markers = [];
     $relevant_school_years = ['Ak1', 'Ak2', 'Ak3', 'Ak4', 'Ak5', 'Ak6', 'Ak7', 'Ak8', 'Ak9'];
-    foreach($schools as $school){
+    foreach($schools as $school_id => $school){
         if(!$school){
             continue;
         }
@@ -168,8 +168,8 @@ if ( basename(__FILE__) == basename($_SERVER["SCRIPT_FILENAME"]) ) {
         echo json_encode(array("status"=>"error", "msg" => "Error: Invalid authentication"), JSON_PRETTY_PRINT);
     }
     else {
-        // echo json_encode(get_schools_list(), JSON_PRETTY_PRINT);
-        echo json_encode(get_school_markers(), JSON_PRETTY_PRINT);
+        echo json_encode(get_schools_list(), JSON_PRETTY_PRINT);
+        // echo json_encode(get_school_markers(), JSON_PRETTY_PRINT);
     }
 
 }
