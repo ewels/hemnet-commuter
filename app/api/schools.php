@@ -50,10 +50,14 @@ function get_schools_list(){
         $kommun_api = 'https://api.skolverket.se/skolenhetsregistret/v1/kommun/'.$kommun_id;
         $results = @json_decode(@file_get_contents($kommun_api));
         $school_ids = [];
-        foreach($results->Skolenheter as $skola){
-            if($skola->Status == 'Aktiv'){
-                $school_ids[] = $skola->Skolenhetskod;
+        if ($results && isset($results->Skolenheter)) {
+            foreach($results->Skolenheter as $skola){
+                if($skola->Status == 'Aktiv'){
+                    $school_ids[] = $skola->Skolenhetskod;
+                }
             }
+        }else{
+            error_log('Error: $results is null or does not have Skolenheter');
         }
 
         // Get detailed info for every school
