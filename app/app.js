@@ -244,7 +244,11 @@ app.controller("hemnetCommuterController", ['$scope', '$location', '$compile', '
   $scope.hemnet_results_update_btn_text = 'Update';
   $scope.translate_target_language = '';
   $scope.translate_description = false;
-  $scope.base_overlays = { schools: { name: 'Schools', type: 'group', visible: false } };
+
+  // School results
+  $scope.base_overlays = { schools: { name: 'Schools', type: 'group', visible: true } };
+  $scope.active_schools = [];
+  $scope.active_school_leaflet_ids = [];
 
   // Build custom leaflet buttons for map settings
   L.Control.HncBtn = L.Control.extend({
@@ -779,6 +783,7 @@ app.controller("hemnetCommuterController", ['$scope', '$location', '$compile', '
         console.error("NaN for lat/lng!", lat, lng, school);
       } else {
         markers['school_' + school['id']] = {
+          school_id: school['id'],
           layer: 'schools',
           lat: lat,
           lng: lng,
@@ -790,6 +795,10 @@ app.controller("hemnetCommuterController", ['$scope', '$location', '$compile', '
             prefix: 'fa',
             shape: 'square',
             svg: true
+          },
+          popupOptions: {
+            autoClose: false,
+            closeOnClick: false,
           }
         }
       }
@@ -910,10 +919,14 @@ app.controller("hemnetCommuterController", ['$scope', '$location', '$compile', '
 
   // Leaflet marker clicked
   $scope.$on('leafletDirectiveMarker.click', function (event, args) {
+
     // Get house details
     if (args.model.id !== undefined) {
       // Clear any active error message
       $scope.error_msg = false;
+
+      // Clear any schools
+      $scope.clear_active_schools();
 
       $scope.active_id = args.model.id;
       $scope.active_house = $scope.results[$scope.active_id];
@@ -1036,7 +1049,48 @@ app.controller("hemnetCommuterController", ['$scope', '$location', '$compile', '
         }
       });
     }
+
+    // Get school details
+    if (args.model.school_id !== undefined) {
+      console.log("School clicked:", args);
+
+      // Clear any active error message
+      $scope.error_msg = false;
+      // Clear any active houses
+      $scope.active_id = false;
+      $scope.active_house = false;
+
+      // Add to active schools and update side panel
+      $scope.active_schools.push(args.model.school_id);
+      $scope.active_school_leaflet_ids.push(args.leafletObject._leaflet_id);
+      $scope.update_schools_panel();
+    }
   });
+
+  // Leaflet marker popup closed
+  $scope.$on('leafletDirectiveMarker.popupclose', function (event, args) {
+    // Remove from active schools and update side panel
+    $scope.active_schools = $scope.active_schools.filter(function(e) { return e !== args.model.school_id });
+    $scope.update_schools_panel();
+  });
+
+  // Function to fetch school data for sidebar
+  $scope.update_schools_panel = function () {
+    //
+  }
+
+  // Clear active schools
+  $scope.clear_active_schools = function(){
+    // Close all school marker popups
+    leafletData.getMap().then(function (map) {
+      map.eachLayer(function(layer){
+        if($scope.active_school_leaflet_ids.includes(layer._leaflet_id)){
+          layer.closePopup();
+        }
+      });
+    });
+  }
+
 
 
   // Ratings button clicked

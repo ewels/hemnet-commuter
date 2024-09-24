@@ -109,7 +109,7 @@
         </p>
 
         <!-- INFO WHEN NO ACTIVE HOUSE -->
-        <div ng-show="active_id == false" class="text-muted pt-3 mt-3 border-top">Click a house marker on the map to see more information here.</div>
+        <div ng-show="active_id == false && active_schools.length < 1" class="text-muted pt-3 mt-3 border-top">Click a house or school marker on the map to see more information here.</div>
 
         <!-- ACTIVE HOUSE DETAILS -->
         <div ng-hide="active_id == false" class="pt-md-3 mt-md-3 border-top no-mobile-border">
@@ -259,6 +259,15 @@
           </div>
           <p class="p-3 mb-2 bg-success text-white" style="display:none;" id="saving_ratings_notification">Saving ratings..</p>
         </div>
+
+        <!-- ACTIVE SCHOOL DETAILS -->
+        <div ng-hide="active_schools.length < 1" class="pt-md-3 mt-md-3 border-top no-mobile-border">
+          <div ng-repeat="school in school_locations" ng-if="active_schools.includes(school.id)">
+            <p>{{ school.name }}</p>
+            <pre>{{ school }}</pre>
+          </div>
+        </div>
+
         </div>
       </div>
 
