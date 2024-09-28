@@ -623,7 +623,6 @@ app.controller("hemnetCommuterController", ['$scope', '$location', '$compile', '
 
       // Plot markers
       var markers = $scope.plot_markers();
-
       // Get new map bounds
       var l_bounds = L.latLngBounds(Object.values(markers));
       var bounds = {
@@ -632,11 +631,12 @@ app.controller("hemnetCommuterController", ['$scope', '$location', '$compile', '
       }
 
       // Update the map
-      $scope.map.bounds = bounds;
+      
       $scope.map.markers = markers;
-
+      
       // Allow function to call again in 1 second
       $timeout(function () {
+        $scope.map.bounds = bounds;
         $scope.update_results_call_active = false;
         if ($scope.update_results_call_requested) {
           $scope.update_results();
@@ -710,7 +710,15 @@ app.controller("hemnetCommuterController", ['$scope', '$location', '$compile', '
     $timeout(function () {
       $scope.$broadcast('leafletDirectiveMarker.click', { model: { id: houseId } });
       leafletData.getMap().then(function (map) {
+        // Fly to the marker's location
         map.flyTo(new L.LatLng($scope.active_house.lat, $scope.active_house.lng), 13);
+        // Locate the marker by its houseId (model id)
+        leafletData.getMarkers().then(function (markers) {
+          let targetMarker = markers[houseId]; // Assuming markers are keyed by houseId
+          if (!targetMarker) return;
+          // Open the marker's popup
+          targetMarker.openPopup();
+        });
       });
     }, 200);
   }
