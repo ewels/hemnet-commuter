@@ -251,6 +251,11 @@ app.controller("hemnetCommuterController", ['$scope', '$location', '$compile', '
   $scope.active_school_leaflet_ids = [];
   $scope.schools_data = {};
   $scope.school_national_averages = {};
+  $scope.favourite_schools = [];
+  var favourite_schools_cookie = $cookies.get('hc_favourite_schools');
+  if (favourite_schools_cookie) {
+    $scope.favourite_schools = JSON.parse(favourite_schools_cookie);
+  }
 
   // Build custom leaflet buttons for map settings
   L.Control.HncBtn = L.Control.extend({
@@ -1102,6 +1107,22 @@ app.controller("hemnetCommuterController", ['$scope', '$location', '$compile', '
       }
     }
   });
+
+  $scope.star_school = function(school_id){
+    if ($scope.favourite_schools.indexOf(school_id) == -1) {
+      $scope.favourite_schools.push(school_id);
+      $cookies.put('hc_favourite_schools', JSON.stringify($scope.favourite_schools));
+    }
+    console.log("Starred school: " + school_id, $scope.favourite_schools.indexOf(school_id), $scope.favourite_schools);
+  }
+  $scope.unstar_school = function(school_id){
+    var index = $scope.favourite_schools.indexOf(school_id);
+    if (index !== -1) {
+      $scope.favourite_schools.splice(index, 1);
+      $cookies.put('hc_favourite_schools', JSON.stringify($scope.favourite_schools));
+    }
+    console.log("Unstarred school: " + school_id, $scope.favourite_schools.indexOf(school_id), $scope.favourite_schools);
+  }
 
   // Leaflet marker popup closed
   $scope.$on('leafletDirectiveMarker.popupclose', function (event, args) {

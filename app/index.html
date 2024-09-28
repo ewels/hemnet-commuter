@@ -291,8 +291,10 @@
                 <td ng-bind="school_national_averages.stats.ratioOfPupilsIn6thGradeWithAllSubjectsPassed"></td>
                 <td>-</td>
               </tr>
-              <tr ng-repeat="school in school_locations" ng-if="active_schools.includes(school.id)">
+              <tr ng-repeat="school in school_locations" ng-if="active_schools.includes(school.id) || favourite_schools.includes(school.id)">
                 <td>
+                  <button uib-tooltip="Click to always show this school" tooltip-placement="right" ng-show="favourite_schools.indexOf(school.id) == -1" ng-click="star_school(school.id)" class="btn btn-sm btn-link p-0 mr-1"><i class="fa fa-star-o" aria-hidden="true"></i></button>
+                  <button uib-tooltip="Click to stop always showing this school" tooltip-placement="right" ng-show="favourite_schools.indexOf(school.id) !== -1" ng-click="unstar_school(school.id)" class="btn btn-sm btn-link p-0 mr-1"><i class="fa fa-star text-warning shadow" aria-hidden="true"></i></button>
                   <span class="badge badge-warning">{{ school.years[0] }}-{{ school.years[school.years.length-1] }}</span>
                   <a href="https://utbildningsguiden.skolverket.se/skolenhet?schoolUnitID={{ school.id }}" target="_blank">{{ school.name }}</a>
                 </td>
