@@ -56,8 +56,8 @@ function get_schools_list(){
                     $school_ids[] = $skola->Skolenhetskod;
                 }
             }
-        }else{
-            error_log('Error: $results is null or does not have Skolenheter');
+        } else {
+            error_log('Error: Skolverket did not return any schools');
         }
 
         // Get detailed info for every school
