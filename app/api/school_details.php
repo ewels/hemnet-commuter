@@ -26,21 +26,25 @@ function get_school_details($id){
     // Get school report PDFs
     $reports_api = 'https://api.skolverket.se/planned-educations/v3/school-units/'.$id.'/documents';
     $results = @json_decode(@file_get_contents($reports_api));
-    foreach($results->body as $type){
-        foreach($type->documents as $doc){
-            $school_details['reports'][$type->typeOfSchoolingCode] = $doc->url;
-            break;
+    if ($results) {
+        foreach($results->body as $type){
+            foreach($type->documents as $doc){
+                $school_details['reports'][$type->typeOfSchoolingCode][] = $doc;
+            }
         }
     }
 
     // Get school statistics
     $stats_api = 'https://api.skolverket.se/planned-educations/v3/school-units/'.$id.'/statistics/gr';
+    if($id == 'national'){
+        $stats_api = 'http://api.skolverket.se/planned-educations/v3/statistics/national-values/gr';
+    }
     $results = @json_decode(@file_get_contents($stats_api));
     $school_details['full_statistics'] = $results->body;
     $school_details['stats'] = [
         'studentsPerTeacherQuota' => $results->body->studentsPerTeacherQuota[0]->value,
         'certifiedTeachersQuota' => $results->body->certifiedTeachersQuota[0]->value,
-        'hasLibrary' => $results->body->hasLibrary,
+        'hasLibrary' => (isset($results->body->hasLibrary) && $results->body->hasLibrary),
         'totalNumberOfPupils' => str_replace('cirka ', '', $results->body->totalNumberOfPupils[0]->value),
         'ratioOfPupilsIn6thGradeWithAllSubjectsPassed' => $results->body->ratioOfPupilsIn6thGradeWithAllSubjectsPassed[0]->value,
     ];

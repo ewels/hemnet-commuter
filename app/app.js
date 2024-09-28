@@ -250,6 +250,7 @@ app.controller("hemnetCommuterController", ['$scope', '$location', '$compile', '
   $scope.active_schools = [];
   $scope.active_school_leaflet_ids = [];
   $scope.schools_data = {};
+  $scope.school_national_averages = {};
 
   // Build custom leaflet buttons for map settings
   L.Control.HncBtn = L.Control.extend({
@@ -631,9 +632,9 @@ app.controller("hemnetCommuterController", ['$scope', '$location', '$compile', '
       }
 
       // Update the map
-      
+
       $scope.map.markers = markers;
-      
+
       // Allow function to call again in 1 second
       $timeout(function () {
         $scope.map.bounds = bounds;
@@ -1074,6 +1075,19 @@ app.controller("hemnetCommuterController", ['$scope', '$location', '$compile', '
       $scope.active_schools.push($id);
       $scope.active_school_leaflet_ids.push(args.leafletObject._leaflet_id);
 
+      // Fetch the national averages if we don't already have them
+      if(Object.keys($scope.school_national_averages).length == 0){
+        console.log("Fetching national averages for schools");
+        $http.get("api/school_details.php?school_id=national").then(function (response) {
+          if (response.status != 200) {
+            console.error("Could not fetch national averages for schools");
+            console.log(response);
+          } else {
+            $scope.school_national_averages = response.data;
+          }
+        });
+      }
+
       // Fetch detailed info about the schoole
       if(!($id in $scope.schools_data)){
         $http.get("api/school_details.php?school_id="+$id).then(function (response) {
@@ -1082,6 +1096,7 @@ app.controller("hemnetCommuterController", ['$scope', '$location', '$compile', '
             console.log(response);
           } else {
             $scope.schools_data[$id] = response.data;
+            console.log(response);
           }
         });
       }

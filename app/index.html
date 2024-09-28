@@ -269,7 +269,7 @@
             Schools
           </h3>
           <p>Grundskola results:</p>
-          <table class="table table-sm">
+          <table class="table table-sm small">
             <thead>
               <tr>
                 <th>School</th>
@@ -278,22 +278,55 @@
                 <th><i uib-tooltip="% Licensed and authorized teachers (average 71.5%)" title="% Licensed and authorized teachers (average 71.5%)" class="fa fa-address-card-o" aria-hidden="true"></i></th>
                 <th><i uib-tooltip="hasLibrary" title="hasLibrary" class="fa fa-book" aria-hidden="true"></i></th>
                 <th><i uib-tooltip="Year 6: Proportion of students with passing grades in all subjects (average 71.2%)" title="Year 6: Proportion of students with passing grades in all subjects (average 71.2%)" class="fa fa-check-square-o" aria-hidden="true"></i></th>
+                <th><i uib-tooltip="Link to PDF report" title="Link to PDF report" class="fa fa-paperclip" aria-hidden="true"></i></th>
               </tr>
             </thead>
             <tbody>
+              <tr class="text-muted font-italic bg-light">
+                <td>National averages</td>
+                <td ng-bind="school_national_averages.stats.totalNumberOfPupils"></td>
+                <td ng-bind="school_national_averages.stats.studentsPerTeacherQuota"></td>
+                <td ng-bind="school_national_averages.stats.certifiedTeachersQuota"></td>
+                <td>-</td>
+                <td ng-bind="school_national_averages.stats.ratioOfPupilsIn6thGradeWithAllSubjectsPassed"></td>
+                <td>-</td>
+              </tr>
               <tr ng-repeat="school in school_locations" ng-if="active_schools.includes(school.id)">
                 <td>
                   <span class="badge badge-warning">{{ school.years[0] }}-{{ school.years[school.years.length-1] }}</span>
                   <a href="https://utbildningsguiden.skolverket.se/skolenhet?schoolUnitID={{ school.id }}" target="_blank">{{ school.name }}</a>
                 </td>
-                <td>{{ schools_data[school.id].stats.totalNumberOfPupils }}</td>
-                <td>{{ schools_data[school.id].stats.studentsPerTeacherQuota }}</td>
-                <td>{{ schools_data[school.id].stats.certifiedTeachersQuota }}</td>
-                <td>
-                  <i ng-if="schools_data[school.id].stats.hasLibrary" class="fa fa-check" aria-hidden="true"></i>
-                  <i ng-if="!schools_data[school.id].stats.hasLibrary" class="fa fa-close" aria-hidden="true"></i>
+                <td ng-class="schools_data[school.id].stats.totalNumberOfPupils > school_national_averages.stats.totalNumberOfPupils ? 'text-success' : 'text-danger'">
+                  {{ schools_data[school.id].stats.totalNumberOfPupils }}
                 </td>
-                <td>{{ schools_data[school.id].stats.ratioOfPupilsIn6thGradeWithAllSubjectsPassed }}</td>
+                <td ng-class="schools_data[school.id].stats.studentsPerTeacherQuota > school_national_averages.stats.studentsPerTeacherQuota ? 'text-success' : 'text-danger'">
+                  {{ schools_data[school.id].stats.studentsPerTeacherQuota }}
+                </td>
+                <td ng-class="schools_data[school.id].stats.certifiedTeachersQuota > school_national_averages.stats.certifiedTeachersQuota ? 'text-success' : 'text-danger'">
+                  {{ schools_data[school.id].stats.certifiedTeachersQuota }}
+                </td>
+                <td>
+                  <i ng-if="schools_data[school.id].stats.hasLibrary" class="fa fa-check text-success" aria-hidden="true"></i>
+                  <i ng-if="!schools_data[school.id].stats.hasLibrary" class="fa fa-close text-danger" aria-hidden="true"></i>
+                </td>
+                <td ng-class="schools_data[school.id].stats.ratioOfPupilsIn6thGradeWithAllSubjectsPassed > school_national_averages.stats.ratioOfPupilsIn6thGradeWithAllSubjectsPassed ? 'text-success' : 'text-danger'">
+                  {{ schools_data[school.id].stats.ratioOfPupilsIn6thGradeWithAllSubjectsPassed }}
+                </td>
+                <td>
+                  <a ng-href="{{schools_data[school.id].reports.gr[0].url}}" target="_blank" ng-show="schools_data[school.id].reports.gr.length == 1">
+                    <i class="fa fa-file-pdf-o" aria-hidden="true"></i>
+                  </a>
+                  <span uib-dropdown on-toggle="toggled(open)" ng-show="schools_data[school.id].reports.gr.length > 1" class="dropleft">
+                    <a href id="simple-dropdown" uib-dropdown-toggle>
+                      <i class="fa fa-file-pdf-o" aria-hidden="true"></i>
+                    </a>
+                    <ul class="dropdown-menu" uib-dropdown-menu aria-labelledby="simple-dropdown" style="max-width:400px; overflow-x: auto;">
+                      <li  ng-repeat="report in schools_data[school.id].reports.gr">
+                        <a class="dropdown-item small" href="{{report.url}}" target="_blank">{{report.title}}</a>
+                      </li>
+                    </ul>
+                  </span>
+                </td>
               </tr>
             </tbody>
           </table>
