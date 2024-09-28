@@ -150,7 +150,8 @@ function get_school_markers(){
             'lng' => $school->SkolenhetInfo->Besoksadress->GeoData->Koordinat_WGS84_Lng,
             'name' => $school->SkolenhetInfo->Namn,
             'description' => $description,
-            'id' => $school_id
+            'id' => $school_id,
+            'years' => $school_years,
         );
     }
     return $markers;
