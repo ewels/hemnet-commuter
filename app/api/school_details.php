@@ -49,6 +49,16 @@ function get_school_details($id){
         'ratioOfPupilsIn6thGradeWithAllSubjectsPassed' => $results->body->ratioOfPupilsIn6thGradeWithAllSubjectsPassed[0]->value,
     ];
 
+    // Survey results - custodians
+    $survey_custodians_api = 'https://api.skolverket.se/planned-educations/v3/school-units/'.$id.'/surveys/custodiansgr';
+    $results = @json_decode(@file_get_contents($survey_custodians_api));
+    $school_details['survey_custodians'] = $results->body;
+
+    // Survey results - custodians
+    $survey_pupils_api = 'https://api.skolverket.se/planned-educations/v3/school-units/'.$id.'/surveys/pupilsgr';
+    $results = @json_decode(@file_get_contents($survey_pupils_api));
+    $school_details['survey_pupils'] = $results->body->schoolYearMetrics[0];
+
     // Save cache
     // TODO - Save to DB instead?
     $cache = [
