@@ -275,12 +275,12 @@
             <thead>
               <tr>
                 <th>School</th>
-                <th><i uib-tooltip="Number of Pupils" title="Number of Pupils" class="fa fa-users" aria-hidden="true"></i></th>
-                <th><i uib-tooltip="Students per teacher (average 12.0)" title="Students per teacher (average 12.0)" class="fa fa-sort-numeric-asc" aria-hidden="true"></i></th>
-                <th><i uib-tooltip="% Licensed and authorized teachers (average 71.5%)" title="% Licensed and authorized teachers (average 71.5%)" class="fa fa-address-card-o" aria-hidden="true"></i></th>
-                <th><i uib-tooltip="hasLibrary" title="hasLibrary" class="fa fa-book" aria-hidden="true"></i></th>
-                <th><i uib-tooltip="Year 6: Proportion of students with passing grades in all subjects (average 71.2%)" title="Year 6: Proportion of students with passing grades in all subjects (average 71.2%)" class="fa fa-check-square-o" aria-hidden="true"></i></th>
-                <th><i uib-tooltip="Link to PDF report" title="Link to PDF report" class="fa fa-paperclip" aria-hidden="true"></i></th>
+                <th><i uib-tooltip="Number of Pupils" class="fa fa-users" aria-hidden="true"></i></th>
+                <th><i uib-tooltip="Students per teacher" class="fa fa-sort-numeric-asc" aria-hidden="true"></i></th>
+                <th><i uib-tooltip="% Licensed and authorized teachers" class="fa fa-address-card-o" aria-hidden="true"></i></th>
+                <th><i uib-tooltip="Has library?" class="fa fa-book" aria-hidden="true"></i></th>
+                <th><i uib-tooltip="Year 6: Proportion of students with passing grades in all subjects" class="fa fa-check-square-o" aria-hidden="true"></i></th>
+                <th><i uib-tooltip="Link to PDF report" class="fa fa-paperclip" aria-hidden="true"></i></th>
               </tr>
             </thead>
             <tbody>
@@ -300,10 +300,10 @@
                   <span class="badge badge-warning">{{ school.years[0] }}-{{ school.years[school.years.length-1] }}</span>
                   <a href="https://utbildningsguiden.skolverket.se/skolenhet?schoolUnitID={{ school.id }}" target="_blank">{{ school.name }}</a>
                 </td>
-                <td ng-class="schools_data[school.id].stats.totalNumberOfPupils > school_national_averages.stats.totalNumberOfPupils ? 'text-success' : 'text-danger'">
+                <td>
                   {{ schools_data[school.id].stats.totalNumberOfPupils }}
                 </td>
-                <td ng-class="schools_data[school.id].stats.studentsPerTeacherQuota > school_national_averages.stats.studentsPerTeacherQuota ? 'text-success' : 'text-danger'">
+                <td ng-class="schools_data[school.id].stats.studentsPerTeacherQuota < school_national_averages.stats.studentsPerTeacherQuota ? 'text-success' : 'text-danger'">
                   {{ schools_data[school.id].stats.studentsPerTeacherQuota }}
                 </td>
                 <td ng-class="schools_data[school.id].stats.certifiedTeachersQuota > school_national_averages.stats.certifiedTeachersQuota ? 'text-success' : 'text-danger'">
