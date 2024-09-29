@@ -1134,7 +1134,7 @@ app.controller("hemnetCommuterController", ['$scope', '$location', '$compile', '
   $scope.school_survey_plot = function(){
     console.log("Updating school survey plot");
     var questions = [
-      'recommend',
+      // 'recommend',
       'satisfaction',
       'security',
       'workingEnvironment',
@@ -1188,7 +1188,10 @@ app.controller("hemnetCommuterController", ['$scope', '$location', '$compile', '
     var layout = {
       scattermode: 'group',
       title: 'Survey results: Custodians',
-      yaxis: { zeroline: false },
+      yaxis: {
+        tickangle: -45,
+        zeroline: false
+      },
       xaxis: {
         title: 'Average score',
         zeroline: false
