@@ -1149,14 +1149,13 @@ app.controller("hemnetCommuterController", ['$scope', '$location', '$compile', '
         return;
       }
       var trace = {
-        x: [],
-        y: [],
+        r: [],
+        theta: [],
         name: $scope.school_names[school_id],
-        type: 'scatter',
+        type: 'scatterpolar',
         line: {
-          color: 'rgb(200, 200, 200)',
+          color: 'rgb(150, 150, 150)',
           dash: 'dashdot',
-          width: 1
         }
       };
       questions.forEach(function(question){
@@ -1164,39 +1163,46 @@ app.controller("hemnetCommuterController", ['$scope', '$location', '$compile', '
         if(!(question+'Average' in survey_data)){
           return;
         }
-        trace.y.push(question);
-        trace.x.push(survey_data[question+'Average']);
+        trace.r.push(survey_data[question+'Average']);
+        trace.theta.push(question);
       });
+      trace.r.push(trace.r[0]);
+      trace.theta.push(trace.theta[0]);
       data.push(trace);
     });
     // Now plot selected schools
     $scope.active_schools.forEach(function(school_id){
       var trace = {
-        x: [],
-        y: [],
+        r: [],
+        theta: [],
         name: $scope.school_names[school_id],
-        type: 'scatter'
+        type: 'scatterpolar'
       };
       questions.forEach(function(question){
         var survey_data = $scope.schools_data[school_id].survey_custodians;
-        trace.y.push(question);
-        trace.x.push(survey_data[question+'Average']);
+        trace.r.push(survey_data[question+'Average']);
+        trace.theta.push(question);
       });
+      trace.r.push(trace.r[0]);
+      trace.theta.push(trace.theta[0]);
       data.push(trace);
     });
     // Config for plot
     var layout = {
-      scattermode: 'group',
       title: 'Survey results: Custodians',
-      yaxis: {
-        tickangle: -45,
-        zeroline: false
-      },
-      xaxis: {
-        title: 'Average score',
-        zeroline: false
-      },
-      scattergap: 0.7
+      polar: {
+        angularaxis: {
+          linecolor: '#dedede',
+        },
+        radialaxis: {
+          visible: true,
+          title: 'Average score',
+          // range: [40, 90],
+          rangemode: 'normal',
+          gridcolor: '#ededed',
+          showline: false
+        }
+      }
     };
     // Render plot
     Plotly.newPlot(document.getElementById("school_survey_plotly"), data, layout);
