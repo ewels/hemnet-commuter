@@ -1121,18 +1121,22 @@ app.controller("hemnetCommuterController", ['$scope', '$location', '$compile', '
             console.log(response);
           }
           // Update plot
-          $scope.school_survey_plot();
+          $scope.school_survey_plots();
         });
       } else {
         // Update plot
-        $scope.school_survey_plot();
+        $scope.school_survey_plots();
       }
 
     }
   });
 
-  $scope.school_survey_plot = function(){
-    console.log("Updating school survey plot");
+  $scope.school_survey_plots = function(){
+    // Update all school survey plots
+    $scope.school_survey_plot('pupils');
+    $scope.school_survey_plot('custodians');
+  };
+  $scope.school_survey_plot = function(survey_type){
     var questions = [
       // 'recommend',
       'satisfaction',
@@ -1160,6 +1164,9 @@ app.controller("hemnetCommuterController", ['$scope', '$location', '$compile', '
       };
       questions.forEach(function(question){
         var survey_data = $scope.schools_data[school_id].survey_custodians;
+        if(survey_type == 'pupils'){
+          survey_data = $scope.schools_data[school_id].survey_pupils;
+        }
         if(!(question+'Average' in survey_data)){
           return;
         }
@@ -1180,6 +1187,12 @@ app.controller("hemnetCommuterController", ['$scope', '$location', '$compile', '
       };
       questions.forEach(function(question){
         var survey_data = $scope.schools_data[school_id].survey_custodians;
+        if(survey_type == 'pupils'){
+          survey_data = $scope.schools_data[school_id].survey_pupils;
+        }
+        if(!(question+'Average' in survey_data)){
+          return;
+        }
         trace.r.push(survey_data[question+'Average']);
         trace.theta.push(question);
       });
@@ -1189,7 +1202,7 @@ app.controller("hemnetCommuterController", ['$scope', '$location', '$compile', '
     });
     // Config for plot
     var layout = {
-      title: 'Survey results: Custodians',
+      title: 'Survey results: '+survey_type,
       polar: {
         angularaxis: {
           linecolor: '#dedede',
@@ -1197,7 +1210,6 @@ app.controller("hemnetCommuterController", ['$scope', '$location', '$compile', '
         radialaxis: {
           visible: true,
           title: 'Average score',
-          // range: [40, 90],
           rangemode: 'normal',
           gridcolor: '#ededed',
           showline: false
@@ -1205,7 +1217,11 @@ app.controller("hemnetCommuterController", ['$scope', '$location', '$compile', '
       }
     };
     // Render plot
-    Plotly.newPlot(document.getElementById("school_survey_plotly"), data, layout);
+    if(survey_type == 'pupils'){
+      Plotly.newPlot(document.getElementById("school_survey_pupils_plotly"), data, layout);
+    } else {
+      Plotly.newPlot(document.getElementById("school_survey_custodians_plotly"), data, layout);
+    }
   }
 
 
@@ -1230,7 +1246,7 @@ app.controller("hemnetCommuterController", ['$scope', '$location', '$compile', '
   $scope.$on('leafletDirectiveMarker.popupclose', function (event, args) {
     // Remove from active schools and update side panel
     $scope.active_schools = $scope.active_schools.filter(function(e) { return e !== args.model.school_id });
-    $scope.school_survey_plot();
+    $scope.school_survey_plots();
   });
 
   // Clear active schools
