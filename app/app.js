@@ -251,11 +251,27 @@ app.controller("hemnetCommuterController", ['$scope', '$location', '$compile', '
   $scope.active_school_leaflet_ids = [];
   $scope.schools_data = {};
   $scope.school_national_averages = {};
+  $scope.school_names = {};
   $scope.favourite_schools = [];
   var favourite_schools_cookie = $cookies.get('hc_favourite_schools');
   if (favourite_schools_cookie) {
     $scope.favourite_schools = JSON.parse(favourite_schools_cookie);
   }
+  $scope.favourite_schools.forEach(function(school_id){
+    // Fetch detailed info about favourite schoole
+    if(!(school_id in $scope.schools_data)){
+      $http.get("api/school_details.php?school_id="+school_id).then(function (response) {
+        if (response.status != 200) {
+          console.error("Could not fetch school details: ", school_id);
+          console.log(response);
+        } else {
+          $scope.schools_data[school_id] = response.data;
+          console.log(response);
+        }
+      });
+    }
+  });
+
 
   // Build custom leaflet buttons for map settings
   L.Control.HncBtn = L.Control.extend({
@@ -791,6 +807,7 @@ app.controller("hemnetCommuterController", ['$scope', '$location', '$compile', '
 
     // Markers for schools
     angular.forEach($scope.school_locations, function (school) {
+      $scope.school_names[school['id']] = school['name'];
       // Lat / Lng
       var lat = parseFloat(school['lat']);
       var lng = parseFloat(school['lng']);
@@ -1103,10 +1120,83 @@ app.controller("hemnetCommuterController", ['$scope', '$location', '$compile', '
             $scope.schools_data[$id] = response.data;
             console.log(response);
           }
+          // Update plot
+          $scope.school_survey_plot();
         });
+      } else {
+        // Update plot
+        $scope.school_survey_plot();
       }
+
     }
   });
+
+  $scope.school_survey_plot = function(){
+    console.log("Updating school survey plot");
+    var questions = [
+      'recommend',
+      'satisfaction',
+      'security',
+      'workingEnvironment',
+      'support',
+      'inspiration',
+    ];
+    var data = [];
+    // First - plot favourite schools (so that they're on the bottom)
+    $scope.favourite_schools.forEach(function(school_id){
+      // Skip if also selected
+      if(school_id in $scope.active_schools){
+        return;
+      }
+      var trace = {
+        x: [],
+        y: [],
+        name: $scope.school_names[school_id],
+        type: 'scatter',
+        line: {
+          color: 'rgb(200, 200, 200)',
+          dash: 'dashdot',
+          width: 1
+        }
+      };
+      questions.forEach(function(question){
+        var survey_data = $scope.schools_data[school_id].survey_custodians;
+        trace.y.push(question);
+        trace.x.push(survey_data[question+'Average']);
+      });
+      data.push(trace);
+    });
+    // Now plot selected schools
+    $scope.active_schools.forEach(function(school_id){
+      var trace = {
+        x: [],
+        y: [],
+        name: $scope.school_names[school_id],
+        type: 'scatter'
+      };
+      questions.forEach(function(question){
+        var survey_data = $scope.schools_data[school_id].survey_custodians;
+        trace.y.push(question);
+        trace.x.push(survey_data[question+'Average']);
+      });
+      data.push(trace);
+    });
+    // Config for plot
+    var layout = {
+      scattermode: 'group',
+      title: 'Survey results: Custodians',
+      yaxis: { zeroline: false },
+      xaxis: {
+        title: 'Average score',
+        zeroline: false
+      },
+      scattergap: 0.7
+    };
+    // Render plot
+    Plotly.newPlot(document.getElementById("school_survey_plotly"), data, layout);
+  }
+
+
 
   $scope.star_school = function(school_id){
     if ($scope.favourite_schools.indexOf(school_id) == -1) {
@@ -1128,14 +1218,8 @@ app.controller("hemnetCommuterController", ['$scope', '$location', '$compile', '
   $scope.$on('leafletDirectiveMarker.popupclose', function (event, args) {
     // Remove from active schools and update side panel
     $scope.active_schools = $scope.active_schools.filter(function(e) { return e !== args.model.school_id });
-    $scope.update_schools_panel();
+    $scope.school_survey_plot();
   });
-
-  // Function to fetch school data for sidebar
-  $scope.update_schools_panel = function () {
-    //
-    // console.log("data", $scope.schools_data);
-  }
 
   // Clear active schools
   $scope.clear_active_schools = function(){
