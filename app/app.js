@@ -1161,6 +1161,9 @@ app.controller("hemnetCommuterController", ['$scope', '$location', '$compile', '
       };
       questions.forEach(function(question){
         var survey_data = $scope.schools_data[school_id].survey_custodians;
+        if(!(question+'Average' in survey_data)){
+          return;
+        }
         trace.y.push(question);
         trace.x.push(survey_data[question+'Average']);
       });
