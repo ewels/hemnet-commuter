@@ -99,7 +99,8 @@ if ( basename(__FILE__) == basename($_SERVER["SCRIPT_FILENAME"]) ) {
   }
   // Save ratings results
   else if(isset($postdata['school_id']) && isset($postdata['user_id']) && isset($postdata['rating'])){
-    echo json_encode( save_school_rating($postdata['school_id'], $postdata['user_id'], $postdata['rating']), JSON_PRETTY_PRINT);
+    save_school_rating($postdata['school_id'], $postdata['user_id'], $postdata['rating']);
+    echo json_encode( get_school_ratings($postdata['school_id']), JSON_PRETTY_PRINT);
   }
   // Get recent ratings
   else if(isset($postdata['recent'])){

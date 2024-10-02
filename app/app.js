@@ -116,6 +116,15 @@ app.controller("hemnetCommuterController", ['$scope', '$location', '$compile', '
 
   // Functions to colour markers
   $scope.base_marker_colour = '#aab2b9';
+  $scope.get_rating_colour = function (score, num_ratings) {
+    if (score >= 2) { return '#28a745'; }
+    if (score == 1) { return '#87d699'; }
+    if (score == 0 && num_ratings > 1) { return '#17a2b8'; }
+    if (score == 0 && num_ratings == 1) { return '#8bccd6'; }
+    if (score == -1) { return '#f5c6cb'; }
+    if (score <= -2) { return '#dc3545'; }
+    return $scope.base_marker_colour;
+  }
   $scope.set_marker_colour = {
     'none': function (house) { return $scope.base_marker_colour; },
     'rating_combined': function (house) {
@@ -126,13 +135,7 @@ app.controller("hemnetCommuterController", ['$scope', '$location', '$compile', '
         if (house.ratings[user_id] == 'maybe') { score += 0; num_ratings++; }
         if (house.ratings[user_id] == 'no') { score += -1; num_ratings++; }
       }
-      if (score >= 2) { return '#28a745'; }
-      if (score == 1) { return '#87d699'; }
-      if (score == 0 && num_ratings > 1) { return '#17a2b8'; }
-      if (score == 0 && num_ratings == 1) { return '#8bccd6'; }
-      if (score == -1) { return '#f5c6cb'; }
-      if (score <= -2) { return '#dc3545'; }
-      return $scope.base_marker_colour;
+      return $scope.get_rating_colour (score, num_ratings);
     },
     'commute_threshold_combined': function (house) {
       var passes_threshold = null;
@@ -814,6 +817,20 @@ app.controller("hemnetCommuterController", ['$scope', '$location', '$compile', '
     // Markers for schools
     angular.forEach($scope.school_locations, function (school) {
       $scope.school_names[school['id']] = school['name'];
+
+      // Rating
+      var rating_score = null;
+      var num_ratings = 0;
+      for (let user_id in $scope.users) {
+        if(school['id'] in $scope.school_ratings[user_id]){
+          var user_rating = $scope.school_ratings[user_id][school['id']];
+          if (user_rating == 'yes') { rating_score += 1; num_ratings++; }
+          if (user_rating == 'maybe') { rating_score += 0; num_ratings++; }
+          if (user_rating == 'no') { rating_score += -1; num_ratings++; }
+        }
+      }
+      var marker_colour = $scope.get_rating_colour (rating_score, num_ratings);
+
       // Lat / Lng
       var lat = parseFloat(school['lat']);
       var lng = parseFloat(school['lng']);
@@ -828,7 +845,7 @@ app.controller("hemnetCommuterController", ['$scope', '$location', '$compile', '
           message: school['description'],
           icon: {
             type: 'extraMarker',
-            markerColor: 'cyan',
+            markerColor: marker_colour,
             icon: 'fa-graduation-cap',
             prefix: 'fa',
             shape: 'square',
@@ -841,7 +858,6 @@ app.controller("hemnetCommuterController", ['$scope', '$location', '$compile', '
         }
       }
     });
-
     return markers;
   }
 
@@ -1316,7 +1332,18 @@ app.controller("hemnetCommuterController", ['$scope', '$location', '$compile', '
     $http.post("api/school_ratings.php", JSON.stringify(post_data)).then(function (response) {
       // Update the scope with the new rating
       $scope.school_ratings[r_user_id][school_id] = rating;
-      $scope.update_markers();
+      // Update the map marker colour
+      var rating_score = null;
+      var num_ratings = 0;
+      for (let user_id in $scope.users) {
+        if(user_id in response.data){
+          var user_rating = response.data[user_id][school_id];
+          if (user_rating == 'yes') { rating_score += 1; num_ratings++; }
+          if (user_rating == 'maybe') { rating_score += 0; num_ratings++; }
+          if (user_rating == 'no') { rating_score += -1; num_ratings++; }
+        }
+      }
+      $scope.map.markers['school_' + school_id].icon.markerColor = $scope.get_rating_colour(rating_score, num_ratings);
       console.log("School rating saved:", post_data, response);
     });
   }
