@@ -483,14 +483,14 @@ app.controller("hemnetCommuterController", ['$scope', '$location', '$compile', '
       console.log("House filters found in a cookie: ", house_filters);
 
       // Fetch houses for the map
-      $scope.update_results();
+      $scope.update_results(true);
       // Fetch the commute time shape
       $scope.plot_commute_map();
     });
   }
 
   // Get the map markers
-  $scope.update_results = function () {
+  $scope.update_results = function (set_bounds = false) {
 
     if ($scope.initialising) {
       console.log("Ignoring update_results - still initialising");
@@ -658,7 +658,9 @@ app.controller("hemnetCommuterController", ['$scope', '$location', '$compile', '
 
       // Allow function to call again in 1 second
       $timeout(function () {
-        $scope.map.bounds = bounds;
+        if(set_bounds){
+          $scope.map.bounds = bounds;
+        }
         $scope.update_results_call_active = false;
         if ($scope.update_results_call_requested) {
           $scope.update_results();
