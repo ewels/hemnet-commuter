@@ -249,7 +249,11 @@ app.controller("hemnetCommuterController", ['$scope', '$location', '$compile', '
   $scope.translate_description = false;
 
   // School results
-  $scope.base_overlays = { schools: { name: 'Schools', type: 'group', visible: false } };
+  $scope.base_overlays = {
+    houses: { name: 'Houses', type: 'group', visible: true },
+    commute_locations: { name: 'Commute centres', type: 'group', visible: true },
+    schools: { name: 'Schools', type: 'group', visible: false },
+  };
   $scope.active_schools = [];
   $scope.active_school_leaflet_ids = [];
   $scope.school_ratings = [];
@@ -773,6 +777,7 @@ app.controller("hemnetCommuterController", ['$scope', '$location', '$compile', '
 
         markers[house.id] = {
           id: house.id,
+          layer: 'houses',
           lat: lat,
           lng: lng,
           message: house.title,
@@ -799,6 +804,7 @@ app.controller("hemnetCommuterController", ['$scope', '$location', '$compile', '
         console.error("NaN for lat/lng!", lat, lng, commute);
       } else {
         markers['commute_' + commute_id] = {
+          layer: 'commute_locations',
           lat: lat,
           lng: lng,
           message: '<h6>'+commute.nickname+'</h6><p class="my-0">' + commute.address + '</p>',
