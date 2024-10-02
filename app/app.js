@@ -249,6 +249,8 @@ app.controller("hemnetCommuterController", ['$scope', '$location', '$compile', '
   $scope.base_overlays = { schools: { name: 'Schools', type: 'group', visible: false } };
   $scope.active_schools = [];
   $scope.active_school_leaflet_ids = [];
+  $scope.school_ratings = [];
+  $scope.school_comments = [];
   $scope.schools_data = {};
   $scope.school_national_averages = {};
   $scope.school_names = {};
@@ -403,6 +405,8 @@ app.controller("hemnetCommuterController", ['$scope', '$location', '$compile', '
       $scope.users = response.data.users;
       $scope.commute_locations = response.data.commute_locations;
       $scope.school_locations = response.data.school_locations;
+      $scope.school_ratings = response.data.school_ratings;
+      $scope.school_comments = response.data.school_comments;
       $scope.translate_target_language = response.data.translate_target_language;
       $scope.stats = response.data.stats;
 
@@ -1265,7 +1269,7 @@ app.controller("hemnetCommuterController", ['$scope', '$location', '$compile', '
 
 
 
-  // Ratings button clicked
+  // House Ratings button clicked
   $scope.save_rating = function (r_user_id, rating) {
     // Deselect ratings
     if (rating == $scope.active_house.ratings[r_user_id]) {
@@ -1285,7 +1289,7 @@ app.controller("hemnetCommuterController", ['$scope', '$location', '$compile', '
     });
   }
 
-  // Comment updated
+  // House Comment updated
   $scope.save_comment = function (r_user_id) {
     // Build post data and send to API
     var post_data = {
@@ -1294,6 +1298,40 @@ app.controller("hemnetCommuterController", ['$scope', '$location', '$compile', '
       'comment': $scope.active_house.comments[r_user_id]
     };
     $http.post("api/comments.php", JSON.stringify(post_data));
+  }
+
+  // School Ratings button clicked
+  $scope.save_school_rating = function (school_id, r_user_id, rating) {
+    // Deselect school ratings
+    if (rating == $scope.school_ratings[r_user_id][school_id]) {
+      rating = 'not_set';
+    }
+
+    // Build post data and send to API
+    var post_data = {
+      'school_id': school_id,
+      'user_id': r_user_id,
+      'rating': rating
+    };
+    $http.post("api/school_ratings.php", JSON.stringify(post_data)).then(function (response) {
+      // Update the scope with the new rating
+      $scope.school_ratings[r_user_id][school_id] = rating;
+      $scope.update_markers();
+      console.log("School rating saved:", post_data, response);
+    });
+  }
+
+  // School Comment updated
+  $scope.save_school_comment = function (school_id, r_user_id) {
+    // Build post data and send to API
+    var post_data = {
+      'school_id': school_id,
+      'user_id': r_user_id,
+      'comment': $scope.school_comments[r_user_id][school_id]
+    };
+    $http.post("api/school_comments.php", JSON.stringify(post_data)).then(function (response) {
+      console.log("School comment saved:", post_data, response);
+    });
   }
 
   // Tag button clicked

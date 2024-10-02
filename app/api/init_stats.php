@@ -17,7 +17,8 @@ function get_init_stats(){
   require_once('comments.php');
   require_once('commute_locations.php');
   require_once('schools.php');
-  require_once('ratings.php');
+  require_once('school_comments.php');
+  require_once('school_ratings.php');
   require_once('tags.php');
   require_once('users.php');
 
@@ -27,6 +28,8 @@ function get_init_stats(){
     "users" => get_all_users(),
     "commute_locations" => get_commute_locations(),
     "school_locations" => get_school_markers(),
+    "school_ratings" => get_school_ratings(),
+    "school_comments" => get_school_comments(),
     "translate_target_language" => $ini_array['translate_target_language'],
     "stats" => array()
   );
