@@ -18,7 +18,7 @@ function get_schools_list(){
 
     // Check we have some school kommun names in the config
     if(!isset($ini_array['school_kommuns']) || count($ini_array['school_kommuns']) == 0){
-        return array('status'=>'error', 'msg'=>'No school kommun names found in config.ini');
+        return [];
     }
 
     // Get county IDs

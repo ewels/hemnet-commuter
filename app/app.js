@@ -246,7 +246,7 @@ app.controller("hemnetCommuterController", ['$scope', '$location', '$compile', '
   $scope.translate_description = false;
 
   // School results
-  $scope.base_overlays = { schools: { name: 'Schools', type: 'group', visible: true } };
+  $scope.base_overlays = { schools: { name: 'Schools', type: 'group', visible: false } };
   $scope.active_schools = [];
   $scope.active_school_leaflet_ids = [];
   $scope.schools_data = {};
