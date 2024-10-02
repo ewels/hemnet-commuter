@@ -821,7 +821,7 @@ app.controller("hemnetCommuterController", ['$scope', '$location', '$compile', '
           layer: 'schools',
           lat: lat,
           lng: lng,
-          message: '<h6>'+school['name']+'</h6>'+school['description'],
+          message: school['description'],
           icon: {
             type: 'extraMarker',
             markerColor: 'cyan',

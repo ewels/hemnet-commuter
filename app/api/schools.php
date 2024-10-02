@@ -133,22 +133,24 @@ function get_school_markers(){
         if(!isset($school->SkolenhetInfo->Besoksadress->GeoData->Koordinat_WGS84_Lat) || !isset($school->SkolenhetInfo->Besoksadress->GeoData->Koordinat_WGS84_Lng)){
             continue;
         }
+        $school_name = $school->SkolenhetInfo->Namn;
         $school_id = $school->SkolenhetInfo->Skolenhetskod;
         $school_typ = $school->SkolenhetInfo->Huvudman->Typ;
-
         $description =
-            '<p class="mt-0 mb-1">'.
-                '<span class="badge badge-'.($school_typ == 'Kommun' ? 'secondary' : 'primary').'">'.$school_typ.'</span>'.
-            '</p>'.
-            '<p class="mt-0 mb-1">'.
+            '<h6><a href="https://utbildningsguiden.skolverket.se/skolenhet?schoolUnitID='.$school_id.'" target="_blank">'.
+                $school_name.
+            ' <i class="fa fa-external-link" aria-hidden="true"></i></a></h6>
+            <p class="mt-0 mb-1">'.
+                '<span class="badge badge-'.($school_typ == 'Kommun' ? 'secondary' : 'primary').'">'.$school_typ.'</span>
+            </p>
+            <p class="mt-0 mb-1">'.
                 implode(', ', $school_types).
-            '</p>'.
-            '<p class="mt-0 mb-1">'.school_year_badges($school_years).'</p>'.
-            '<p class="my-0"><a href="https://utbildningsguiden.skolverket.se/skolenhet?schoolUnitID='.$school_id.'" target="_blank">[ View details ]</a></p>';
+            '</p>
+            <p class="my-0">'.school_year_badges($school_years).'</p>';
         $markers[] = array(
             'lat' => $school->SkolenhetInfo->Besoksadress->GeoData->Koordinat_WGS84_Lat,
             'lng' => $school->SkolenhetInfo->Besoksadress->GeoData->Koordinat_WGS84_Lng,
-            'name' => $school->SkolenhetInfo->Namn,
+            'name' => $school_name,
             'description' => $description,
             'id' => $school_id,
             'years' => $school_years,
