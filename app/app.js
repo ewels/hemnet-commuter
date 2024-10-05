@@ -383,10 +383,10 @@ app.controller("hemnetCommuterController", ['$scope', '$location', '$compile', '
   updateMapSize(200);
   // Force LeafletJS to updat map when sidebar is toggled
   $scope.$watch('sidebar', function () {
-    updateMapSize();
+    updateMapSize(100);
   });
   $scope.$watch('show_detail', function () {
-    updateMapSize();
+    updateMapSize(100);
   });
 
   // Get the initial stats and setup
@@ -656,15 +656,16 @@ app.controller("hemnetCommuterController", ['$scope', '$location', '$compile', '
 
       // Plot markers
       var markers = $scope.plot_markers();
+      // Filter markers for just those with layer 'houses'
+      var house_markers = Object.values(markers).filter(marker => marker.layer == 'houses');
       // Get new map bounds
-      var l_bounds = L.latLngBounds(Object.values(markers));
+      var l_bounds = L.latLngBounds(house_markers);
       var bounds = {
         northEast: l_bounds._northEast,
         southWest: l_bounds._southWest,
       }
 
       // Update the map
-
       $scope.map.markers = markers;
 
       // Allow function to call again in 1 second
