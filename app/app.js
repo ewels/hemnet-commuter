@@ -1162,12 +1162,12 @@ app.controller("hemnetCommuterController", ['$scope', '$location', '$compile', '
 
   $scope.school_plots = function(){
     // Update all school survey plots
-    $scope.school_survey_plot('pupils');
-    $scope.school_survey_plot('custodians');
+    $scope.school_survey_plot();
     // Update the school results plot
     $scope.school_results_plot();
   };
-  $scope.school_survey_plot = function(survey_type){
+  $scope.school_survey_plot_data = function(survey_type){
+    var d3colors = Plotly.d3.scale.category10();
     var questions = [
       // 'recommend',
       'satisfaction',
@@ -1193,6 +1193,10 @@ app.controller("hemnetCommuterController", ['$scope', '$location', '$compile', '
           dash: 'dashdot',
         }
       };
+      if(survey_type == 'custodians'){
+        trace.subplot = "polar2";
+        trace.showlegend = false;
+      }
       questions.forEach(function(question){
         var survey_data = $scope.schools_data[school_id].survey_custodians;
         if(survey_type == 'pupils'){
@@ -1210,13 +1214,20 @@ app.controller("hemnetCommuterController", ['$scope', '$location', '$compile', '
       data.push(trace);
     });
     // Now plot selected schools
-    $scope.active_schools.forEach(function(school_id){
+    $scope.active_schools.forEach(function(school_id, idx){
       var trace = {
         r: [],
         theta: [],
         name: $scope.school_names[school_id],
-        type: 'scatterpolar'
+        type: 'scatterpolar',
+        line: {
+          color: d3colors(idx),
+        }
       };
+      if(survey_type == 'custodians'){
+        trace.subplot = "polar2";
+        trace.showlegend = false;
+      }
       questions.forEach(function(question){
         var survey_data = $scope.schools_data[school_id].survey_custodians;
         if(survey_type == 'pupils'){
@@ -1233,10 +1244,19 @@ app.controller("hemnetCommuterController", ['$scope', '$location', '$compile', '
       trace.theta.push(trace.theta[0]);
       data.push(trace);
     });
+    return data;
+  }
+  $scope.school_survey_plot = function(){
+    var data = $scope.school_survey_plot_data('pupils');
+    data = data.concat($scope.school_survey_plot_data('custodians'));
     // Config for plot
-    var layout = {
-      title: 'Survey results: '+survey_type,
+    const layout = {
+      title: 'Survey results (pupils, custodians)',
       polar: {
+        domain: {
+          x: [0, 1],
+          y: [0, 0.46]
+        },
         angularaxis: {
           linecolor: '#dedede',
         },
@@ -1247,15 +1267,29 @@ app.controller("hemnetCommuterController", ['$scope', '$location', '$compile', '
           gridcolor: '#ededed',
           showline: false
         }
-      }
+      },
+      polar2: {
+        domain: {
+          x: [0, 1],
+          y: [0.54, 1]
+        },
+        angularaxis: {
+          linecolor: '#dedede',
+        },
+        radialaxis: {
+          visible: true,
+          title: 'Average score',
+          rangemode: 'normal',
+          gridcolor: '#ededed',
+          showline: false
+        }
+      },
+      legend: {"orientation": "h"}
     };
     // Render plots - wait a second for the DOM to update
     setTimeout(function () {
-      if(survey_type == 'pupils'){
-        Plotly.newPlot(document.getElementById("school_survey_pupils_plotly"), data, layout);
-      } else {
-        Plotly.newPlot(document.getElementById("school_survey_custodians_plotly"), data, layout);
-      }
+      console.log(data, layout);
+      Plotly.newPlot(document.getElementById("school_survey_plotly"), data, layout);
     }, 100);
   }
 
@@ -1282,7 +1316,7 @@ app.controller("hemnetCommuterController", ['$scope', '$location', '$compile', '
         var result = null;
         try {
           result = $scope.schools_data[school_id].full_statistics[field][0].value;
-          result = parseFloat(result.replace('..', '').replace(',', '.'));
+          result = parseFloat(result?.replace('..', '')?.replace(',', '.'));
         } catch (e) {
           console.log("Error fetching school results for: ", school_id, subject, e);
         }
@@ -1303,7 +1337,7 @@ app.controller("hemnetCommuterController", ['$scope', '$location', '$compile', '
         var result = null;
         try {
           result = $scope.schools_data[school_id].full_statistics[field][0]?.value;
-          result = parseFloat(result.replace('..', '').replace(',', '.'));
+          result = parseFloat(result?.replace('..', '')?.replace(',', '.'));
         } catch (e) {
           console.log("Error fetching school results for: ", school_id, subject, e);
         }
