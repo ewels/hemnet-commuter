@@ -1150,20 +1150,22 @@ app.controller("hemnetCommuterController", ['$scope', '$location', '$compile', '
             console.log(response);
           }
           // Update plot
-          $scope.school_survey_plots();
+          $scope.school_plots();
         });
       } else {
         // Update plot
-        $scope.school_survey_plots();
+        $scope.school_plots();
       }
 
     }
   });
 
-  $scope.school_survey_plots = function(){
+  $scope.school_plots = function(){
     // Update all school survey plots
     $scope.school_survey_plot('pupils');
     $scope.school_survey_plot('custodians');
+    // Update the school results plot
+    $scope.school_results_plot();
   };
   $scope.school_survey_plot = function(survey_type){
     var questions = [
@@ -1199,7 +1201,8 @@ app.controller("hemnetCommuterController", ['$scope', '$location', '$compile', '
         if(!(question+'Average' in survey_data)){
           return;
         }
-        trace.r.push(survey_data[question+'Average']);
+        var result = parseFloat(survey_data[question+'Average'].replace('..', '').replace(',', '.'));
+        trace.r.push(result);
         trace.theta.push(question);
       });
       trace.r.push(trace.r[0]);
@@ -1219,10 +1222,11 @@ app.controller("hemnetCommuterController", ['$scope', '$location', '$compile', '
         if(survey_type == 'pupils'){
           survey_data = $scope.schools_data[school_id].survey_pupils;
         }
-        if(!(question+'Average' in survey_data)){
+        if(survey_data == null || !(question+'Average' in survey_data)){
           return;
         }
-        trace.r.push(survey_data[question+'Average']);
+        var result = parseFloat(survey_data[question+'Average'].replace('..', '').replace(',', '.'));
+        trace.r.push(result);
         trace.theta.push(question);
       });
       trace.r.push(trace.r[0]);
@@ -1245,12 +1249,78 @@ app.controller("hemnetCommuterController", ['$scope', '$location', '$compile', '
         }
       }
     };
-    // Render plot
-    if(survey_type == 'pupils'){
-      Plotly.newPlot(document.getElementById("school_survey_pupils_plotly"), data, layout);
-    } else {
-      Plotly.newPlot(document.getElementById("school_survey_custodians_plotly"), data, layout);
-    }
+    // Render plots - wait a second for the DOM to update
+    setTimeout(function () {
+      if(survey_type == 'pupils'){
+        Plotly.newPlot(document.getElementById("school_survey_pupils_plotly"), data, layout);
+      } else {
+        Plotly.newPlot(document.getElementById("school_survey_custodians_plotly"), data, layout);
+      }
+    }, 100);
+  }
+
+  $scope.school_results_plot = function(){
+    var subjects = ['SVE', 'ENG', 'MA', 'SVA'];
+    var data = [];
+    // First - plot favourite schools (so that they're on the bottom)
+    $scope.favourite_schools.forEach(function(school_id){
+      // Skip if also selected
+      if(school_id in $scope.active_schools){
+        return;
+      }
+      // Random value between 80 and 180
+      const random = Math.floor(Math.random() * 100) + 80;
+      var trace = {
+        x: subjects,
+        y: [],
+        name: $scope.school_names[school_id],
+        marker: { color: `rgb(${random}, ${random}, ${random})` },
+        type: 'bar'
+      };
+      subjects.forEach(function(subject){
+        const field = `averageResultNationalTestsSubject${subject}6thGrade`;
+        var result = null;
+        try {
+          result = $scope.schools_data[school_id].full_statistics[field][0].value;
+          result = parseFloat(result.replace('..', '').replace(',', '.'));
+        } catch (e) {
+          console.log("Error fetching school results for: ", school_id, subject, e);
+        }
+        trace.y.push(result);
+      });
+      data.push(trace);
+    });
+    // Now plot selected schools
+    $scope.active_schools.forEach(function(school_id){
+      var trace = {
+        x: subjects,
+        y: [],
+        name: $scope.school_names[school_id],
+        type: 'bar'
+      };
+      subjects.forEach(function(subject){
+        const field = `averageResultNationalTestsSubject${subject}6thGrade`;
+        var result = null;
+        try {
+          result = $scope.schools_data[school_id].full_statistics[field][0]?.value;
+          result = parseFloat(result.replace('..', '').replace(',', '.'));
+        } catch (e) {
+          console.log("Error fetching school results for: ", school_id, subject, e);
+        }
+        trace.y.push(result);
+      });
+      data.push(trace);
+    });
+
+    // Render plots - wait a second for the DOM to update
+    setTimeout(function () {
+      var layout = {
+        title: '6th Grade Results',
+        barmode: 'group',
+        legend: {"orientation": "h"}
+      };
+      Plotly.newPlot(document.getElementById("school_results_plotly"), data, layout);
+    }, 100);
   }
 
 
