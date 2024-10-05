@@ -1305,11 +1305,12 @@ app.controller("hemnetCommuterController", ['$scope', '$location', '$compile', '
       // Random value between 80 and 180
       const random = Math.floor(Math.random() * 100) + 80;
       var trace = {
-        x: subjects,
-        y: [],
+        y: subjects,
+        x: [],
         name: $scope.school_names[school_id],
         marker: { color: `rgb(${random}, ${random}, ${random})` },
-        type: 'bar'
+        type: 'bar',
+        orientation: 'h',
       };
       subjects.forEach(function(subject){
         const field = `averageResultNationalTestsSubject${subject}6thGrade`;
@@ -1320,7 +1321,7 @@ app.controller("hemnetCommuterController", ['$scope', '$location', '$compile', '
         } catch (e) {
           console.log("Error fetching school results for: ", school_id, subject, e);
         }
-        trace.y.push(result);
+        trace.x.push(result);
       });
       data.push(trace);
     });
@@ -1328,10 +1329,11 @@ app.controller("hemnetCommuterController", ['$scope', '$location', '$compile', '
     var d3colors = Plotly.d3.scale.category10();
     $scope.active_schools.forEach(function(school_id, idx){
       var trace = {
-        x: subjects,
-        y: [],
+        y: subjects,
+        x: [],
         name: $scope.school_names[school_id],
         type: 'bar',
+        orientation: 'h',
         marker: { color: d3colors(idx) }
       };
       subjects.forEach(function(subject){
@@ -1343,7 +1345,7 @@ app.controller("hemnetCommuterController", ['$scope', '$location', '$compile', '
         } catch (e) {
           console.log("Error fetching school results for: ", school_id, subject, e);
         }
-        trace.y.push(result);
+        trace.x.push(result);
       });
       data.push(trace);
     });
@@ -1353,7 +1355,8 @@ app.controller("hemnetCommuterController", ['$scope', '$location', '$compile', '
       var layout = {
         title: '6th Grade Results',
         barmode: 'group',
-        legend: {"orientation": "h"}
+        yaxis: { autorange: "reversed" },
+        legend: {"orientation": "h"},
       };
       Plotly.newPlot(document.getElementById("school_results_plotly"), data, layout);
     }, 100);
