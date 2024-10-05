@@ -1325,12 +1325,14 @@ app.controller("hemnetCommuterController", ['$scope', '$location', '$compile', '
       data.push(trace);
     });
     // Now plot selected schools
-    $scope.active_schools.forEach(function(school_id){
+    var d3colors = Plotly.d3.scale.category10();
+    $scope.active_schools.forEach(function(school_id, idx){
       var trace = {
         x: subjects,
         y: [],
         name: $scope.school_names[school_id],
-        type: 'bar'
+        type: 'bar',
+        marker: { color: d3colors(idx) }
       };
       subjects.forEach(function(subject){
         const field = `averageResultNationalTestsSubject${subject}6thGrade`;
