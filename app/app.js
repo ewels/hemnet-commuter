@@ -1316,6 +1316,7 @@ app.controller("hemnetCommuterController", ['$scope', '$location', '$compile', '
         const field = `averageResultNationalTestsSubject${subject}6thGrade`;
         var result = null;
         try {
+          // TODO: Show whiskers for range of other available years
           result = $scope.schools_data[school_id].full_statistics[field][0].value;
           result = parseFloat(result?.replace('..', '')?.replace(',', '.'));
         } catch (e) {
@@ -1340,6 +1341,7 @@ app.controller("hemnetCommuterController", ['$scope', '$location', '$compile', '
         const field = `averageResultNationalTestsSubject${subject}6thGrade`;
         var result = null;
         try {
+          // TODO: Show whiskers for range of other available years
           result = $scope.schools_data[school_id].full_statistics[field][0]?.value;
           result = parseFloat(result?.replace('..', '')?.replace(',', '.'));
         } catch (e) {
