@@ -10,6 +10,10 @@
 var app = angular.module("hemnetCommuterApp", ['ui-leaflet', 'ngCookies', 'ngAnimate', 'ngTouch', 'ui.bootstrap']);
 app.controller("hemnetCommuterController", ['$scope', '$location', '$compile', '$http', '$timeout', '$cookies', 'leafletData', function ($scope, $location, $compile, $http, $timeout, $cookies, leafletData) {
 
+  // Cookie expiration date - 200 days
+  var cookieExpireDate = new Date();
+  cookieExpireDate.setDate(cookieExpireDate.getDate() + 200);
+
   // First - check if we have an auth token cookie
   $scope.hasAuth = false;
   $scope.hc_auth_token = '';
@@ -21,7 +25,7 @@ app.controller("hemnetCommuterController", ['$scope', '$location', '$compile', '
   // Login form submitted
   $scope.login = function () {
     // Save hc_auth_token cookie
-    $cookies.put('hc_auth_token', $scope.hc_auth_token);
+    $cookies.put('hc_auth_token', $scope.hc_auth_token, {'expires': cookieExpireDate});
     // reload page
     location.reload();
   }
@@ -604,7 +608,7 @@ app.controller("hemnetCommuterController", ['$scope', '$location', '$compile', '
     // Save filters for next time - user hide_ratings has different structure but rest is the same.
     var cookie_filters = JSON.parse(JSON.stringify(postdata));
     cookie_filters.hide_ratings = $scope.filters.hide_ratings;
-    $cookies.putObject('hc_house_filters', cookie_filters);
+    $cookies.putObject('hc_house_filters', cookie_filters, {'expires': cookieExpireDate});
 
     // Get the house data from the database
     $http.post("api/houses.php", postdata).then(function (response) {
@@ -1369,7 +1373,7 @@ app.controller("hemnetCommuterController", ['$scope', '$location', '$compile', '
   $scope.star_school = function(school_id){
     if ($scope.favourite_schools.indexOf(school_id) == -1) {
       $scope.favourite_schools.push(school_id);
-      $cookies.put('hc_favourite_schools', JSON.stringify($scope.favourite_schools));
+      $cookies.put('hc_favourite_schools', JSON.stringify($scope.favourite_schools), {'expires': cookieExpireDate});
     }
     console.log("Starred school: " + school_id, $scope.favourite_schools.indexOf(school_id), $scope.favourite_schools);
   }
@@ -1377,7 +1381,7 @@ app.controller("hemnetCommuterController", ['$scope', '$location', '$compile', '
     var index = $scope.favourite_schools.indexOf(school_id);
     if (index !== -1) {
       $scope.favourite_schools.splice(index, 1);
-      $cookies.put('hc_favourite_schools', JSON.stringify($scope.favourite_schools));
+      $cookies.put('hc_favourite_schools', JSON.stringify($scope.favourite_schools), {'expires': cookieExpireDate});
     }
     console.log("Unstarred school: " + school_id, $scope.favourite_schools.indexOf(school_id), $scope.favourite_schools);
   }
@@ -1534,7 +1538,7 @@ app.controller("hemnetCommuterController", ['$scope', '$location', '$compile', '
   // Hide footer button clicked
   $scope.hide_footer = function () {
     $scope.show_footer = false;
-    $cookies.put('hc_hide_footer', true);
+    $cookies.put('hc_hide_footer', true, {'expires': cookieExpireDate});
   }
 
   // Update commute time
@@ -1705,7 +1709,7 @@ app.controller("hemnetCommuterController", ['$scope', '$location', '$compile', '
         return;
       }
       $scope.hemnet_api_key = response.data.data.authenticateUser.apiToken;
-      $cookies.put('hc_hemnet_api_key', $scope.hemnet_api_key);
+      $cookies.put('hc_hemnet_api_key', $scope.hemnet_api_key, {'expires': cookieExpireDate});
       $scope.hemnet_fetch_saved_searches();
     });
   }
