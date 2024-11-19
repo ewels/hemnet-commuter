@@ -335,8 +335,8 @@
             </tbody>
           </table>
 
-          <div id="school_results_plotly" style="width:100%; height:500px;"></div>
-          <div id="school_survey_plotly" style="width:100%; height:800px;"></div>
+          <div id="school_results_plotly" style="max-width: 390px; width:100%; height:500px;"></div>
+          <div id="school_survey_plotly" style="max-width: 390px; width:100%; height:800px;"></div>
 
           <div ng-repeat="school in school_locations" ng-if="active_schools.includes(school.id)">
             <h4>Comments: {{ school.name }}</h4>
