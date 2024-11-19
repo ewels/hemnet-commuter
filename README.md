@@ -98,7 +98,7 @@ docker exec -i hemnet_commuter mysql -uroot hemnet_commuter < hemnet_commuter.sq
 You can read the server logs by going into the container and tailing the apache log (which gets the PHP logs):
 
 ```bash
-docker exec -it hemnet_commuter
+docker exec -it hemnet_commuter bash
 ```
 
 ```bash

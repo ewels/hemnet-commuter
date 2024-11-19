@@ -79,10 +79,10 @@
     </div>
   </nav>
   <div class="row mr-0 flex-fill h-100" style="position:relative;">
-    <div ng-class="show_detail ? 'd-none d-lg-block' : ''; !sidebar ? 'col-lg-8' : 'd-none d-lg-block col-lg-4'" class="px-0 order-2">
+    <div ng-class="show_detail ? 'd-none d-lg-block' : ''; !sidebar ? 'col-lg-8 col-xxl-9' : 'd-none d-lg-block col-lg-4 col-xxl-6'" class="px-0 order-2">
       <leaflet bounds="map.bounds" lf-center="map.center" event-broadcast="map.events" markers="map.markers" layers="map.layers" controls="map.controls" style="position: absolute; top: 0; bottom: 0; width: 100%;"></leaflet>
     </div>
-    <div ng-class="show_detail ? 'd-block' : 'd-none d-lg-block'" class="col-lg-4 pr-0 order-1 h-100 overflow-auto">
+    <div ng-class="show_detail ? 'd-block' : 'd-none d-lg-block'" class="col-lg-4 col-xxl-3 pr-0 order-1 h-100 overflow-auto">
       <div class="container pt-md-3">
         <h1 class="h2 d-none d-md-inline">
           <img ng-hide="update_results_call_active || commute_map_call_active" src="hemnet_commuter.svg" class="float-right" style="width: 40px; margin-top:-5px;">
@@ -360,7 +360,7 @@
       </div>
 
     <!-- RIGHT SIDEBAR -->
-    <div ng-class="!sidebar ? 'd-none' : 'col-lg-4'" class="order-3 h-100 overflow-auto d-none d-lg-block">
+    <div ng-class="!sidebar ? 'd-none' : 'col-lg-4 col-xxl-3'" class="order-3 h-100 overflow-auto d-none d-lg-block">
 
       <!-- RECENT RATINGS -->
       <div ng-show="sidebar == 'recent_ratings'" class="pt-3">
@@ -743,6 +743,14 @@
                   ng-repeat="open_house in viewing.upcomingOpenHouses track by $index"
                   class="badge badge-pill mb-0 mr-1 badge-secondary">
                   {{ open_house * 1000.00 | date: 'EEE d MMM, HH:mm' | stripZeros }}
+                </span>
+              </p>
+              <p ng-show="viewing.isNewConstruction == 1 || viewing.isUpcoming == 1 || viewing.isBiddingOngoing == 1" class="clearfix">
+                <span ng-show="viewing.isNewConstruction == 1" class="badge badge-light border text-secondary"><i class="fa fa-certificate mr-2" aria-hidden="true"></i>New production</span>
+                <span ng-show="viewing.isUpcoming == 1" class="badge badge-success"><i class="fa fa-bolt mr-2" aria-hidden="true"></i>Kommande</span>
+                <span ng-show="viewing.isBiddingOngoing == 1" class="badge badge-info" style="background-color: #67458c;"><i class="fa fa-gavel mr-2" aria-hidden="true"></i> Bidding is ongoing</span>
+                <span class="badge" ng-class="{'badge-success': viewing.askingPrice < 4000000, 'badge-primary': viewing.askingPrice > 4000000 && viewing.askingPrice < 5700000, 'badge-danger': viewing.askingPrice > 5700000}">
+                  <span ng-bind="viewing.askingPrice / 1000000 | number:3"></span> MKr</span>
                 </span>
               </p>
             </div>

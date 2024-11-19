@@ -744,6 +744,7 @@ app.controller("hemnetCommuterController", ['$scope', '$location', '$compile', '
       return firstOpenHouseA - firstOpenHouseB;
     }).map(house => ({...house, upcomingOpenHouses: house.upcomingOpenHouses.split(",")}));
     $scope.upcoming_viewings_houses = viewings
+    console.log('upcoming biewings', $scope.upcoming_viewings_houses);
   };
 
   $scope.simulateClickOnMarker = function (houseId) {
